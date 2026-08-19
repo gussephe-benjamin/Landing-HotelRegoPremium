@@ -1,0 +1,232 @@
+/* Floating menu trigger + curved slide-in navigation.
+
+   Vanilla port of the supplied `curved-menu` React component. The panel, its
+   curved leading edge, the numbered links and the per-letter ripple on hover
+   are all kept; Next's <Link> becomes a plain anchor and the lucide icons are
+   inlined. The component's open/close sound effects are dropped — it shipped
+   with no audio files, and a page that makes noise on a click without being
+   asked is a poor default.
+
+   Namespaced `nav-fab-*` for the trigger and `cv-*` for the panel. */
+
+/* ── The trigger ─────────────────────────────────────────────────────── */
+/* Deliberately faint: a thin glass disc that borrows whatever is behind it,
+   rather than a solid button competing with the page. */
+.nav-fab {
+  position: fixed;
+  right: clamp(1rem, 2.4vw, 2rem);
+  bottom: clamp(1rem, 2.4vw, 2rem);
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  padding: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.07);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  backdrop-filter: blur(16px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow:
+    0 10px 30px -12px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  /* Hidden until a calm section is under the viewport centre; menu.js owns
+     the class. */
+  opacity: 0;
+  transform: translateY(10px) scale(0.9);
+  pointer-events: none;
+  transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.nav-fab.is-shown {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.nav-fab:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+.nav-fab:focus-visible {
+  outline: none;
+  border-color: rgba(199, 154, 91, 0.8);
+  box-shadow: 0 0 0 3px rgba(199, 154, 91, 0.3);
+}
+
+.nav-fab-lines {
+  position: relative;
+  display: block;
+  width: 20px;
+  height: 12px;
+}
+.nav-fab-lines i {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 1.5px;
+  border-radius: 2px;
+  background: #fff;
+  transition: transform 0.35s cubic-bezier(0.76, 0, 0.24, 1), opacity 0.2s ease;
+}
+.nav-fab-lines i:nth-child(1) { top: 0; }
+.nav-fab-lines i:nth-child(2) { top: 5.25px; }
+.nav-fab-lines i:nth-child(3) { top: 10.5px; }
+
+/* Morphs to a cross while the panel is open. */
+.nav-fab[aria-expanded="true"] .nav-fab-lines i:nth-child(1) { transform: translateY(5.25px) rotate(45deg); }
+.nav-fab[aria-expanded="true"] .nav-fab-lines i:nth-child(2) { opacity: 0; }
+.nav-fab[aria-expanded="true"] .nav-fab-lines i:nth-child(3) { transform: translateY(-5.25px) rotate(-45deg); }
+
+/* On the cream panel the white bars would vanish. */
+.nav-fab[aria-expanded="true"] { background: rgba(20, 16, 12, 0.5); }
+
+/* ── Panel ───────────────────────────────────────────────────────────── */
+.cv {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+}
+.cv[hidden] { display: none; }
+
+.cv-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 10, 12, 0.55);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+}
+
+.cv-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100dvh;
+  width: min(640px, 100vw);
+  /* The source panel is pure white. This is the cream already used by the
+     testimonials band — same role, but it belongs to this page's palette. */
+  background: #efeae3;
+  color: #14100c;
+  font-family: var(--ov-font-display);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(4rem, 9vh, 6rem) 0 0;
+  will-change: transform;
+}
+
+/* The leading edge. A quadratic control point pushed out to the left bows the
+   panel's side outward, and relaxing it back to the edge flattens it — that
+   travel is the whole effect, so the path is animated, not the element. */
+.cv-edge {
+  position: absolute;
+  top: 0;
+  left: -99px;
+  width: 100px;
+  height: 100%;
+  stroke: none;
+  fill: #efeae3;
+  pointer-events: none;
+}
+
+.cv-inner {
+  padding: 0 clamp(2.5rem, 6vw, 6rem);
+}
+
+.cv-cap {
+  margin: 0 0 0.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(20, 16, 12, 0.3);
+  font-family: var(--rs-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  color: rgba(20, 16, 12, 0.65);
+}
+
+.cv-nav { display: block; }
+
+.cv-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: clamp(1rem, 2.6vh, 2rem) 0;
+  border-bottom: 1px solid rgba(20, 16, 12, 0.3);
+  text-decoration: none;
+  color: #14100c;
+  text-transform: uppercase;
+  outline: none;
+}
+
+.cv-num {
+  font-size: clamp(1.4rem, 3vw, 2.25rem);
+  font-weight: 200;
+  line-height: 1;
+  color: rgba(20, 16, 12, 0.55);
+  font-variant-numeric: tabular-nums;
+}
+
+.cv-word {
+  display: block;
+  font-size: clamp(1.6rem, 4vw, 2.25rem);
+  font-weight: 200;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.cv-word span {
+  display: inline-block;
+  will-change: transform;
+}
+
+.cv-link:focus-visible {
+  outline: 2px solid rgba(20, 16, 12, 0.8);
+  outline-offset: 4px;
+}
+
+.cv-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem clamp(2.5rem, 6vw, 6rem) clamp(1.5rem, 4vh, 2.5rem);
+  border-top: 1px solid rgba(20, 16, 12, 0.16);
+}
+
+.cv-foot a {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  color: rgba(20, 16, 12, 0.7);
+  text-decoration: none;
+  outline: none;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+.cv-foot a:hover { background: rgba(20, 16, 12, 0.08); color: #14100c; }
+.cv-foot a:focus-visible { outline: 2px solid rgba(20, 16, 12, 0.8); outline-offset: 2px; }
+.cv-foot svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (max-width: 560px) {
+  .cv-panel { width: 100vw; }
+  /* The curve needs room to the panel's left; at full width there is none. */
+  .cv-edge { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-fab { transition: opacity 0.3s ease; transform: none; }
+  .nav-fab.is-shown { transform: none; }
+}

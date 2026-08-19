@@ -1,0 +1,262 @@
+/* "Qué ofrecemos" section. Inherits the hero's tokens (--ov-font-display,
+   --ov-ease) rather than redefining them; only the section-local ink and
+   canvas colours are new. */
+:root {
+  --of-canvas: #f4f1ec;
+  --of-ink: 20, 16, 12;
+}
+
+.offering {
+  position: relative;
+  width: 100%;
+  padding: clamp(6rem, 14vh, 12rem) 0;
+  background-color: var(--of-canvas);
+  color: rgb(var(--of-ink));
+  font-family: var(--ov-font-display);
+  overflow: hidden;
+}
+
+.offering-grain {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.05;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+/* Registration marks, same device as the hero but dark on the light canvas */
+.offering-corner {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+}
+.offering-corner::before,
+.offering-corner::after {
+  content: "";
+  position: absolute;
+  background: rgba(var(--of-ink), 0.3);
+}
+.offering-corner::before { width: 1px; height: 14px; left: 50%; top: 0; transform: translateX(-50%); }
+.offering-corner::after { width: 14px; height: 1px; top: 50%; left: 0; transform: translateY(-50%); }
+.offering-corner-tl { top: 32px; left: 32px; }
+.offering-corner-br { bottom: 32px; right: 32px; }
+
+.offering-inner {
+  position: relative;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 5vw;
+}
+
+/* ── Image: asymmetric corner radii (curved on one diagonal only) ────── */
+.offering-media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  border-radius: 0 clamp(48px, 9vw, 180px) 0 clamp(48px, 9vw, 180px);
+  /* Shadow and scale are set by the entrance timeline, which grows both from
+     nothing. The card is only clipped on the inner wrapper, never here: a
+     clip-path on this element would cut off its own drop shadow. */
+  will-change: transform;
+}
+
+/* Carries the reveal. Kept separate from .offering-media so the wipe can run
+   without clipping the card's shadow, and separate from the image so the
+   image is free to scale underneath the moving edge. */
+.offering-clip {
+  position: absolute;
+  inset: 0;
+  clip-path: inset(0% 0% 100% 0%);
+  will-change: clip-path;
+}
+
+/* A band of light that rides just ahead of the reveal edge, so the card reads
+   as being drawn onto the page rather than uncovered by a moving rectangle. */
+.offering-sweep {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  top: 0;
+  height: 40%;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-100%);
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.35) 55%,
+    rgba(255, 255, 255, 0.75) 88%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  will-change: transform, opacity;
+}
+
+/* Oversized so the parallax shift never exposes an edge: 124% tall with
+   -12% offset leaves 12% of slack on each side for a ±8% travel. */
+.offering-img {
+  position: absolute;
+  top: -12%;
+  left: 0;
+  width: 100%;
+  height: 124%;
+  object-fit: cover;
+  will-change: transform;
+}
+
+/* ── Connector line from the image down to the copy ──────────────────── */
+.offering-line {
+  display: block;
+  width: 1px;
+  height: clamp(3rem, 7vh, 5.5rem);
+  margin: 0 auto;
+  background: rgba(var(--of-ink), 0.15);
+  transform: scaleY(0);
+  transform-origin: top;
+  will-change: transform;
+}
+
+/* ── Copy block ──────────────────────────────────────────────────────── */
+.offering-copy {
+  position: relative;
+  text-align: center;
+  padding-top: clamp(1.5rem, 4vh, 3rem);
+}
+
+/* Ghost section number, sitting behind the headline */
+.offering-ghost {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: clamp(8rem, 18vw, 16rem);
+  font-weight: 600;
+  line-height: 1;
+  color: rgba(var(--of-ink), 0.04);
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+  will-change: transform;
+}
+
+/* Each mask clips its child so the line can start fully out of sight. */
+.offering-mask {
+  display: block;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+.offering-mask > * {
+  display: block;
+  transform: translateY(100%);
+  opacity: 0;
+  filter: blur(6px);
+  will-change: transform, opacity, filter;
+}
+
+/* Subdued tone comes from the colour alpha, not `opacity` — the opacity
+   property is reserved for the reveal animation on the mask children. */
+.offering-eyebrow {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  color: rgba(var(--of-ink), 0.5);
+  margin: 0;
+}
+
+.offering-title {
+  position: relative;
+  z-index: 1;
+  font-size: clamp(2.25rem, 5.5vw, 4.5rem);
+  line-height: 0.98;
+  letter-spacing: -0.03em;
+  font-weight: 500;
+  margin: 1.25rem 0 0;
+}
+.offering-title em {
+  font-style: italic;
+  font-weight: 400;
+}
+
+.offering-sub {
+  font-size: 16px;
+  line-height: 1.5;
+  color: rgba(var(--of-ink), 0.65);
+  max-width: 46ch;
+  margin: 1.75rem auto 0;
+}
+
+.offering-chips {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 2.5rem;
+}
+
+.offering-chip {
+  border: 1px solid rgba(var(--of-ink), 0.18);
+  background: transparent;
+  color: rgb(var(--of-ink));
+  border-radius: 999px;
+  padding: 0.65em 1.35em;
+  font-family: inherit;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: default;
+  opacity: 0;
+  transform: translateY(14px);
+  will-change: transform, opacity;
+  transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease;
+}
+.offering-chip:hover {
+  background-color: rgb(var(--of-ink));
+  border-color: rgb(var(--of-ink));
+  color: var(--of-canvas);
+}
+
+@media (max-width: 767px) {
+  .offering-inner { padding: 0 20px; }
+
+  .offering-media {
+    border-radius: 0 48px 0 48px;
+    box-shadow: 0 20px 40px -12px rgba(var(--of-ink), 0.3);
+  }
+
+  .offering-ghost { display: none; }
+
+  /* Blur is dropped on small screens — it is the expensive part of the
+     reveal and barely reads at this size. */
+  .offering-mask > * { filter: none; }
+
+  .offering-chips { gap: 0.5rem; }
+  .offering-chip { padding: 0.6em 1em; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .offering-media {
+    transform: none;
+    box-shadow:
+      0 2px 8px rgba(var(--of-ink), 0.08),
+      0 40px 80px -20px rgba(var(--of-ink), 0.35);
+  }
+  .offering-clip { clip-path: none; }
+  .offering-sweep { display: none; }
+  .offering-line { transform: scaleY(1); }
+  .offering-mask > * {
+    transform: none;
+    opacity: 1;
+    filter: none;
+  }
+  .offering-chip {
+    opacity: 1;
+    transform: none;
+  }
+}

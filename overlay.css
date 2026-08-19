@@ -1,0 +1,283 @@
+/* ── Design tokens ──────────────────────────────────────────────────── */
+:root {
+  --ov-ink: #ffffff;
+  --ov-black: #0a0a0a;
+  --ov-line: rgba(255, 255, 255, 0.35);
+  --ov-grad-soft: rgba(0, 0, 0, 0.55);
+  --ov-grad-strong: rgba(0, 0, 0, 0.75);
+  --ov-font-display: "Satoshi", "Space Grotesk", -apple-system, BlinkMacSystemFont, sans-serif;
+  --ov-ease: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  font-family: var(--ov-font-display);
+  color: var(--ov-ink);
+}
+
+/* ── Legibility layers ──────────────────────────────────────────────── */
+.grad-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 45%, var(--ov-grad-soft) 0%, transparent 65%),
+    linear-gradient(to top, var(--ov-grad-strong) 0%, transparent 45%);
+}
+
+.grain-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  opacity: 0.04;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+/* ── Corner registration marks ──────────────────────────────────────── */
+.corner {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+  z-index: 3;
+}
+.corner::before,
+.corner::after {
+  content: "";
+  position: absolute;
+  background: var(--ov-line);
+}
+.corner::before { width: 1px; height: 14px; left: 50%; top: 0; transform: translateX(-50%); }
+.corner::after { width: 14px; height: 1px; top: 50%; left: 0; transform: translateY(-50%); }
+.corner-tr { top: 32px; right: 32px; }
+.corner-bl { bottom: 32px; left: 32px; }
+.corner-br { bottom: 32px; right: 32px; }
+
+/* ── Topbar ──────────────────────────────────────────────────────────── */
+.topbar {
+  position: absolute;
+  top: 40px;
+  left: 0;
+  right: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 48px;
+}
+
+.brand {
+  height: 48px;
+  width: auto;
+  opacity: 0.9;
+  display: block;
+}
+
+.nav-center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  gap: 2.5em;
+}
+.nav-center a {
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  color: var(--ov-ink);
+  text-decoration: none;
+  opacity: 0.75;
+  transition: opacity 0.3s ease;
+}
+.nav-center a:hover { opacity: 1; }
+
+.btn-book {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  background: #fff;
+  color: var(--ov-black);
+  border: none;
+  padding: 0.75em 1.75em;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.btn-book:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.btn-burger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 28px;
+  height: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.btn-burger span { display: block; width: 100%; height: 1px; background: #fff; }
+
+/* ── Hero center: eyebrow + headline ────────────────────────────────── */
+.hero-center {
+  position: absolute;
+  top: 48%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 4;
+  width: 100%;
+  padding: 0 24px;
+  text-align: center;
+}
+
+.eyebrow {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  opacity: 0.6;
+  margin-bottom: 1em;
+}
+
+.headline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.25em;
+  font-size: clamp(2.75rem, 7vw, 7rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+.headline-fixed { font-weight: 500; font-style: normal; }
+
+/* word rotator: fixed-height clipped window, width animates to match content */
+.word-rotator {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  height: 1em;
+  vertical-align: -0.08em;
+  font-style: italic;
+  font-weight: 400;
+  transition: width 0.7s var(--ov-ease);
+}
+
+.wr-track {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: inline-flex;
+  white-space: nowrap;
+  transform: translateY(0);
+  filter: blur(0);
+  transition: transform 0.7s var(--ov-ease), filter 0.7s var(--ov-ease);
+}
+.wr-track.wr-leaving { transform: translateY(-100%); }
+.wr-track.wr-entering { transform: translateY(100%); }
+.wr-track.wr-entering.wr-blur { filter: blur(4px); }
+
+.wr-letter {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.wr-letter.wr-in { opacity: 1; transform: translateY(0); }
+
+/* ── Bottom-left: subtitle + links ──────────────────────────────────── */
+.bottom-left {
+  position: absolute;
+  left: 48px;
+  bottom: 56px;
+  z-index: 4;
+  max-width: 34ch;
+}
+
+.subtitle {
+  font-size: 15px;
+  line-height: 1.5;
+  opacity: 0.8;
+  margin: 0 0 1.25em;
+}
+
+.links-row { display: flex; gap: 2em; flex-wrap: wrap; }
+
+.link-underline {
+  position: relative;
+  font-size: 13px;
+  color: var(--ov-ink);
+  text-decoration: none;
+  opacity: 0.9;
+  padding-bottom: 0.3em;
+}
+.link-underline span { opacity: 0.5; margin-left: 0.25em; }
+.link-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s ease;
+}
+.link-underline:hover::after { transform: scaleX(1); }
+
+/* ── Staggered entrance (triggered by JS once the pin settles) ─────────
+   Delays encode the reveal order from the spec: eyebrow → headline →
+   subtitle → links → topbar. */
+.reveal-item {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.reveal-eyebrow { transition-delay: 0ms; }
+.reveal-headline { transition-delay: 120ms; }
+.reveal-subtitle { transition-delay: 240ms; }
+.reveal-links { transition-delay: 340ms; }
+.reveal-topbar { transition-delay: 420ms; }
+
+.hero-overlay.is-revealed .reveal-item {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+footer { z-index: 5; }
+
+/* ── Responsive ──────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .corner { display: none; }
+  .nav-center { display: none; }
+  .btn-burger { display: flex; }
+
+  .topbar { padding: 0 24px; }
+  .headline { font-size: clamp(2rem, 9vw, 3rem); }
+
+  .bottom-left {
+    left: 24px;
+    right: 24px;
+    bottom: 132px;
+    max-width: none;
+  }
+}
+
+/* ── Reduced motion ──────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .reveal-item,
+  .wr-track,
+  .wr-letter,
+  .word-rotator {
+    transition: none !important;
+  }
+}

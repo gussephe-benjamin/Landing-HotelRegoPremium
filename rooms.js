@@ -1,0 +1,447 @@
+/* WebGL rooms slider, adapted from the shader pack.
+   Removed from the original: the full-screen loading takeover, the fixed
+   .frame chrome and the custom cursors — all three assumed they owned the
+   whole page, which they don't here. Splitting.js was replaced by a local
+   character splitter so the page keeps a single set of dependencies. */
+document.addEventListener("DOMContentLoaded", function () {
+  var root = document.querySelector(".rooms");
+  if (!root || typeof THREE === "undefined") return;
+
+  var mediaEl = root.querySelector(".rooms-media");
+  var slideEls = [].slice.call(root.querySelectorAll(".rooms-slide"));
+  if (!mediaEl || !slideEls.length) return;
+
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ── helpers ────────────────────────────────────────────────────────
+  function splitChars(el) {
+    var text = el.textContent.trim();
+    el.textContent = "";
+    var chars = [];
+    for (var i = 0; i < text.length; i++) {
+      var s = document.createElement("span");
+      s.className = "char";
+      s.textContent = text[i] === " " ? " " : text[i];
+      el.appendChild(s);
+      chars.push(s);
+    }
+    return chars;
+  }
+
+  // Measures the rendered text on a canvas to break a paragraph into the
+  // same lines the browser produced, then wraps each in an overflow-hidden
+  // span so it can be masked.
+  function splitLines(el) {
+    var styles = getComputedStyle(el);
+    // A zero here means layout has not settled; falling back to the parent
+    // (or a sane default) avoids splitting every single word onto its own line.
+    var maxWidth =
+      el.getBoundingClientRect().width ||
+      (el.parentElement && el.parentElement.getBoundingClientRect().width) ||
+      360;
+    var words = el.textContent.trim().split(/\s+/);
+    var ctx = document.createElement("canvas").getContext("2d");
+    ctx.font = styles["font-weight"] + " " + styles["font-size"] + " " + styles["font-family"];
+
+    var lines = [];
+    var current = [];
+    for (var i = 0; i < words.length; i++) {
+      current.push(words[i]);
+      if (ctx.measureText(current.join(" ")).width >= maxWidth) {
+        var cached = current.pop();
+        lines.push(current.join(" "));
+        current = [cached];
+      }
+    }
+    lines.push(current.join(" "));
+
+    el.innerHTML = "";
+    var inners = [];
+    lines.forEach(function (text) {
+      var line = document.createElement("span");
+      var inner = document.createElement("span");
+      line.className = "line";
+      line.style.display = "block";
+      inner.style.display = "block";
+      inner.textContent = text;
+      line.appendChild(inner);
+      el.appendChild(line);
+      inners.push(inner);
+    });
+    return inners;
+  }
+
+  // ── WebGL stage ────────────────────────────────────────────────────
+  var vertexShader = document.getElementById("roomsVertexShader").textContent;
+  var fragmentShader = document.getElementById("roomsFragmentShader").textContent;
+
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+  camera.position.z = 50;
+
+  var renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x000000, 0);
+  renderer.domElement.className = "rooms-gl";
+  root.appendChild(renderer.domElement);
+
+  var clock = new THREE.Clock();
+
+  var pointer = new THREE.Vector2();
+  var mouseOver = false;
+  var mouseDown = false;
+  window.addEventListener("mousemove", function (e) {
+    pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
+    pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  });
+
+  var geometry = new THREE.PlaneBufferGeometry(1, 1, 32, 32);
+  var material = new THREE.ShaderMaterial({
+    vertexShader: vertexShader,
+    fragmentShader: fragmentShader,
+    transparent: true,
+    uniforms: {
+      uCurrTex: { value: null },
+      uNextTex: { value: null },
+      uTime: { value: 0 },
+      uProg: { value: 0 },
+      uAmplitude: { value: 0 },
+      uProgDirection: { value: 1 },
+      uMeshSize: { value: [1, 1] },
+      uImageSize: { value: [1, 1] },
+      uMousePos: { value: [0, 0] },
+      uMouseOverAmp: { value: 0 },
+      uAnimating: { value: false },
+      uRadius: { value: 0.08 },
+      uTranslating: { value: false },
+    },
+  });
+
+  var mesh = new THREE.Mesh(geometry, material);
+  scene.add(mesh);
+
+  var raycaster = new THREE.Raycaster();
+  var meshMouse = new THREE.Vector2();
+  var mouseLerp = 0.1;
+  var textures = [];
+  var animating = false;
+
+  // Maps the DOM rect of .rooms-media into camera units. Because the canvas
+  // is viewport-fixed, feeding the element's *viewport* position (rect.top)
+  // is what keeps the plane glued to the element while the page scrolls.
+  function syncMeshToElement() {
+    var rect = mediaEl.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+
+    var vFov = (camera.fov * Math.PI) / 180;
+    var unitHeight = 2 * Math.tan(vFov / 2) * (camera.position.z - mesh.position.z);
+    var unitWidth = unitHeight * camera.aspect;
+
+    mesh.scale.x = unitWidth * (rect.width / window.innerWidth);
+    mesh.scale.y = unitHeight * (rect.height / window.innerHeight);
+    mesh.position.y = unitHeight / 2 - mesh.scale.y / 2 - (rect.top / window.innerHeight) * unitHeight;
+    mesh.position.x = -(unitWidth / 2) + mesh.scale.x / 2 + (rect.left / window.innerWidth) * unitWidth;
+
+    material.uniforms.uMeshSize.value = [rect.width, rect.height];
+  }
+
+  // A fixed-position canvas is NOT clipped by the section's overflow, so it
+  // would otherwise paint across the whole page. Visibility is gated on the
+  // section actually being on screen, and rendering pauses while it isn't.
+  var texturesReady = false;
+  var onScreen = false;
+
+  function updateGlVisibility() {
+    gsap.to(renderer.domElement, {
+      opacity: texturesReady && onScreen ? 1 : 0,
+      duration: 0.5,
+      ease: "power2.out",
+    });
+  }
+
+  function loadTextures() {
+    var imgs = [].slice.call(mediaEl.querySelectorAll("img"));
+    var loader = new THREE.TextureLoader();
+    var pending = imgs.length;
+
+    imgs.forEach(function (img, i) {
+      loader.load(img.src, function (texture) {
+        texture.minFilter = THREE.LinearFilter;
+        texture.generateMipmaps = false;
+        textures[i] = texture;
+        if (i === 0) {
+          material.uniforms.uImageSize.value = [texture.image.width, texture.image.height];
+          material.uniforms.uCurrTex.value = texture;
+          material.uniforms.uNextTex.value = texture;
+        }
+        if (--pending === 0) {
+          texturesReady = true;
+          updateGlVisibility();
+        }
+      });
+    });
+  }
+
+  function render() {
+    requestAnimationFrame(render);
+    if (!onScreen) return;
+
+    material.uniforms.uTime.value = clock.getElapsedTime();
+    syncMeshToElement();
+
+    var target = mouseOver ? pointer : new THREE.Vector2(0, 0);
+    meshMouse.lerp(target, mouseLerp);
+    raycaster.setFromCamera(meshMouse, camera);
+    var hits = raycaster.intersectObject(mesh);
+    if (hits.length > 0) {
+      material.uniforms.uMousePos.value = [hits[0].uv.x, hits[0].uv.y];
+    }
+
+    var amp = material.uniforms.uMouseOverAmp;
+    amp.value = THREE.MathUtils.lerp(amp.value, mouseOver && !animating ? 1 : 0, 0.08);
+    mouseLerp = THREE.MathUtils.lerp(mouseLerp, mouseOver ? 0.1 : 0, 0.5);
+
+    var radius = material.uniforms.uRadius;
+    if (mouseOver && mouseDown) radius.value = THREE.MathUtils.lerp(radius.value, 1, 0.01);
+    else radius.value = THREE.MathUtils.lerp(radius.value, 0.08, 0.08);
+
+    renderer.render(scene, camera);
+  }
+
+  window.addEventListener("resize", function () {
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    syncMeshToElement();
+  });
+
+  mediaEl.addEventListener("mouseenter", function () { mouseOver = true; });
+  mediaEl.addEventListener("mouseleave", function () { mouseOver = false; mouseDown = false; });
+  mediaEl.addEventListener("mousedown", function () { mouseDown = true; });
+  window.addEventListener("mouseup", function () { mouseDown = false; });
+  mediaEl.addEventListener("click", function () { step(1); });
+
+  loadTextures();
+  syncMeshToElement();
+  render();
+
+  // ── Slide content ──────────────────────────────────────────────────
+  var slides = [];
+  var ready = false;
+
+  // Splitting measures text on a canvas, so it must wait for the webfont and
+  // a settled layout — otherwise every word lands on its own line.
+  function buildSlides() {
+    if (ready) return;
+    slides = slideEls.map(function (el) {
+      return {
+        el: el,
+        index: splitChars(el.querySelector(".rooms-index")),
+        title: splitChars(el.querySelector(".rooms-title")),
+        lines: splitLines(el.querySelector(".rooms-desc")),
+        panel: el.querySelector(".rooms-panel"),
+      };
+    });
+
+    slides.forEach(function (s, i) {
+      if (i === 0) return;
+      gsap.set([s.index, s.title], { yPercent: 120, rotation: -3 });
+      gsap.set(s.lines, { yPercent: 100 });
+      gsap.set(s.panel, { opacity: 0, y: 20 });
+    });
+
+    ready = true;
+    syncChrome();
+  }
+
+  var tabs = [].slice.call(root.querySelectorAll(".rooms-tab"));
+  var progressBar = root.querySelector(".rooms-progress i");
+  var counterNow = root.querySelector(".rooms-counter b");
+  var bgEl = root.querySelector(".rooms-bg");
+  var bgColors = ["#17120f", "#141a18", "#1b1512", "#101418"];
+
+  var current = 0;
+  // Counted from the DOM, not from `slides` — that array is only populated
+  // later by buildSlides(), and a zero here makes step()'s modulo return NaN.
+  var total = slideEls.length;
+
+  function syncChrome() {
+    tabs.forEach(function (t, i) { t.classList.toggle("is-active", i === current); });
+    if (progressBar) progressBar.style.transform = "scaleX(" + (current + 1) + ")";
+    if (counterNow) counterNow.textContent = String(current + 1).padStart(2, "0");
+    gsap.to(bgEl, { backgroundColor: bgColors[current % bgColors.length], duration: 1.2, ease: "power2.out" });
+  }
+
+  function switchTextures(index, direction) {
+    if (!textures[index]) return;
+    gsap.timeline({
+      onStart: function () {
+        animating = true;
+        material.uniforms.uAnimating.value = true;
+        material.uniforms.uProgDirection.value = direction;
+        material.uniforms.uNextTex.value = textures[index];
+      },
+      onComplete: function () {
+        animating = false;
+        material.uniforms.uAnimating.value = false;
+        material.uniforms.uCurrTex.value = textures[index];
+        material.uniforms.uProg.value = 0;
+      },
+    })
+      .fromTo(material.uniforms.uProg, { value: 0 }, { value: 1, duration: 1, ease: "power2.out" }, 0)
+      .fromTo(
+        material.uniforms.uAmplitude,
+        { value: 0 },
+        { value: 1, duration: 0.8, repeat: 1, yoyo: true, yoyoEase: "sine.out", ease: "expo.out" },
+        0
+      );
+  }
+
+  var busy = false;
+
+  function goTo(index, direction) {
+    if (!ready || busy || index === current || animating) return;
+    busy = true;
+
+    var from = slides[current];
+    var to = slides[index];
+    var next = direction === 1;
+
+    gsap
+      .timeline({
+        defaults: { duration: 1, ease: "power4.inOut" },
+        onStart: function () {
+          switchTextures(index, direction);
+          current = index;
+          syncChrome();
+        },
+        onComplete: function () {
+          from.el.classList.remove("is-current");
+          busy = false;
+        },
+      })
+      .addLabel("out", 0)
+      .to([from.index, from.title], {
+        yPercent: next ? -120 : 120,
+        rotation: next ? 3 : -3,
+        stagger: next ? 0.02 : -0.02,
+      }, "out")
+      .to(from.lines, { yPercent: next ? -100 : 100, stagger: next ? 0.05 : -0.05 }, "out")
+      .to(from.panel, { opacity: 0, y: next ? -20 : 20, duration: 0.5 }, "out")
+      .addLabel("in", 0.4)
+      .add(function () {
+        gsap.set([to.index, to.title], { yPercent: next ? 120 : -120, rotation: next ? -3 : 3 });
+        gsap.set(to.lines, { yPercent: next ? 100 : -100 });
+        gsap.set(to.panel, { opacity: 0, y: next ? 20 : -20 });
+        to.el.classList.add("is-current");
+      }, "in")
+      .to([to.index, to.title], { yPercent: 0, rotation: 0, stagger: next ? 0.02 : -0.02 }, "in")
+      .to(to.lines, { yPercent: 0, stagger: next ? 0.05 : -0.05 }, "in")
+      .to(to.panel, { opacity: 1, y: 0, duration: 0.7 }, "in+=0.15");
+  }
+
+  function step(dir) {
+    var index = (current + dir + total) % total;
+    goTo(index, dir);
+  }
+
+  root.querySelector(".rooms-nav-prev").addEventListener("click", function () { step(-1); });
+  root.querySelector(".rooms-nav-next").addEventListener("click", function () { step(1); });
+  tabs.forEach(function (tab, i) {
+    tab.addEventListener("click", function () { goTo(i, i > current ? 1 : -1); });
+  });
+
+  window.addEventListener("keydown", function (e) {
+    if (!isSectionVisible()) return;
+    if (e.key === "ArrowLeft") step(-1);
+    if (e.key === "ArrowRight") step(1);
+  });
+
+  function isSectionVisible() {
+    var r = root.getBoundingClientRect();
+    return r.top < window.innerHeight * 0.5 && r.bottom > window.innerHeight * 0.5;
+  }
+
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(buildSlides);
+    setTimeout(buildSlides, 2000); // guard if the font promise never settles
+  } else {
+    window.addEventListener("load", buildSlides);
+  }
+
+  // ── Entrance + cover behaviour ─────────────────────────────────────
+  if (typeof ScrollTrigger !== "undefined") {
+    ScrollTrigger.create({
+      trigger: root,
+      start: "top bottom",
+      end: "bottom top",
+      onToggle: function (self) {
+        onScreen = self.isActive;
+        updateGlVisibility();
+      },
+    });
+
+    if (!reduced) {
+      // The cover effect: this panel rides up over the previous section while
+      // that section recedes behind it — shrinking, blurring and darkening,
+      // like it's dropping a layer back in depth. Pinning was avoided on
+      // purpose: .offering is far taller than the viewport, so pinning it
+      // (with or without spacing) yanks its height out of the flow and makes
+      // the whole page jump.
+      //
+      // NOTE: `.rooms` itself is never transformed/filtered. Its WebGL canvas
+      // is `position: fixed` and reads real viewport coordinates every frame
+      // (see syncMeshToElement) — a transform on an ancestor would make the
+      // canvas fixed *to that ancestor* instead of the viewport, silently
+      // detaching the photo from the slider. Only `.offering-inner` (an
+      // unrelated subtree) and elements below get transformed/filtered.
+      gsap.to(".offering-inner", {
+        scale: 0.9,
+        opacity: 0.3,
+        ease: "none",
+        scrollTrigger: { trigger: ".rooms", start: "top bottom", end: "top 15%", scrub: true },
+      });
+
+      // Shadow intensifies as the panel settles into place, reinforcing that
+      // it just landed on top of something.
+      gsap.fromTo(
+        root,
+        { boxShadow: "0 -10px 30px rgba(0,0,0,0)" },
+        {
+          boxShadow: "0 -34px 90px rgba(0,0,0,0.6)",
+          ease: "none",
+          scrollTrigger: { trigger: root, start: "top bottom", end: "top 40%", scrub: true },
+        }
+      );
+
+      // Continuous, scroll-scrubbed parallax (not a one-shot trigger fade) on
+      // the chrome that ISN'T an ancestor of the canvas, so it's safe to
+      // transform: it rises into place at a slightly different rate than the
+      // scroll itself, which is what actually reads as "parallax".
+      gsap.fromTo(
+        ".rooms-head > *",
+        { y: 70, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          stagger: 0.15,
+          ease: "none",
+          scrollTrigger: { trigger: root, start: "top bottom", end: "top 45%", scrub: true },
+        }
+      );
+
+      gsap.fromTo(
+        [".rooms-tabs", ".rooms-progress", ".rooms-counter"],
+        { y: 40, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          stagger: 0.08,
+          ease: "none",
+          scrollTrigger: { trigger: root, start: "top 70%", end: "bottom 90%", scrub: true },
+        }
+      );
+    }
+  }
+});

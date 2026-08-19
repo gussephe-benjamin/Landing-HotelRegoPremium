@@ -1,0 +1,116 @@
+/* Kinetic typography page transition.
+   Ported from the demo, but scroll-driven instead of click-driven: the whole
+   page is a scroll narrative, so the transition is scrubbed by a pinned
+   section rather than fired by a button. */
+:root {
+  /* Same value as the reserve section's fallback, so the hand-off from the
+     video (whose lower scrim is this colour) reads as one continuous field
+     instead of a hard cut to a light panel. */
+  --kn-bg: #12161a;
+  --kn-type: #f4f8fb;
+  --kn-line-opacity: 0.07;
+}
+
+.kinetic {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  height: 100svh;
+  overflow: hidden;
+  background: var(--kn-bg);
+  color: var(--kn-type);
+  font-family: var(--ov-font-display);
+}
+
+/* Meets the reserve section's now-solid bottom scrim, so the two dark fields
+   read as one continuous surface rather than two stacked panels. */
+.kinetic::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 22vh;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(to bottom, var(--kn-bg) 0%, rgba(18, 22, 26, 0) 100%);
+}
+
+/* Square canvas (100vmax) centred on the section, so the -90deg rotation
+   never exposes an empty corner. */
+.kinetic-type {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100vmax;
+  height: 100vmax;
+  margin: -50vmax 0 0 -50vmax;
+  display: grid;
+  justify-content: center;
+  align-content: center;
+  text-align: center;
+  text-transform: uppercase;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.kinetic-line {
+  white-space: nowrap;
+  font-size: clamp(4rem, 15vh, 12rem);
+  line-height: 0.75;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--kn-type);
+  opacity: var(--kn-line-opacity);
+  user-select: none;
+  will-change: transform, opacity;
+}
+
+/* ── The single image ────────────────────────────────────────────────── */
+.kinetic-item {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  margin: 0;
+  width: clamp(260px, 30vw, 430px);
+  text-align: center;
+  will-change: transform, opacity;
+}
+
+/* Cutout PNG (transparent background), not a photo — object-fit: cover with
+   a rounded card frame was built for the earlier rectangular photograph and
+   would crop straight through the building's silhouette. `contain` shows the
+   whole cutout, no border-radius since there is no card edge to round, and
+   the aspect-ratio matches the source file (594:420) instead of forcing it
+   into a portrait box with dead space above and below. */
+.kinetic-item img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 594 / 420;
+  object-fit: contain;
+}
+
+.kinetic-caption {
+  margin-top: 1.25rem;
+}
+
+.kinetic-caption h2 {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.kinetic-caption p {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: rgba(244, 248, 251, 0.55);
+}
+
+@media (max-width: 720px) {
+  .kinetic-line { font-size: clamp(2.5rem, 10vh, 6rem); }
+  .kinetic-item { width: min(70vw, 300px); }
+}

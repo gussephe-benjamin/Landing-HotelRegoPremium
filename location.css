@@ -1,0 +1,405 @@
+/* Location — real map beside a compact contact card.
+   The cards use deliberately irregular geometry: a notched tab cut into the
+   map's top-right corner and asymmetric radii on the info card, so the block
+   reads as one designed object rather than two rectangles. */
+:root {
+  --loc-bg: #0d0e0e;
+  --loc-card: #202121;
+  --loc-ink: #efeae3;
+  --loc-line: rgba(239, 234, 227, 0.12);
+  /* The card's palette is now entirely neutral — the amber accent read as
+     decorative rather than considered against this near-black surround. */
+  --loc-glass-line: rgba(239, 234, 227, 0.16);
+}
+
+.location {
+  position: relative;
+  z-index: 8;
+  background: var(--loc-bg);
+  color: var(--loc-ink);
+  font-family: var(--ov-font-display);
+  padding: clamp(4rem, 10vh, 7rem) clamp(1.25rem, 5vw, 4rem) clamp(4rem, 10vh, 7rem);
+  overflow: hidden;
+}
+
+.location-head {
+  max-width: 1280px;
+  margin: 0 auto clamp(2.5rem, 6vh, 4rem);
+}
+
+.location-eyebrow {
+  margin: 0 0 0.9rem;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  color: rgba(239, 234, 227, 0.5);
+}
+
+.location-title {
+  margin: 0;
+  font-size: clamp(1.85rem, 4.2vw, 3.4rem);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+}
+.location-title em {
+  font-family: var(--vc-serif);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.location-grid {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: clamp(1.25rem, 2.5vw, 2rem);
+  align-items: stretch;
+}
+
+/* ── Map card ────────────────────────────────────────────────────────── */
+.location-map {
+  position: relative;
+  min-height: clamp(420px, 62vh, 620px);
+  /* Top-right left square: the tab occupies that corner. */
+  border-radius: 30px 0 30px 30px;
+  background: var(--loc-card);
+  overflow: visible;
+}
+
+.location-map-frame {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+.location-map iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+  /* Google's default tiles are bright; this pulls them into the page's
+     dark palette without needing a styled-map API key. */
+  filter: invert(92%) hue-rotate(180deg) saturate(0.55) contrast(0.92) brightness(0.95);
+}
+
+/* The floating tab that bites into the map's corner */
+.location-tab {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 3;
+  background: var(--loc-bg);
+  padding: 0 0 14px 18px;
+  border-bottom-left-radius: 22px;
+}
+/* Scoped to the label only — the fillet spans also live inside .location-tab
+   and a bare `span` selector was overwriting their gradient and padding. */
+.location-tab-label {
+  display: block;
+  background: var(--loc-card);
+  border: 1px solid var(--loc-line);
+  border-radius: 999px;
+  padding: 0.75em 1.4em;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(239, 234, 227, 0.75);
+  white-space: nowrap;
+}
+
+/* Concave fillet joining the tab back into the card edge. A quarter disc is
+   punched out of a solid square, which is what makes the corner curve inward
+   instead of outward. */
+.location-fillet {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  z-index: 2;
+  pointer-events: none;
+  background-image: radial-gradient(circle 22px at 0 100%, transparent 0 22px, var(--loc-bg) 22px);
+}
+.location-fillet-a {
+  top: 0;
+  right: 100%;
+  margin-right: -1px;
+}
+.location-fillet-b {
+  top: 100%;
+  right: 0;
+  margin-top: -1px;
+  background-image: radial-gradient(circle 22px at 100% 0, transparent 0 22px, var(--loc-bg) 22px);
+}
+
+/* ── Ambient field ───────────────────────────────────────────────────── */
+/* Glass has nothing to refract over a flat black section — the backdrop blur
+   would sample uniform colour and the panel would look like plain grey. These
+   two very soft pools give it something to pick up, so the card reads as a
+   physical sheet lit from behind rather than a translucency effect. */
+.location-aura {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(46vw 46vw at 78% 34%, rgba(150, 176, 190, 0.14), transparent 62%),
+    radial-gradient(38vw 38vw at 96% 82%, rgba(239, 234, 227, 0.07), transparent 66%);
+  /* Clipped to the section box, these pools would start and stop dead on its
+     edges — and against the identically-coloured testimonials section above,
+     that straight cut read as a seam between the two panels. The mask lets the
+     field ramp up and down instead, so the boundary has nothing to draw. */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.55) 14%,
+    #000 32%,
+    #000 78%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.55) 14%,
+    #000 32%,
+    #000 78%,
+    transparent 100%
+  );
+}
+
+.location-head,
+.location-grid,
+.location-near {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Info card ───────────────────────────────────────────────────────── */
+.location-card {
+  position: relative;
+  /* Liquid glass, built the same way as the reservation panel so the two read
+     as the same material: a translucent graded fill, a heavy backdrop blur
+     with a saturation lift, a hairline border, and an inner top highlight
+     standing in for the lit edge of a thick sheet. */
+  background: linear-gradient(
+    168deg,
+    rgba(239, 234, 227, 0.11) 0%,
+    rgba(239, 234, 227, 0.045) 46%,
+    rgba(239, 234, 227, 0.075) 100%
+  );
+  -webkit-backdrop-filter: blur(30px) saturate(150%);
+  backdrop-filter: blur(30px) saturate(150%);
+  border: 1px solid var(--loc-glass-line);
+  box-shadow:
+    0 28px 70px -22px rgba(0, 0, 0, 0.75),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+  /* Mirror of the map's asymmetry, so the pair reads as one system. */
+  border-radius: 30px 30px 30px 4px;
+  padding: clamp(1.75rem, 3vw, 2.5rem);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  isolation: isolate;
+}
+
+/* Specular sheen down the top-left, where the light would catch the edge. */
+.location-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(148deg, rgba(255, 255, 255, 0.13) 0%, rgba(255, 255, 255, 0) 40%);
+}
+
+.location-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* Etched into the glass rather than stamped on top of it. */
+.location-badge {
+  background: rgba(239, 234, 227, 0.1);
+  border: 1px solid var(--loc-glass-line);
+  color: rgba(239, 234, 227, 0.92);
+  border-radius: 5px;
+  padding: 0.5em 0.85em;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.location-place {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: rgba(239, 234, 227, 0.5);
+}
+
+.location-name {
+  margin: 0;
+  font-family: var(--vc-serif);
+  font-weight: 400;
+  font-size: clamp(1.35rem, 2.2vw, 1.85rem);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.location-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  border-top: 1px solid var(--loc-line);
+  padding-top: 1.5rem;
+}
+
+.location-item {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 0.9rem;
+  align-items: start;
+}
+
+/* Each mark sits in its own recessed tile. The tile is what makes the row read
+   as a record in a document rather than a bullet with a pictogram next to it. */
+.location-ico {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  background: rgba(239, 234, 227, 0.06);
+  border: 1px solid rgba(239, 234, 227, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.location-ico svg {
+  width: 15px;
+  height: 15px;
+  /* Thin, even, square-cut strokes: the previous set was heavy and rounded,
+     which is what made it read as emoji rather than as notation. */
+  stroke: rgba(239, 234, 227, 0.78);
+  fill: none;
+  stroke-width: 1.25;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+}
+
+.location-item dt {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: rgba(239, 234, 227, 0.45);
+  margin-bottom: 0.3rem;
+}
+
+.location-item dd {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--loc-ink);
+}
+
+.location-code {
+  display: inline-block;
+  background: rgba(239, 234, 227, 0.08);
+  border: 1px solid rgba(239, 234, 227, 0.16);
+  border-radius: 5px;
+  padding: 0.2em 0.55em;
+  font-family: var(--vc-mono);
+  font-size: 12.5px;
+  letter-spacing: 0.06em;
+}
+
+/* The phone was falling through to the browser's default link styling —
+   blue and underlined against a dark card. */
+.location-item dd a {
+  color: var(--loc-ink);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(239, 234, 227, 0.28);
+  padding-bottom: 1px;
+  transition: border-color 0.3s ease;
+}
+.location-item dd a:hover {
+  border-bottom-color: var(--loc-ink);
+}
+
+.location-cta {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  background: var(--loc-ink);
+  color: #17120f;
+  border: none;
+  border-radius: 999px;
+  padding: 1.05em 1.5em;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+.location-cta:hover {
+  transform: translateY(-2px);
+  background: #fff;
+}
+.location-cta svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+}
+
+/* ── Nearby strip ────────────────────────────────────────────────────── */
+.location-near {
+  max-width: 1280px;
+  margin: clamp(1.25rem, 2.5vw, 2rem) auto 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(1.25rem, 2.5vw, 2rem);
+  border-top: 1px solid var(--loc-line);
+  padding-top: clamp(1.5rem, 3vh, 2.25rem);
+}
+
+.location-near-item b {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 0.35rem;
+}
+.location-near-item span {
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  color: rgba(239, 234, 227, 0.45);
+}
+
+@media (max-width: 900px) {
+  .location-grid { grid-template-columns: 1fr; }
+  .location-map { min-height: 360px; }
+  .location-near { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 1.5rem; }
+}
+
+@media (max-width: 520px) {
+  .location-near { grid-template-columns: 1fr; }
+  .location-tab-label { font-size: 10px; padding: 0.65em 1.1em; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .location-cta:hover { transform: none; }
+}

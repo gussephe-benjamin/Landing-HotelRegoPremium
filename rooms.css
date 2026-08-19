@@ -1,0 +1,404 @@
+/* Rooms / WebGL slider section.
+   Class names are namespaced `rooms-*` — the source pack used .slider,
+   .frame and .cursor, all of which would have collided with the page above. */
+:root {
+  --rm-bg: #17120f;
+  --rm-ink: #f4efe8;
+  --rm-accent: #c79a5b;
+}
+
+/* Sits above the previous section and overlaps it slightly, so it reads as a
+   new panel riding up over the page. The negative margin keeps this purely a
+   layout offset — a transform here would re-root the fixed canvas below. */
+.rooms {
+  position: relative;
+  z-index: 5;
+  width: 100%;
+  min-height: 100svh;
+  margin-top: -7svh;
+  border-radius: 34px 34px 0 0;
+  box-shadow: 0 -34px 90px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+  color: var(--rm-ink);
+  font-family: var(--ov-font-display);
+  isolation: isolate;
+}
+
+/* Opaque backdrop; its colour is tweened per slide. */
+.rooms-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-color: var(--rm-bg);
+}
+
+.rooms-grain {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+/* The WebGL canvas is injected here by rooms.js. It is viewport-fixed, so
+   .rooms must never carry a transform (that would re-root fixed children). */
+.rooms-gl {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.rooms-corner {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  z-index: 4;
+  pointer-events: none;
+}
+.rooms-corner::before,
+.rooms-corner::after {
+  content: "";
+  position: absolute;
+  background: rgba(244, 239, 232, 0.3);
+}
+.rooms-corner::before { width: 1px; height: 14px; left: 50%; top: 0; transform: translateX(-50%); }
+.rooms-corner::after { width: 14px; height: 1px; top: 50%; left: 0; transform: translateY(-50%); }
+.rooms-corner-tl { top: 32px; left: 32px; }
+.rooms-corner-br { bottom: 32px; right: 32px; }
+
+/* ── Section heading ─────────────────────────────────────────────────── */
+.rooms-head {
+  position: relative;
+  z-index: 4;
+  text-align: center;
+  padding: clamp(3rem, 7vh, 5.5rem) 1.5rem 0;
+}
+
+.rooms-eyebrow {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  color: rgba(244, 239, 232, 0.5);
+  margin: 0 0 0.9rem;
+}
+
+.rooms-heading {
+  font-size: clamp(1.75rem, 3.6vw, 3rem);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin: 0;
+}
+.rooms-heading em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--rm-accent);
+}
+
+/* ── Slider stage ────────────────────────────────────────────────────── */
+.rooms-stage {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  height: clamp(560px, 74svh, 760px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rooms-media {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: clamp(240px, 30vw, 420px);
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  z-index: 1;
+  user-select: none;
+  cursor: pointer;
+}
+
+/* The <img> tags are texture sources only — three.js paints the canvas. */
+.rooms-media img {
+  display: none;
+}
+
+.rooms-info {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: clamp(240px, 30vw, 420px);
+  aspect-ratio: 3 / 4;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.rooms-slide {
+  pointer-events: auto;
+}
+.rooms-slide:not(.is-current) .rooms-index,
+.rooms-slide:not(.is-current) .rooms-title,
+.rooms-slide:not(.is-current) .rooms-panel {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.rooms-index {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-58%, -22%);
+  font-size: clamp(5rem, 11vw, 12rem);
+  font-weight: 700;
+  line-height: 0.8;
+  overflow: hidden;
+  pointer-events: none;
+  color: rgba(244, 239, 232, 0.12);
+}
+
+.rooms-title {
+  font-size: clamp(2.25rem, 5.4vw, 5.5rem);
+  font-weight: 700;
+  line-height: 0.82;
+  letter-spacing: -0.02em;
+  overflow: hidden;
+  white-space: nowrap;
+  transform: translateX(-34%);
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--rm-ink);
+  margin: 0;
+  pointer-events: none;
+}
+.rooms-title .char {
+  display: inline-block;
+}
+
+/* Copy + specs block, offset to the right of the image like the original */
+.rooms-panel {
+  position: absolute;
+  bottom: 0;
+  left: 105%;
+  width: 360px;
+}
+
+.rooms-desc {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: rgba(244, 239, 232, 0.75);
+  margin: 0 0 1.4rem;
+}
+.rooms-desc .line { overflow: hidden; }
+
+/* ── Spec pills with icons ───────────────────────────────────────────── */
+.rooms-specs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+}
+
+.rooms-spec {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid rgba(244, 239, 232, 0.16);
+  border-radius: 10px;
+  background: rgba(244, 239, 232, 0.03);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  transition: border-color 0.35s ease, background-color 0.35s ease;
+}
+.rooms-spec:hover {
+  border-color: rgba(199, 154, 91, 0.55);
+  background: rgba(199, 154, 91, 0.08);
+}
+.rooms-spec svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  stroke: var(--rm-accent);
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.rooms-spec b {
+  font-weight: 600;
+  color: var(--rm-ink);
+}
+.rooms-spec span {
+  color: rgba(244, 239, 232, 0.55);
+}
+
+.rooms-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-top: 1px solid rgba(244, 239, 232, 0.14);
+  padding-top: 1rem;
+}
+
+.rooms-price small {
+  display: block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: rgba(244, 239, 232, 0.45);
+  margin-bottom: 0.25rem;
+}
+.rooms-price strong {
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.rooms-price i {
+  font-style: normal;
+  font-size: 0.8rem;
+  color: rgba(244, 239, 232, 0.5);
+}
+
+.rooms-cta {
+  font-family: inherit;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--rm-bg);
+  background: var(--rm-ink);
+  border: none;
+  border-radius: 999px;
+  padding: 0.85em 1.6em;
+  cursor: pointer;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+.rooms-cta:hover {
+  transform: scale(1.03);
+  background: var(--rm-accent);
+}
+
+/* ── Navigation ──────────────────────────────────────────────────────── */
+.rooms-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 52px;
+  height: 22px;
+  z-index: 5;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+}
+.rooms-nav svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transition: transform 250ms ease;
+  transform: translateX(var(--tr-x, 0px));
+}
+.rooms-nav svg path { fill: var(--rm-ink); }
+.rooms-nav-prev { left: 8vw; }
+.rooms-nav-prev:hover svg { --tr-x: -10px; }
+.rooms-nav-next { right: 8vw; }
+.rooms-nav-next:hover svg { --tr-x: 10px; }
+
+/* ── Tabs + progress ─────────────────────────────────────────────────── */
+.rooms-tabs {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0 1.5rem;
+}
+
+.rooms-tab {
+  font-family: inherit;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(244, 239, 232, 0.45);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 0.6em 1.1em;
+  cursor: pointer;
+  transition: color 0.3s ease, border-color 0.3s ease;
+}
+.rooms-tab:hover { color: var(--rm-ink); }
+.rooms-tab.is-active {
+  color: var(--rm-ink);
+  border-color: rgba(244, 239, 232, 0.3);
+}
+
+.rooms-progress {
+  position: relative;
+  z-index: 4;
+  width: min(420px, 60vw);
+  height: 1px;
+  margin: 1.75rem auto 0;
+  background: rgba(244, 239, 232, 0.15);
+}
+.rooms-progress i {
+  display: block;
+  height: 100%;
+  width: 25%;
+  background: var(--rm-accent);
+  transform-origin: left;
+  transition: transform 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.rooms-counter {
+  position: relative;
+  z-index: 4;
+  text-align: center;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: rgba(244, 239, 232, 0.45);
+  padding: 1rem 0 clamp(2.5rem, 6vh, 4.5rem);
+}
+.rooms-counter b { color: var(--rm-ink); font-weight: 600; }
+
+/* ── Responsive ──────────────────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .rooms-panel {
+    left: 50%;
+    bottom: auto;
+    top: 104%;
+    transform: translateX(-50%);
+    width: min(420px, 86vw);
+    text-align: left;
+  }
+  .rooms-stage { height: auto; padding: 2rem 0 26rem; }
+  .rooms-media,
+  .rooms-info { position: relative; left: auto; top: auto; transform: none; margin: 0 auto; }
+  .rooms-info { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+  .rooms-title { transform: translateX(-20%); }
+  .rooms-nav-prev { left: 4vw; }
+  .rooms-nav-next { right: 4vw; }
+}
+
+@media (max-width: 640px) {
+  .rooms-corner { display: none; }
+  .rooms-specs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .rooms-foot { flex-direction: column; align-items: flex-start; }
+  .rooms-nav { width: 40px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rooms-cta:hover { transform: none; }
+  .rooms-progress i { transition: none; }
+}

@@ -1,0 +1,702 @@
+/* Booking widget — replaces the five flat inputs that used to sit in the
+   reservation card. Namespaced `bk-*`.
+
+   Two deliberate departures from the brief, both forced by conflicts inside
+   the brief itself; see the notes on --bk-surface and .bk-cal.
+
+   The widget is vanilla: the spec's React/Framer Motion/date-fns stack is not
+   on this page and installing it would mean migrating the whole landing. The
+   calendar is built by hand in booking.js against native Date. */
+
+.bk {
+  /* The brief asks for "verde cálido oscuro" AND for "nada de colores
+     nuevos". Those contradict: this landing has no green anywhere — its
+     palette is near-black plus a single warm gold. The second rule wins,
+     because a green card would read as imported from another brand. This is
+     the page's own dark, at the 88% the brief specifies. */
+  --bk-surface: rgba(18, 22, 26, 0.88);
+  --bk-accent: var(--rs-accent);
+  --bk-line: rgba(244, 248, 251, 0.12);
+  --bk-line-hover: rgba(244, 248, 251, 0.24);
+  /* Every text tone below clears 4.5:1 on --bk-surface. The old card ran
+     labels at white/30, which was the legibility complaint. */
+  --bk-dim: rgba(244, 248, 251, 0.62);
+  --bk-mid: rgba(244, 248, 251, 0.78);
+  --bk-bad: #e08b7d;
+
+  position: relative;
+  width: min(680px, 100%);
+  margin-top: clamp(0.5rem, 1.5vh, 1rem);
+  padding: clamp(1.4rem, 3.2vw, 2rem);
+  border-radius: 24px;
+  text-align: left;
+  background: var(--bk-surface);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  backdrop-filter: blur(24px) saturate(140%);
+  border: 1px solid rgba(244, 248, 251, 0.14);
+  box-shadow:
+    0 30px 70px -20px rgba(0, 0, 0, 0.75),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  isolation: isolate;
+}
+
+/* The brand's inverted notch, kept from the old card. A quarter disc punched
+   out of a solid square is what curves the corner inward instead of out. */
+.bk-notch {
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: 46px;
+  height: 46px;
+  z-index: 3;
+  pointer-events: none;
+  border-top-right-radius: 24px;
+  background: radial-gradient(circle 26px at 0 100%, transparent 0 26px, var(--bk-surface) 26px);
+  border-top: 1px solid rgba(244, 248, 251, 0.14);
+  border-right: 1px solid rgba(244, 248, 251, 0.14);
+}
+
+/* ── Header ──────────────────────────────────────────────────────────── */
+.bk-eyebrow {
+  margin: 0 0 0.6rem;
+  font-family: var(--rs-mono);
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  color: var(--bk-dim);
+}
+
+.bk-title {
+  margin: 0 0 0.45rem;
+  font-family: var(--vc-serif);
+  font-weight: 400;
+  font-size: clamp(1.5rem, 3.2vw, 2rem);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--rs-ink);
+}
+
+.bk-sub {
+  margin: 0 0 1.25rem;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--bk-dim);
+}
+
+/* ── Shared field furniture ──────────────────────────────────────────── */
+.bk-form {
+  display: grid;
+  gap: 20px;
+}
+
+.bk-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-family: var(--rs-mono);
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--bk-dim);
+}
+
+.bk-input {
+  width: 100%;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--rs-ink);
+  background: rgba(244, 248, 251, 0.06);
+  border: 1px solid var(--bk-line);
+  border-radius: 12px;
+  padding: 0.85em 1em;
+  outline: none;
+  transition: border-color 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease;
+}
+.bk-input::placeholder { color: rgba(244, 248, 251, 0.55); }
+.bk-input:hover { border-color: var(--bk-line-hover); }
+.bk-input:focus-visible,
+.bk-input:focus {
+  border-color: var(--bk-accent);
+  background: rgba(244, 248, 251, 0.1);
+  box-shadow: 0 0 0 3px rgba(199, 154, 91, 0.15);
+}
+.bk-input[aria-invalid="true"] {
+  border-color: var(--bk-bad);
+  box-shadow: 0 0 0 3px rgba(224, 139, 125, 0.14);
+}
+
+.bk-err {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--bk-bad);
+}
+.bk-err:empty { display: none; }
+
+/* ── Row 1 · dates ───────────────────────────────────────────────────── */
+.bk-dates {
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  align-items: stretch;
+  border: 1px solid var(--bk-line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(244, 248, 251, 0.06);
+  transition: border-color 0.25s ease;
+}
+.bk-dates:hover { border-color: var(--bk-line-hover); }
+.bk-dates[data-open="1"] { border-color: var(--bk-accent); }
+
+.bk-date-sep { background: var(--bk-line); }
+
+.bk-date {
+  display: block;
+  width: 100%;
+  min-height: 68px;
+  padding: 0.85em 1.1em;
+  text-align: left;
+  font-family: inherit;
+  background: none;
+  border: none;
+  color: var(--rs-ink);
+  cursor: pointer;
+  outline: none;
+  transition: background-color 0.25s ease;
+}
+.bk-date:hover { background: rgba(244, 248, 251, 0.05); }
+.bk-date.is-active { background: rgba(199, 154, 91, 0.12); }
+.bk-date:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--bk-accent);
+}
+
+.bk-date-label {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-family: var(--rs-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--bk-dim);
+}
+
+/* The value is set in the editorial serif so a chosen date reads like a
+   magazine dateline rather than form output. */
+.bk-date-value {
+  display: block;
+  font-family: var(--vc-serif);
+  font-size: 1.2rem;
+  line-height: 1.1;
+  color: var(--rs-ink);
+  font-variant-numeric: tabular-nums;
+}
+.bk-date-value.is-empty { color: rgba(244, 248, 251, 0.55); }
+
+/* ── Calendar ────────────────────────────────────────────────────────── */
+/* Inline, per the booking brief — the card itself grows. The supplied
+   glass-calendar was a single-date horizontal strip with Weekly/Monthly tabs,
+   a settings gear and a "New Event" button; those belong to a scheduling app,
+   not a stay picker, so what carries over is its surface: the glass panel,
+   the large animated month title, the chevron pair and the pill day cells.
+   Its pink-to-orange gradient is dropped for the page's gold — the brief's
+   own "nada de colores nuevos" rules it out. */
+.bk-cal-wrap {
+  overflow: hidden;
+  height: 0;
+}
+
+.bk-cal {
+  padding: 1rem;
+  border: 1px solid var(--bk-line);
+  border-radius: 16px;
+  background: rgba(244, 248, 251, 0.05);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+.bk-cal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+}
+
+.bk-cal-title {
+  margin: 0;
+  flex: 1;
+  text-align: center;
+  font-family: var(--vc-serif);
+  font-size: 1.05rem;
+  color: var(--rs-ink);
+  text-transform: capitalize;
+}
+
+.bk-cal-nav {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 50%;
+  border: 1px solid var(--bk-line);
+  background: none;
+  color: var(--bk-mid);
+  cursor: pointer;
+  outline: none;
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+.bk-cal-nav:hover:not(:disabled) {
+  background: rgba(244, 248, 251, 0.1);
+  color: var(--rs-ink);
+  border-color: var(--bk-line-hover);
+}
+.bk-cal-nav:focus-visible {
+  border-color: var(--bk-accent);
+  box-shadow: 0 0 0 3px rgba(199, 154, 91, 0.15);
+}
+.bk-cal-nav:disabled { opacity: 0.3; cursor: not-allowed; }
+.bk-cal-nav svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.6; }
+
+.bk-cal-months {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.bk-month-cap {
+  margin: 0 0 0.6rem;
+  text-align: center;
+  font-family: var(--rs-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--bk-dim);
+}
+
+.bk-week,
+.bk-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.bk-week span {
+  padding-bottom: 0.4rem;
+  text-align: center;
+  font-family: var(--rs-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(244, 248, 251, 0.55);
+}
+
+.bk-day {
+  position: relative;
+  /* 44px minimum touch target, per the brief. */
+  min-height: 44px;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 0.9rem;
+  /* Tabular figures so the columns do not shift between 1 and 11. */
+  font-variant-numeric: tabular-nums;
+  color: var(--rs-ink);
+  cursor: pointer;
+  outline: none;
+}
+.bk-day.is-blank { pointer-events: none; }
+
+/* The pill sits inside the cell so the range band can run edge to edge
+   underneath it without the pill itself stretching. */
+.bk-day i {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  margin: 0 auto;
+  border-radius: 50%;
+  font-style: normal;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.bk-day:hover:not(:disabled) i { background: rgba(244, 248, 251, 0.14); }
+.bk-day:focus-visible i { box-shadow: 0 0 0 2px var(--bk-accent); }
+
+.bk-day:disabled {
+  color: rgba(244, 248, 251, 0.28);
+  cursor: not-allowed;
+}
+
+/* Band under the days between the two ends. */
+.bk-day.in-range::before {
+  content: "";
+  position: absolute;
+  inset: 3px 0;
+  z-index: 1;
+  background: rgba(199, 154, 91, 0.16);
+}
+.bk-day.is-start::before { left: 50%; }
+.bk-day.is-end::before { right: 50%; }
+.bk-day.is-start.is-end::before { display: none; }
+
+.bk-day.is-start i,
+.bk-day.is-end i {
+  background: var(--bk-accent);
+  color: #17120f;
+  font-weight: 600;
+}
+
+.bk-day.is-today i { box-shadow: inset 0 0 0 1px var(--bk-line-hover); }
+
+.bk-cal-hint {
+  margin: 0.9rem 0 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--bk-dim);
+}
+
+/* ── Row 2 · guests + unit ───────────────────────────────────────────── */
+.bk-grid2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+.bk-stepper {
+  display: inline-grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+  border: 1px solid var(--bk-line);
+  border-radius: 12px;
+  background: rgba(244, 248, 251, 0.06);
+  overflow: hidden;
+}
+
+.bk-step {
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: none;
+  color: var(--rs-ink);
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+  outline: none;
+  transition: background-color 0.2s ease;
+}
+.bk-step:hover:not(:disabled) { background: rgba(244, 248, 251, 0.1); }
+.bk-step:focus-visible { box-shadow: inset 0 0 0 2px var(--bk-accent); }
+.bk-step:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.bk-step-val {
+  text-align: center;
+  font-family: var(--vc-serif);
+  font-size: 1.15rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--rs-ink);
+}
+
+.bk-seg {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.bk-pill {
+  flex: 1;
+  min-height: 44px;
+  padding: 0 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--bk-line);
+  background: rgba(244, 248, 251, 0.06);
+  color: var(--bk-mid);
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  outline: none;
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+.bk-pill:hover { border-color: var(--bk-line-hover); color: var(--rs-ink); }
+.bk-pill:focus-visible {
+  border-color: var(--bk-accent);
+  box-shadow: 0 0 0 3px rgba(199, 154, 91, 0.15);
+}
+.bk-pill[aria-checked="true"] {
+  background: var(--bk-accent);
+  border-color: var(--bk-accent);
+  color: #17120f;
+  font-weight: 600;
+}
+
+.bk-unit-note {
+  margin: 0.55rem 0 0;
+  font-size: 12px;
+  color: var(--bk-dim);
+}
+.bk-unit-note.is-warn { color: var(--bk-bad); }
+
+/* ── Row 3 · live summary ────────────────────────────────────────────── */
+.bk-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.9rem 1.1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(199, 154, 91, 0.28);
+  background: rgba(199, 154, 91, 0.1);
+}
+
+.bk-sum-nights {
+  display: block;
+  font-family: var(--vc-serif);
+  font-size: 1.05rem;
+  color: var(--rs-ink);
+  font-variant-numeric: tabular-nums;
+}
+.bk-sum-range {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 12px;
+  color: var(--bk-dim);
+}
+
+.bk-sum-price { text-align: right; }
+.bk-sum-price b {
+  display: block;
+  font-family: var(--vc-serif);
+  font-size: 1.15rem;
+  font-weight: 400;
+  color: var(--rs-ink);
+  font-variant-numeric: tabular-nums;
+}
+.bk-sum-price span {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 11px;
+  color: var(--bk-dim);
+}
+
+/* ── Row 4 · contact ─────────────────────────────────────────────────── */
+.bk-contact { display: grid; gap: 1rem; }
+
+.bk-reveal { opacity: 0; }
+
+.bk-tel {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: stretch;
+  border: 1px solid var(--bk-line);
+  border-radius: 12px;
+  background: rgba(244, 248, 251, 0.06);
+  overflow: hidden;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.bk-tel:hover { border-color: var(--bk-line-hover); }
+.bk-tel:focus-within {
+  border-color: var(--bk-accent);
+  box-shadow: 0 0 0 3px rgba(199, 154, 91, 0.15);
+}
+.bk-tel[data-invalid="1"] {
+  border-color: var(--bk-bad);
+  box-shadow: 0 0 0 3px rgba(224, 139, 125, 0.14);
+}
+.bk-tel-pre {
+  display: grid;
+  place-items: center;
+  padding: 0 0.9rem;
+  border-right: 1px solid var(--bk-line);
+  font-family: var(--rs-mono);
+  font-size: 0.85rem;
+  color: var(--bk-mid);
+}
+.bk-tel .bk-input {
+  border: none;
+  background: none;
+  border-radius: 0;
+}
+.bk-tel .bk-input:focus { box-shadow: none; background: none; }
+
+.bk-extra-toggle {
+  justify-self: start;
+  padding: 0.4em 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 0.85rem;
+  color: var(--bk-mid);
+  cursor: pointer;
+  outline: none;
+  border-bottom: 1px solid var(--bk-line);
+  transition: color 0.25s ease, border-color 0.25s ease;
+}
+.bk-extra-toggle:hover { color: var(--rs-ink); border-color: var(--bk-line-hover); }
+.bk-extra-toggle:focus-visible { color: var(--rs-ink); border-color: var(--bk-accent); }
+
+.bk-extra { overflow: hidden; height: 0; }
+textarea.bk-input { min-height: 88px; resize: vertical; line-height: 1.5; }
+
+/* ── Row 5 · CTA ─────────────────────────────────────────────────────── */
+.bk-banner {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(224, 139, 125, 0.4);
+  background: rgba(224, 139, 125, 0.12);
+  font-size: 0.85rem;
+  color: #f3c3ba;
+}
+
+.bk-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 100%;
+  height: 56px;
+  border: none;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #17120f;
+  background: var(--rs-ink);
+  cursor: pointer;
+  outline: none;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, opacity 0.25s ease, background-color 0.25s ease;
+}
+.bk-submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: #fff;
+  box-shadow: 0 14px 32px -12px rgba(0, 0, 0, 0.6);
+}
+.bk-submit:focus-visible { box-shadow: 0 0 0 3px rgba(199, 154, 91, 0.4); }
+.bk-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.bk-spin {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(23, 18, 15, 0.25);
+  border-top-color: #17120f;
+  animation: bkSpin 0.7s linear infinite;
+}
+@keyframes bkSpin { to { transform: rotate(360deg); } }
+
+.bk-micro {
+  margin: 0.7rem 0 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--bk-dim);
+}
+
+/* ── Row 6 · alternate route ─────────────────────────────────────────── */
+.bk-alt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--bk-line);
+  font-size: 0.88rem;
+  color: var(--bk-dim);
+}
+
+.bk-wa {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.5em 1.1em 0.5em 0.5em;
+  border-radius: 999px;
+  background: rgba(244, 248, 251, 0.12);
+  border: 1px solid rgba(244, 248, 251, 0.18);
+  color: var(--rs-ink);
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none;
+  outline: none;
+  transition: background-color 0.25s ease, transform 0.25s ease;
+}
+.bk-wa:hover { background: rgba(244, 248, 251, 0.2); transform: translateY(-1px); }
+.bk-wa:focus-visible { box-shadow: 0 0 0 3px rgba(199, 154, 91, 0.35); }
+.bk-wa i {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--bk-accent);
+}
+.bk-wa svg { width: 14px; height: 14px; fill: #17120f; }
+
+/* ── Success state ───────────────────────────────────────────────────── */
+.bk-done {
+  text-align: center;
+  padding: 1.5rem 0 0.5rem;
+}
+
+.bk-check {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 1.1rem;
+  display: block;
+}
+.bk-check circle,
+.bk-check path {
+  fill: none;
+  stroke: var(--bk-accent);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.bk-done h3 {
+  margin: 0 0 0.5rem;
+  font-family: var(--vc-serif);
+  font-weight: 400;
+  font-size: 1.5rem;
+  color: var(--rs-ink);
+}
+.bk-done p {
+  margin: 0 auto 1.5rem;
+  max-width: 34ch;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--bk-dim);
+}
+.bk-done p b { color: var(--rs-ink); font-weight: 500; }
+
+.bk-again {
+  min-height: 44px;
+  padding: 0 1.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--bk-line-hover);
+  background: none;
+  color: var(--rs-ink);
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  outline: none;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+.bk-again:hover { background: rgba(244, 248, 251, 0.08); }
+.bk-again:focus-visible { border-color: var(--bk-accent); box-shadow: 0 0 0 3px rgba(199, 154, 91, 0.15); }
+
+/* ── Wider than a phone ──────────────────────────────────────────────── */
+@media (min-width: 720px) {
+  .bk { padding: 32px; }
+  .bk-grid2 { grid-template-columns: 1fr 1fr; }
+  /* Two months side by side, per the brief. */
+  .bk-cal-months { grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bk-submit:hover:not(:disabled),
+  .bk-wa:hover { transform: none; }
+  .bk-reveal { opacity: 1; }
+  .bk-spin { animation-duration: 1.6s; }
+}

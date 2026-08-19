@@ -1,0 +1,308 @@
+/* Scroll story section. Every class is prefixed `story-` because the source
+   template used .container, .hero and .col — all three already belong to the
+   hero grid above. */
+:root {
+  --st-light: #efeae3;
+  --st-dark: #0d0d0f;
+}
+
+.story {
+  position: relative;
+  width: 100%;
+  background-color: var(--st-light);
+  will-change: background-color;
+  font-family: var(--ov-font-display);
+}
+
+.story h2,
+.story h3 {
+  font-weight: 500;
+  margin: 0;
+}
+
+.story h2 {
+  font-size: clamp(1.75rem, 4vw, 4rem);
+  letter-spacing: -0.03em;
+  line-height: 1.125;
+}
+
+.story h3 {
+  font-size: clamp(1.25rem, 2.4vw, 2.25rem);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.story img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ── Opening statement ───────────────────────────────────────────────── */
+.story-intro {
+  position: relative;
+  width: 100%;
+  height: 100svh;
+  padding: 2rem;
+  align-content: center;
+  text-align: center;
+}
+
+.story-intro h2 {
+  width: 75%;
+  margin: 0 auto;
+}
+
+/* Draws in as the page is scrolled, completing just before the words begin
+   to reveal — a lead-in the eye follows down into the phrase, rather than a
+   static rule. Scoped to above the heading only: no matching line runs after
+   it, so it reads as an approach, not a bracket around the text. */
+.story-intro-line {
+  position: relative;
+  display: block;
+  width: 9px;
+  height: clamp(64px, 10vh, 120px);
+  margin: 0 auto clamp(1.5rem, 4vh, 2.5rem);
+}
+
+/* The unfilled measure, drawn faintly from the start. Showing the full extent
+   up front is what keeps the draw from reading as open-ended: the stroke is
+   visibly filling a length it cannot pass. */
+.story-line-track {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    to bottom,
+    rgba(13, 13, 15, 0.16) 0%,
+    rgba(13, 13, 15, 0.05) 100%
+  );
+}
+
+/* The stroke itself, weighted so it darkens toward the leading edge — it
+   reads as being extruded downward rather than simply becoming taller. */
+.story-line-draw {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  transform: translateX(-50%) scaleY(0);
+  transform-origin: top center;
+  background: linear-gradient(
+    to bottom,
+    rgba(13, 13, 15, 0.12) 0%,
+    rgba(13, 13, 15, 0.5) 45%,
+    rgba(13, 13, 15, 0.9) 100%
+  );
+  will-change: transform;
+}
+
+/* Origin mark: the stroke is anchored to something, not floating. */
+.story-line-node {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 3px;
+  height: 3px;
+  margin: -1px 0 0 -1.5px;
+  border-radius: 50%;
+  background: rgba(13, 13, 15, 0.55);
+}
+
+/* Rides the leading edge as the stroke extends, then settles as the terminal
+   mark once the measure is full. */
+.story-line-tip {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 5px;
+  height: 5px;
+  margin: -2.5px 0 0 -2.5px;
+  border-radius: 50%;
+  background: #0d0d0f;
+  box-shadow:
+    0 0 0 3px rgba(13, 13, 15, 0.08),
+    0 0 12px 2px rgba(13, 13, 15, 0.18);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .story-line-draw { transform: translateX(-50%) scaleY(1) !important; }
+  .story-line-tip { opacity: 1 !important; }
+}
+
+/* Word-by-word blur-in for the opening statement — a port of the TextBlurIn
+   component. Each word starts fully blurred and transparent and resolves in
+   place; there is no vertical travel, which is what makes it read as coming
+   into focus rather than sliding in. story.js wraps each word and drives the
+   tween (duration 0.8, stagger 0.04, ease-out — the component's own values). */
+.reveal-word {
+  display: inline-block;
+  opacity: 0;
+  filter: blur(10px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-word {
+    opacity: 1;
+    filter: none;
+  }
+}
+
+/* ── Tilted image marquee ───────────────────────────────────────────── */
+.story-marquee {
+  position: relative;
+  width: 100%;
+  height: 50svh;
+  overflow: hidden;
+}
+
+.story-marquee-wrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-5deg);
+  width: 150%;
+  height: 100%;
+}
+
+.story-marquee-images {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-75%, -50%);
+  width: 200%;
+  height: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  will-change: transform;
+}
+
+.story-marquee-img {
+  flex: 1;
+  width: 100%;
+  aspect-ratio: 5/3;
+}
+
+/* ── Pinned horizontal scroll ───────────────────────────────────────── */
+.story-hscroll {
+  position: relative;
+  width: 100%;
+  height: 100svh;
+  overflow: hidden;
+}
+
+/* ── Giant horizontally-scrolling headline + flying cards ────────────── */
+/* Adapted from the "Meet The Obsessives" section: the oversized headline
+   sweeps sideways while the cards cross the screen from the right with
+   their own bob and rotation. */
+/* Width comes from the headline itself rather than a fixed 290vw, so the
+   travel distance stays correct whatever the font metrics turn out to be. */
+.obsess-header {
+  position: relative;
+  top: 0;
+  left: 0;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: max-content;
+  /* The 100vw left pad parks the headline just past the right edge at x:0,
+     so nothing of it is on screen until the horizontal run actually starts.
+     Without it the type sits visible from the moment the section appears,
+     on top of the facade that is still flipping. */
+  padding: 0 12vw 0 100vw;
+  height: 100svh;
+  will-change: transform;
+}
+
+.obsess-header h1 {
+  margin: 0;
+  font-family: "Anton", var(--ov-font-display), sans-serif;
+  font-size: 36vw;
+  font-weight: 400;
+  line-height: 0.9;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #ffffff;
+}
+
+
+.obsess-card {
+  position: absolute;
+  top: 10%;
+  /* Origin pulled in from the right edge so the whole pass sits further
+     left on screen. Cards are still invisible at their start position
+     (opacity is 0 until their travel begins), so nothing peeks in early. */
+  left: 88%;
+  z-index: 2;
+  width: 285px;
+  height: 440px;
+  padding: 0.75rem;
+  background-color: var(--st-light, #efeae3);
+  color: #0d0d0f;
+  border-radius: 1rem;
+  box-shadow: 0 26px 60px -22px rgba(0, 0, 0, 0.65);
+  opacity: 0;
+  will-change: transform;
+}
+
+.obsess-img {
+  width: 100%;
+  height: 175px;
+  overflow: hidden;
+  border-radius: 0.5rem;
+}
+.obsess-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.obsess-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+  height: 241px;
+  padding: 1rem;
+}
+
+.obsess-body h6 {
+  margin: 0;
+  font-family: "Lobster Two", var(--ov-font-display), cursive;
+  font-size: 2.4rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.05;
+}
+
+.obsess-body p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: rgba(13, 13, 15, 0.65);
+}
+
+@media (max-width: 1000px) {
+  .story-intro h2 { width: 100%; }
+
+  .story-marquee-wrapper { width: 300%; }
+
+  .obsess-header h1 { font-size: 34vw; }
+  .obsess-card {
+    width: 220px;
+    height: 360px;
+  }
+  .obsess-img { height: 135px; }
+  .obsess-body { height: 201px; padding: 0.75rem; }
+  .obsess-body h6 { font-size: 1.6rem; }
+  .obsess-body p { font-size: 0.8rem; }
+}

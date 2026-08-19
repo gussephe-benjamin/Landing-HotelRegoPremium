@@ -1,0 +1,442 @@
+/* Guest voices — testimonials.
+   A dark section framing one wide cream band. The band's interior is a port of
+   the "design-testimonial" React component: an oversized index numeral bleeding
+   off the left edge with a magnetic parallax, a vertical rail carrying the
+   label and a progress line, the quote revealing word by word, and a ticker
+   running underneath. Tailwind's semantic tokens map onto the band's own
+   palette — `foreground` is the band ink, `border` and `muted-foreground` are
+   alpha steps of it, and `accent` is the gold used elsewhere on the page.
+   Namespaced `voices-*`. */
+:root {
+  /* Blacker than the previous #1a1b1b: the cream band and the shader read
+     stronger the further the surround gets from grey. */
+  --vc-dark: #0d0e0e;
+  --vc-band: #efeae3;
+  --vc-ink: #14100c;
+  --vc-line: rgba(20, 16, 12, 0.18);
+  --vc-mute: rgba(20, 16, 12, 0.5);
+  --vc-accent: #c79a5b;
+  --vc-serif: "Zodiak", Georgia, serif;
+  --vc-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+.voices {
+  position: relative;
+  z-index: 7;
+  width: 100%;
+  background: var(--vc-dark);
+  color: var(--vc-band);
+  font-family: var(--ov-font-display);
+  padding: clamp(4rem, 10vh, 7rem) 0 clamp(3rem, 8vh, 6rem);
+  overflow: hidden;
+}
+
+/* ── Heading ─────────────────────────────────────────────────────────── */
+.voices-head {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 0 1.5rem clamp(2.5rem, 6vh, 4.5rem);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.voices-eyebrow {
+  margin: 0 0 1rem;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  color: rgba(239, 234, 227, 0.5);
+}
+
+.voices-title {
+  margin: 0 0 1.25rem;
+  font-size: clamp(1.75rem, 3.6vw, 3rem);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+.voices-title em {
+  font-family: var(--vc-serif);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.voices-intro {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: rgba(239, 234, 227, 0.6);
+}
+
+/* ── The cream band ──────────────────────────────────────────────────── */
+.voices-band {
+  position: relative;
+  width: 100%;
+  background: var(--vc-band);
+  color: var(--vc-ink);
+  overflow: hidden;
+  padding: clamp(3.5rem, 9vh, 6.5rem) clamp(1.25rem, 6vw, 5rem);
+  min-height: clamp(460px, 60vh, 620px);
+  display: flex;
+  align-items: center;
+}
+
+/* Animated shader fill. Sits under everything; the band's flat cream stays
+   behind it as the fallback when WebGL is unavailable. */
+.voices-shader {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ── Oversized index numeral ─────────────────────────────────────────── */
+/* Offset from the content container, not from the band. The source component
+   anchors it `-left-8` inside its own max-width wrapper, so it overhangs the
+   copy by a fixed 32px and stays with the layout at any viewport. Measuring
+   from the full-bleed band instead pushed it off the screen edge entirely. */
+.voices-numeral {
+  position: absolute;
+  left: -2rem;
+  top: 50%;
+  /* Below the rail and the copy, which carry z-index 1. */
+  z-index: 0;
+  /* GSAP's parallax stores this as yPercent and adds its own y on top, so the
+     vertical centring survives the mousemove tween. */
+  transform: translateY(-50%);
+  font-size: clamp(14rem, 30vw, 28rem);
+  font-weight: 700;
+  line-height: 0.8;
+  letter-spacing: -0.06em;
+  color: rgba(20, 16, 12, 0.05);
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+  will-change: transform;
+}
+.voices-numeral span {
+  display: block;
+  will-change: transform, opacity, filter;
+}
+
+/* ── Layout: vertical rail + main column ─────────────────────────────── */
+.voices-stage {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  /* Narrower than the band's own measure. The box was already centred, but the
+     quote only fills the left two thirds of it — the nav sits hard right and
+     the rest is air — so the copy read as left-aligned. Pulling both edges in
+     brings the text's optical centre onto the band's centre without moving the
+     rail or the nav out of their relationship to each other. */
+  max-width: 920px;
+  margin: 0 auto;
+  display: flex;
+  align-items: stretch;
+}
+
+.voices-rail {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-right: clamp(1.5rem, 4vw, 4rem);
+  border-right: 1px solid var(--vc-line);
+  flex: none;
+}
+
+.voices-vert {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-family: var(--vc-mono);
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--vc-mute);
+}
+
+/* Progress line: fills as the carousel advances. */
+.voices-progress {
+  position: relative;
+  width: 1px;
+  height: clamp(70px, 14vh, 128px);
+  margin-top: 2rem;
+  background: var(--vc-line);
+}
+.voices-progress i {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 0%;
+  background: var(--vc-ink);
+  transform-origin: top;
+}
+
+.voices-main {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-width: 0;
+  padding: clamp(1rem, 3vh, 3rem) 0 clamp(1rem, 3vh, 3rem) clamp(1.5rem, 4vw, 4rem);
+}
+
+/* ── Source badge ────────────────────────────────────────────────────── */
+.voices-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: clamp(1rem, 2.5vh, 1.5rem);
+  padding: 0.35em 0.9em;
+  border: 1px solid var(--vc-line);
+  border-radius: 999px;
+  font-family: var(--vc-mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--vc-mute);
+  white-space: nowrap;
+  will-change: transform, opacity;
+}
+.voices-badge b {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--vc-accent);
+  flex: none;
+}
+.voices-stars {
+  display: inline-flex;
+  gap: 0.15rem;
+  margin-left: 0.2rem;
+}
+.voices-stars svg {
+  width: 11px;
+  height: 11px;
+  fill: var(--vc-accent);
+}
+
+/* ── Opening mark ────────────────────────────────────────────────────── */
+/* Set as a real glyph rather than an image, so it inherits the band's ink and
+   stays crisp at any density. It sits in flow above the quote, not behind it —
+   it opens the phrase instead of watermarking it. */
+.voices-mark {
+  display: block;
+  font-family: var(--ov-font-display);
+  font-weight: 700;
+  font-size: clamp(3.25rem, 5.5vw, 5rem);
+  /* The glyph's own box is mostly empty space below the marks; collapsing the
+     line box is what keeps the gap to the quote from opening up. */
+  line-height: 0.62;
+  height: 0.42em;
+  /* Cancels the left side bearing so the mark's ink lines up with the text
+     edge underneath it rather than sitting inset from it. */
+  margin-left: -0.055em;
+  margin-bottom: clamp(0.85rem, 2.2vh, 1.35rem);
+  color: rgba(20, 16, 12, 0.24);
+  user-select: none;
+  pointer-events: none;
+}
+
+/* ── Quote ───────────────────────────────────────────────────────────── */
+.voices-quote-wrap {
+  position: relative;
+  margin-bottom: clamp(2rem, 5vh, 3rem);
+  min-height: clamp(150px, 22vh, 210px);
+  /* The words tip in around the X axis; without a perspective on the parent
+     that rotation would be a flat vertical squash. */
+  perspective: 800px;
+}
+
+.voices-quote {
+  margin: 0;
+  max-width: 20ch;
+  font-weight: 300;
+  font-size: clamp(1.65rem, 3.4vw, 3rem);
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  color: var(--vc-ink);
+}
+
+.voices-word {
+  display: inline-block;
+  margin-right: 0.3em;
+  will-change: transform, opacity;
+  transform-style: preserve-3d;
+}
+
+/* ── Author row ──────────────────────────────────────────────────────── */
+.voices-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.voices-person {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  will-change: transform, opacity;
+}
+
+.voices-rule {
+  width: 32px;
+  height: 1px;
+  background: var(--vc-ink);
+  flex: none;
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.voices-name {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--vc-ink);
+}
+.voices-from {
+  margin: 0.15rem 0 0;
+  font-size: 0.85rem;
+  color: var(--vc-mute);
+}
+
+/* ── Prev / next ─────────────────────────────────────────────────────── */
+.voices-nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: none;
+}
+
+.voices-arrow {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 1px solid var(--vc-line);
+  border-radius: 50%;
+  background: none;
+  color: var(--vc-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+/* The fill slides in from the side the button points at. */
+.voices-arrow i {
+  position: absolute;
+  inset: 0;
+  background: var(--vc-ink);
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.voices-arrow[data-dir="1"] i { transform: translateX(100%); }
+.voices-arrow:hover i,
+.voices-arrow:focus-visible i { transform: translateX(0); }
+.voices-arrow:active { transform: scale(0.95); }
+.voices-arrow svg {
+  position: relative;
+  z-index: 2;
+  width: 18px;
+  height: 18px;
+}
+.voices-arrow:hover { color: var(--vc-band); }
+.voices-arrow:focus-visible {
+  outline: 2px solid var(--vc-ink);
+  outline-offset: 3px;
+}
+
+/* ── Ticker ──────────────────────────────────────────────────────────── */
+.voices-ticker {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.15em;
+  z-index: 1;
+  overflow: hidden;
+  opacity: 0.07;
+  pointer-events: none;
+  user-select: none;
+}
+.voices-ticker-track {
+  display: flex;
+  white-space: nowrap;
+  font-size: clamp(2.5rem, 6vw, 3.75rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--vc-ink);
+  will-change: transform;
+}
+.voices-ticker-track span { padding-right: 2rem; }
+
+/* ── Footer CTA ──────────────────────────────────────────────────────── */
+.voices-foot {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  padding-top: clamp(2.5rem, 6vh, 4rem);
+}
+
+.voices-score {
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(239, 234, 227, 0.5);
+}
+.voices-score b { color: var(--vc-band); font-weight: 600; }
+
+.voices-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: inherit;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--vc-dark);
+  background: var(--vc-band);
+  border: none;
+  border-radius: 999px;
+  padding: 0.95em 1.8em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+.voices-cta:hover {
+  transform: scale(1.03);
+  background: #fff;
+}
+.voices-cta svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
+}
+
+@media (max-width: 860px) {
+  .voices-rail { display: none; }
+  .voices-main { padding-left: 0; }
+  .voices-quote { max-width: none; }
+  .voices-numeral { font-size: 40vw; left: -1rem; }
+  .voices-row { flex-direction: column; align-items: flex-start; gap: 2rem; }
+  /* Pinned to the same 1.65x of the quote's size that it holds on desktop.
+     Left on the clamp's 3.25rem floor the ratio climbed to 1.97 here, because
+     the quote keeps shrinking with the viewport and the floor does not — the
+     mark would read as heavier on a phone than on a laptop. */
+  .voices-mark { font-size: 2.75rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .voices-cta:hover { transform: none; }
+  .voices-rule { transform: scaleX(1); }
+}

@@ -1,0 +1,77 @@
+/* MaskedHeading — ported from the React Bits registry (JS-CSS variant).
+   The class names keep the source's structure; only the prefix is shortened.
+   Applied to a single word inside an existing heading rather than owning the
+   whole heading, so the surrounding type is untouched. */
+.mh {
+  position: relative;
+  display: inline-block;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Lays out the real glyphs so their box and baseline can be measured, but
+   paints nothing — the visible letters are the clipped media below. */
+.mh__measure {
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+.mh__word {
+  display: inline-block;
+  white-space: pre;
+}
+
+/* Zero-sized inline-block: sits exactly on the text baseline, which is what
+   the SVG <text> y-coordinate needs. */
+.mh__baseline {
+  display: inline-block;
+  width: 0;
+  height: 0;
+}
+
+.mh__defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.mh__reveal {
+  position: absolute;
+  inset: 0;
+  display: block;
+  pointer-events: none;
+}
+
+.mh__clip {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.mh__media {
+  position: absolute;
+  inset: 0;
+  display: block;
+  will-change: transform, filter;
+}
+
+.mh__source {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Where clip-path can't reference an SVG clipPath, the measured text is
+   repainted so the word stays legible instead of disappearing. */
+@supports not (clip-path: url("#x")) {
+  .mh__measure {
+    color: inherit;
+    -webkit-text-fill-color: currentColor;
+  }
+  .mh__reveal {
+    display: none;
+  }
+}

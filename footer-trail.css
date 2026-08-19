@@ -1,0 +1,225 @@
+/* Cursor-trail stage — layout and trail rules ported from the demo's
+   stylesheet, prefixed `ft-` (its .container / .circle / .text-item would
+   have collided with markup already on this page).
+
+   It lives inside the kinetic section rather than after it: once the type
+   sweeps off, that pinned screen goes empty, and this fills exactly that
+   space instead of arriving as a separate panel below it. */
+.trail-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0e1216 0%, #171b20 50%, #0e1216 100%);
+  cursor: crosshair;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.trail-stage.is-live {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ── Effect switcher, mono like the demo's ───────────────────────────── */
+.ft-effects {
+  position: absolute;
+  top: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+}
+.ft-effects ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.ft-effect {
+  display: inline-block;
+  padding: 1px 5px;
+  font-family: "JetBrains Mono", ui-monospace, "Courier New", monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: rgba(244, 248, 251, 0.45);
+  transition: color 0.25s ease, background-color 0.25s ease;
+}
+.ft-effect:hover { color: #f4f8fb; }
+.ft-effect.active {
+  background: #f4f8fb;
+  color: #0e1216;
+}
+
+/* ── Word columns ────────────────────────────────────────────────────── */
+.ft-columns {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  width: 100%;
+  padding: 0 clamp(1.5rem, 4vw, 3.5rem);
+  pointer-events: none;
+}
+
+.ft-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.ft-word {
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  /* Starting state for the reveal; GSAP clears these. */
+  opacity: 0;
+  transform: translateY(20px);
+  filter: blur(10px);
+}
+
+/* The demo's 15-step grey ramp. */
+.ft-word:nth-child(1)  { color: #3a3a3a; }
+.ft-word:nth-child(2)  { color: #3f3f3f; }
+.ft-word:nth-child(3)  { color: #444444; }
+.ft-word:nth-child(4)  { color: #494949; }
+.ft-word:nth-child(5)  { color: #4e4e4e; }
+.ft-word:nth-child(6)  { color: #535353; }
+.ft-word:nth-child(7)  { color: #585858; }
+.ft-word:nth-child(8)  { color: #5d5d5d; }
+.ft-word:nth-child(9)  { color: #626262; }
+.ft-word:nth-child(10) { color: #676767; }
+.ft-word:nth-child(11) { color: #6c6c6c; }
+.ft-word:nth-child(12) { color: #717171; }
+.ft-word:nth-child(13) { color: #767676; }
+.ft-word:nth-child(14) { color: #7b7b7b; }
+.ft-word:nth-child(15) { color: #808080; }
+
+/* ── Giant word mark, standing in for the demo's FLAME lettering ─────── */
+.ft-word-mark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 6;
+  margin: 0;
+  font-family: "Anton", var(--ov-font-display), sans-serif;
+  font-size: 30vw;
+  font-weight: 400;
+  line-height: 0.8;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #ffffff;
+  pointer-events: none;
+  user-select: none;
+}
+
+.ft-rotated {
+  position: absolute;
+  right: 40px;
+  top: 0;
+  height: 100%;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+  pointer-events: none;
+}
+
+.ft-rot {
+  font-family: "Inter", system-ui, sans-serif;
+  color: #888888;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  transform: rotate(90deg);
+  transform-origin: center;
+  white-space: nowrap;
+  opacity: 0;
+  filter: blur(10px);
+}
+
+/* ── Trail elements (created by footer-trail.js) ─────────────────────── */
+.ft-trail-img,
+.ft-trail-image {
+  position: absolute;
+  object-fit: cover;
+  transform-origin: center;
+  pointer-events: none;
+  will-change: transform;
+  z-index: 12;
+}
+
+.ft-fragment {
+  position: absolute;
+  overflow: hidden;
+  will-change: transform, clip-path;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
+}
+
+.ft-fragment-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transform: translate3d(0, 0, 0);
+}
+
+.ft-speed {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(244, 248, 251, 0.4);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.ft-hint {
+  position: absolute;
+  bottom: 2rem;
+  left: 2rem;
+  z-index: 20;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(244, 248, 251, 0.28);
+  pointer-events: none;
+}
+
+@media (max-width: 900px) {
+  .ft-columns,
+  .ft-rotated,
+  .ft-hint { display: none; }
+  .ft-word-mark { font-size: 40vw; }
+  .trail-stage { cursor: auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ft-word,
+  .ft-rot {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+  .ft-rot { transform: rotate(90deg); }
+}
