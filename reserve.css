@@ -373,6 +373,83 @@
   .rsv-cal { left: 50%; transform: translateX(-50%); }
 }
 
+/* ── Mobile sheet ────────────────────────────────────────────────────── */
+/* On a phone the bar is a single column, so a panel anchored to the dates
+   field has nowhere to go: opening upward it lands on the title and gets
+   clipped by the section's overflow, opening downward it gets clipped too.
+   Below 720px the script lifts the panel out to <body> and it becomes a
+   floating sheet over the whole bar, dismissed with "Listo" or the scrim. */
+.rsv-cal-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  background: rgba(8, 10, 14, 0.5);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.rsv-cal-scrim.is-in { opacity: 1; }
+
+.rsv-cal.is-sheet {
+  position: fixed;
+  top: auto;
+  left: 50%;
+  bottom: max(1.1rem, env(safe-area-inset-bottom));
+  z-index: 901;
+  width: min(360px, calc(100vw - 1.75rem));
+  padding: 1.15rem 1.15rem 1rem;
+  border-radius: 24px;
+  transform: translateX(-50%);
+  /* Opaque enough that the fields it covers do not read through it. */
+  background: rgba(16, 20, 26, 0.88);
+  animation: rsvSheetIn 0.34s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+@keyframes rsvSheetIn {
+  from { opacity: 0; transform: translate(-50%, 22px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* Desktop closes itself the moment the range is complete, so the actions
+   only exist in the sheet. */
+.rsv-cal-actions { display: none; }
+.rsv-cal.is-sheet .rsv-cal-actions {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.9rem;
+}
+
+.rsv-cal-clear,
+.rsv-cal-done {
+  flex: 1;
+  min-height: 44px;
+  border-radius: 999px;
+  font-family: var(--rs-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  cursor: pointer;
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}
+.rsv-cal-clear {
+  border: 1px solid rgba(244, 248, 251, 0.32);
+  background: none;
+  color: var(--rs-ink-72);
+}
+.rsv-cal-clear:active { background: rgba(255, 255, 255, 0.1); }
+.rsv-cal-done {
+  border: 1px solid #f4f8fb;
+  background: #f4f8fb;
+  color: #14100c;
+}
+.rsv-cal-done:active { background: rgba(244, 248, 251, 0.82); }
+
+@media (prefers-reduced-motion: reduce) {
+  .rsv-cal.is-sheet { animation: none; }
+  .rsv-cal-scrim { transition: none; }
+}
+
 .rsv-go {
   display: inline-flex;
   align-items: center;

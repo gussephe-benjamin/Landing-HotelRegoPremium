@@ -108,13 +108,19 @@ document.addEventListener("DOMContentLoaded", function () {
   var clone = null;
   var cloneActive = false;
 
+  // Kept so the placement can be re-applied exactly. Unwinding the Flip and
+  // killing it gets the size back but not reliably the position, which left
+  // the photograph snapped to the left edge for the stretch between the
+  // horizontal section and the marquee when scrolling back up.
+  var clonePlacement = null;
+
   function createClone() {
     if (cloneActive) return;
     var original = document.querySelector(".story-marquee-img.story-pin img");
     var rect = original.getBoundingClientRect();
 
     clone = original.cloneNode(true);
-    gsap.set(clone, {
+    clonePlacement = {
       position: "fixed",
       left: rect.left + rect.width / 2 - original.offsetWidth / 2,
       top: rect.top + rect.height / 2 - original.offsetHeight / 2,
@@ -125,7 +131,8 @@ document.addEventListener("DOMContentLoaded", function () {
       pointerEvents: "none",
       willChange: "transform",
       zIndex: 100,
-    });
+    };
+    gsap.set(clone, clonePlacement);
 
     document.body.appendChild(clone);
     gsap.set(original, { opacity: 0 });
@@ -142,189 +149,60 @@ document.addEventListener("DOMContentLoaded", function () {
     cloneActive = false;
   }
 
-  ScrollTrigger.create({
-    trigger: ".story-hscroll",
-    start: "top top",
-    end: function () {
-      return "+=" + window.innerHeight * 5;
+  // Shared with hscroll.js, which owns the flight from here into the pinned
+  // horizontal section. The clone is created here because it is this strip's
+  // own photograph, detached; what happens to it afterwards belongs to the
+  // section it flies into.
+  window.regoFacade = {
+    ensure: createClone,
+    release: removeClone,
+    node: function () { return cloneActive ? clone : null; },
+    // Puts the photograph back in the strip exactly where it was detached.
+    reset: function () {
+      if (cloneActive && clone && clonePlacement) gsap.set(clone, clonePlacement);
     },
-    pin: true,
-    // Must refresh before any trigger further down the page, otherwise those
-    // measure their position without this pin's spacer height.
-    refreshPriority: 1,
-  });
+  };
 
-  ScrollTrigger.create({
-    trigger: ".story-marquee",
-    start: "top top",
-    onEnter: createClone,
-    onEnterBack: createClone,
-    onLeaveBack: removeClone,
-  });
-
-  // ── Giant headline + flying cards ───────────────────────────────────
-  // Ported from the "Meet The Obsessives" section. It is driven from this
-  // pinned section's own progress instead of its own ScrollTrigger, because
-  // the cards travel sideways inside a pin — a normal trigger would never
-  // see them cross the viewport.
-  var obsessHeader = document.querySelector(".obsess-header");
-  var obsessCards = [].slice.call(document.querySelectorAll(".obsess-card"));
-
-  // Per-card [yPercent keyframes, rotation keyframes] — this is what gives
-  // each card its own bob and tilt instead of a uniform slide.
-  var cardTransforms = [
-    [[10, 50, -10, 10], [20, -10, -45, 20]],
-    [[0, 47.5, -10, 15], [-25, 15, -45, 30]],
-    [[0, 52.5, -10, 5], [15, -5, -40, 60]],
-    [[0, 50, 30, -80], [20, -10, 60, 5]],
-    [[0, 55, -15, 30], [25, -15, 60, 95]],
-    [[5, 46, -12, 22], [-18, 12, -50, 40]],
-  ];
-
-  var maxTranslate = 0;
-  var cardStartX = 25;
-  var cardEndX = -650;
-
-  function measureObsess() {
-    if (!obsessHeader) return;
-    maxTranslate = Math.max(0, obsessHeader.offsetWidth - window.innerWidth);
-
-    var cardWidth = 325;
-    if (obsessCards[0]) {
-      cardWidth = obsessCards[0].getBoundingClientRect().width || 325;
+  // Only worth detaching where it actually flies. Below the horizontal
+  // breakpoint, and under reduced motion, hscroll.js never builds the Flip —
+  // a clone created there would be a fixed-position photograph pinned over
+  // the page with nothing left to move it.
+  gsap.matchMedia().add(
+    "(min-width: 1024px) and (prefers-reduced-motion: no-preference)",
+    function () {
+      var st = ScrollTrigger.create({
+        trigger: ".story-marquee",
+        start: "top top",
+        onEnter: createClone,
+        onEnterBack: createClone,
+        onLeaveBack: removeClone,
+      });
+      return function () {
+        st.kill();
+        removeClone();
+      };
     }
-    // Scale the travel so cards clear the screen on any viewport width.
-    var travel = Math.abs((-650 / 100) * cardWidth) * 1.25 *
-      Math.max(1, window.innerWidth / 1920);
-    cardStartX = 25;
-    cardEndX = -(travel / cardWidth) * 100;
+  );
+
+  // The light panel darkens as the near-black horizontal section rises under
+  // it, so that hand-off is a fade rather than a cut. This used to hang off
+  // the prelude's own pin; with the prelude folded into .hscroll it is driven
+  // by that section's approach instead.
+  var horizontal = document.querySelector(".hscroll");
+  if (horizontal) {
+    gsap.fromTo(
+      ".story",
+      { backgroundColor: lightColor },
+      {
+        backgroundColor: darkColor,
+        ease: "none",
+        scrollTrigger: {
+          trigger: horizontal,
+          start: "top bottom",
+          end: "top 40%",
+          scrub: true,
+        },
+      }
+    );
   }
-
-  // Headline and cards get separate lead-ins off the same raw progress: the
-  // type follows the facade closely, while the cards hold back until the
-  // full stretch has passed so they never arrive before it.
-  var HEADLINE_LEAD = 0.1;
-  var CARDS_LEAD = 0.24;
-
-  function updateObsess(hp) {
-    var raw = gsap.utils.clamp(0, 1, hp);
-    var headP = gsap.utils.clamp(0, 1, (raw - HEADLINE_LEAD) / (1 - HEADLINE_LEAD));
-    var cardsP = gsap.utils.clamp(0, 1, (raw - CARDS_LEAD) / (1 - CARDS_LEAD));
-
-    if (obsessHeader) gsap.set(obsessHeader, { x: -headP * maxTranslate });
-
-    obsessCards.forEach(function (card, i) {
-      // 0.115 sets the gap between cards; with 6 of them the last still
-      // finishes inside the run (5*0.115 + 1/2.4 ≈ 0.99).
-      var delay = i * 0.115;
-      var cp = Math.max(0, Math.min((cardsP - delay) * 2.4, 1));
-
-      if (cp <= 0) {
-        gsap.set(card, { opacity: 0 });
-        return;
-      }
-
-      var ys = cardTransforms[i][0];
-      var rots = cardTransforms[i][1];
-      var yProgress = cp * 3;
-      var k = Math.min(Math.floor(yProgress), ys.length - 2);
-      var t = yProgress - k;
-
-      gsap.set(card, {
-        xPercent: gsap.utils.interpolate(cardStartX, cardEndX, cp),
-        yPercent: gsap.utils.interpolate(ys[k], ys[k + 1], t),
-        rotation: gsap.utils.interpolate(rots[k], rots[k + 1], t),
-        opacity: 1,
-      });
-    });
-  }
-
-  measureObsess();
-  updateObsess(0);
-  ScrollTrigger.addEventListener("refreshInit", measureObsess);
-  window.addEventListener("resize", measureObsess, { passive: true });
-
-  // ── Flip the clone from its marquee footprint to fullscreen ─────────
-  var flip = null;
-
-  ScrollTrigger.create({
-    trigger: ".story-hscroll",
-    start: "top 50%",
-    end: function () {
-      return "+=" + window.innerHeight * 5.5;
-    },
-    onEnter: function () {
-      if (!clone || !cloneActive || flip) return;
-      var state = Flip.getState(clone);
-      gsap.set(clone, {
-        position: "fixed",
-        left: 0,
-        top: 0,
-        width: "100%",
-        height: "100svh",
-        transform: "rotate(0deg)",
-        transformOrigin: "center center",
-      });
-      flip = Flip.from(state, { duration: 1, ease: "none", paused: true });
-    },
-    onLeaveBack: function () {
-      if (flip) {
-        flip.kill();
-        flip = null;
-      }
-      gsap.set(".story", { backgroundColor: lightColor });
-      updateObsess(0);
-    },
-  });
-
-  // ── Scrub the flip, the background fade and the horizontal travel ───
-  ScrollTrigger.create({
-    trigger: ".story-hscroll",
-    start: "top 50%",
-    end: function () {
-      return "+=" + window.innerHeight * 5.5;
-    },
-    onUpdate: function (self) {
-      var p = self.progress;
-
-      if (p <= 0.05) {
-        gsap.set(".story", {
-          backgroundColor: gsap.utils.interpolate(lightColor, darkColor, Math.min(p / 0.05, 1)),
-        });
-      } else {
-        gsap.set(".story", { backgroundColor: darkColor });
-      }
-
-      // Phases: flip to fullscreen → hold → horizontal run.
-      var FLIP_END = 0.2;
-      // Just a beat once the facade fills the screen — long enough to read as
-      // a deliberate frame, short enough that it never feels like the scroll
-      // has stalled.
-      var HOLD_END = 0.24;
-
-      if (p <= FLIP_END && flip) {
-        flip.progress(p / FLIP_END);
-        return;
-      }
-
-      if (flip) flip.progress(1);
-
-      // The hold keeps the facade filling the screen so it reads as a
-      // full-screen frame before the horizontal run begins.
-      if (p <= HOLD_END) {
-        gsap.set(clone, { x: "0%", scale: 1 });
-        updateObsess(0);
-        return;
-      }
-
-      if (p <= 0.95) {
-        var hp = (p - HOLD_END) / (0.95 - HOLD_END);
-        gsap.set(clone, { x: -((66.67 / 100) * 3 * hp) * 100 + "%", scale: 1 });
-        updateObsess(hp);
-      } else {
-        gsap.set(clone, { x: "-200%", scale: 1 });
-        updateObsess(1);
-      }
-    },
-  });
 });

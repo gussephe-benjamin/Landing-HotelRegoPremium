@@ -154,10 +154,18 @@
   cursor: pointer;
 }
 
-/* The <img> tags are texture sources only — three.js paints the canvas. */
-.rooms-media img {
-  display: none;
+/* The photograph used wherever the shader is not running (see rooms.js).
+   Hidden while the canvas paints, because the canvas is viewport-fixed and
+   sits behind the stage in the stacking order — showing both would put this
+   one on top of it. */
+.rooms-flat {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--rm-img-r);
 }
+.rooms--gl .rooms-flat { display: none; }
 
 .rooms-info {
   position: absolute;
@@ -173,8 +181,8 @@
 /* All four slides occupy the same box. They used to sit in normal flow, and
    because .rooms-index and .rooms-panel are absolute but .rooms-title is not,
    each article contributed exactly one title's height to the stack — so the
-   room name drifted 64px further down on every slide (ESTUDIO at y0,
-   PENTHOUSE at y191) and the lower ones ran straight into the secondary
+   room name drifted 64px further down on every slide (ESTUDIOS at y0,
+   DEPARTAMENTOS at y191) and the lower ones ran straight into the secondary
    frame. inset:0 of .rooms-info gives .rooms-panel the identical containing
    block it had before, so the right-hand column does not move. */
 .rooms-slide {
@@ -209,15 +217,27 @@
 }
 
 .rooms-title {
-  font-size: clamp(2.25rem, 5.4vw, 5.5rem);
+  /* --rm-title-fit is set per-title by rooms.js, only on names that overflow
+     this box at the shared size (everything SUPERIOR-length and under stays
+     untouched at 1). It has to live inside font-size rather than a transform:
+     scale() on the element — overflow:hidden clips against the box as laid
+     out, before any transform runs, so scaling down post-layout only shrinks
+     the already-cropped result instead of the source text. Shrinking the
+     font itself is what keeps the clip from happening in the first place.
+     -webkit-text-stroke is scaled along with it so a smaller word keeps the
+     same relative line weight instead of reading heavier than the rest. */
+  font-size: calc(clamp(2.25rem, 5.4vw, 5.5rem) * var(--rm-title-fit, 1));
   font-weight: 700;
   line-height: 0.82;
   letter-spacing: -0.02em;
   overflow: hidden;
   white-space: nowrap;
+  /* Box width comes from the parent (.rooms-title has no width of its own),
+     so this percentage is unaffected by the font-size change above and keeps
+     landing at the same pixel offset every other title uses. */
   transform: translateX(-34%);
   color: transparent;
-  -webkit-text-stroke: 1.5px var(--rm-ink);
+  -webkit-text-stroke: calc(1.5px * var(--rm-title-fit, 1)) var(--rm-ink);
   margin: 0;
   pointer-events: none;
 }
@@ -502,22 +522,107 @@
 .rooms-counter b { color: var(--rm-ink); font-weight: 600; }
 
 /* ── Responsive ──────────────────────────────────────────────────────── */
+/* ── Phones and tablets: one column, no shader ───────────────────────── */
+/* The previous version kept the desktop's absolute placement and reserved
+   room for it with 26rem of padding under the stage, while .rooms-info was
+   centred inside that padded box. The result was the photograph at the top,
+   the room name floating over it, and then a screen-and-a-half of nothing
+   before the description — the gap was the reserved padding, not spacing.
+   Here everything is in normal flow and the column is only as tall as what
+   is in it. */
 @media (max-width: 1100px) {
+  .rooms {
+    /* Shared by the photograph and by the arrows, which centre on it. */
+    --rm-m-w: min(320px, 74vw);
+  }
+
+  .rooms-stage {
+    /* Back to normal flow. It is a centring flex row on desktop, and leaving
+       it that way here made the photograph and the copy siblings in a row
+       that squeezed the picture down to 45px wide. */
+    display: block;
+    height: auto;
+    padding: 1.5rem 0 0;
+  }
+
+  .rooms-media {
+    position: relative;
+    left: auto;
+    top: auto;
+    transform: none;
+    margin: 0 auto;
+    width: var(--rm-m-w);
+  }
+
+  .rooms-info {
+    position: relative;
+    left: auto;
+    top: auto;
+    transform: none;
+    width: min(420px, 88vw);
+    aspect-ratio: auto;
+    margin: 1.6rem auto 0;
+    /* The slides stack in a single grid cell rather than being absolutely
+       positioned, so the column takes the height of its tallest slide on its
+       own. That is what removes the need for reserved padding — and it keeps
+       every slide in the layout, so the cross-fade between them still has
+       something to animate. */
+    display: grid;
+  }
+
+  .rooms-slide {
+    position: relative;
+    inset: auto;
+    grid-area: 1 / 1;
+  }
+
+  .rooms-index {
+    position: relative;
+    left: auto;
+    top: auto;
+    transform: none;
+    font-size: clamp(2.5rem, 15vw, 3.75rem);
+    line-height: 0.9;
+    /* All four sides, not just the bottom. It is an <h3>, and taking it out
+       of absolute positioning handed it the browser's default 1em top margin
+       back — 56px of it at this size, which was most of the gap under the
+       photograph. */
+    margin: 0 0 0.15rem;
+  }
+
+  .rooms-title {
+    transform: none;
+    /* Keeps the per-title fit factor rooms.js measures; without it the long
+       names would be clipped again at this size. */
+    font-size: calc(clamp(1.6rem, 8.4vw, 2.4rem) * var(--rm-title-fit, 1));
+    -webkit-text-stroke-width: calc(1.2px * var(--rm-title-fit, 1));
+    margin-bottom: 1.1rem;
+  }
+
   .rooms-panel {
-    left: 50%;
+    position: relative;
+    left: auto;
+    top: auto;
     bottom: auto;
-    top: 104%;
-    transform: translateX(-50%);
-    width: min(420px, 86vw);
+    transform: none;
+    width: 100%;
     text-align: left;
   }
-  .rooms-stage { height: auto; padding: 2rem 0 26rem; }
-  .rooms-media,
-  .rooms-info { position: relative; left: auto; top: auto; transform: none; margin: 0 auto; }
-  .rooms-info { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
-  .rooms-title { transform: translateX(-20%); }
-  .rooms-nav-prev { left: 4vw; }
-  .rooms-nav-next { right: 4vw; }
+
+  /* The stage used to end well below the panel because of its reserved
+     padding, which kept these clear. Now that it ends where the content does,
+     they need the gap themselves — without it the Reservar button and the
+     first tab sit against each other. */
+  .rooms-tabs { margin-top: 2.25rem; }
+
+  /* Centred on the photograph rather than on the stage: with the stage now
+     as tall as the whole column, a 50% offset would have put them down among
+     the specs. */
+  .rooms-nav {
+    top: calc(1.5rem + var(--rm-m-w) * 0.6667);
+  }
+  .rooms-nav-prev { left: 3vw; }
+  .rooms-nav-next { right: 3vw; }
 }
 
 @media (max-width: 640px) {

@@ -108,7 +108,7 @@
   transform: translate(-50%, -50%);
   z-index: 6;
   margin: 0;
-  font-family: "Anton", var(--ov-font-display), sans-serif;
+  font-family: "Norican", var(--ov-font-display), cursive;
   font-size: 30vw;
   font-weight: 400;
   line-height: 0.8;
@@ -206,12 +206,62 @@
   pointer-events: none;
 }
 
+/* ── Social row ──────────────────────────────────────────────────────── */
+/* Bottom-right, same corner the site's global nav-fab claims elsewhere —
+   but menu.js keeps that button hidden for the whole .kinetic section, so
+   there is no real risk of the two colliding. Sat clear above it anyway,
+   in case that hide list ever changes. */
+.ft-social {
+  position: absolute;
+  right: clamp(1.25rem, 3vw, 2.5rem);
+  bottom: clamp(4.75rem, 11vh, 6.5rem);
+  z-index: 20;
+  display: flex;
+  gap: 0.6rem;
+}
+
+.ft-social a {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  color: rgba(244, 248, 251, 0.75);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  backdrop-filter: blur(14px) saturate(150%);
+  text-decoration: none;
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}
+.ft-social a:hover,
+.ft-social a:focus-visible {
+  color: #f4f8fb;
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.32);
+}
+.ft-social a:focus-visible { outline: none; }
+
+.ft-social svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* The Facebook glyph is a single closed outline, not a stroked line drawing
+   like the others — filling it is what makes it read as the letterform. */
+.ft-social a[aria-label="Facebook"] svg { fill: currentColor; stroke: none; }
+
 @media (max-width: 900px) {
   .ft-columns,
   .ft-rotated,
   .ft-hint { display: none; }
   .ft-word-mark { font-size: 40vw; }
   .trail-stage { cursor: auto; }
+  .ft-social { right: 1.25rem; bottom: 4.5rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {

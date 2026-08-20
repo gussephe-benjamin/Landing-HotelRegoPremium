@@ -22,6 +22,25 @@
   overflow: hidden;
 }
 
+/* Set by reserve.js for the length of the scrubbed hand-off into .reserve,
+   and removed again afterwards. This section is translated a full viewport
+   while it holds a backdrop-filtered glass card and a filtered live map;
+   promoting it means that whole picture is rasterised once and then only
+   moved, instead of the blur re-sampling its backdrop every frame. It is not
+   left on permanently because a layer this size costs real texture memory.
+   Safe as a backdrop root: the section paints its own opaque background, so
+   everything the card blurs already lives inside it. */
+.location.is-handoff {
+  will-change: transform;
+}
+/* The map's filter chain is five functions deep over a live embed, so it is
+   worth its own cached texture for the same stretch — translateZ(0) is not
+   enough here, it serialises back to a 2D matrix and stops being a promotion
+   hint. Scoped to the hand-off so neither layer is held at rest. */
+.location.is-handoff .location-map iframe {
+  will-change: transform;
+}
+
 .location-head {
   max-width: 1280px;
   margin: 0 auto clamp(2.5rem, 6vh, 4rem);

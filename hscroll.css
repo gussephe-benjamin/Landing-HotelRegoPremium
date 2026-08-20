@@ -1,0 +1,601 @@
+/* (01) Los espacios — horizontal editorial.
+
+   Replaces the old "Studios REGO" card run. Mechanics and composition follow
+   the brief; two of its colour decisions did not survive contact with a
+   contrast checker and are noted at --hs-accent below.
+
+   Every token here is declared on .hscroll, never on :root — the names in the
+   brief (--bg, --fg, --accent) would have repainted the whole landing, and the
+   rest of this project already namespaces its variables per section, so these
+   carry an --hs- prefix as well. */
+.hscroll {
+  /* Interpolated by hscroll.js across four stops; these are stop 0 so the
+     section paints correctly before the script runs. */
+  --hs-bg: #0e0e0f;
+  --hs-fg: #eae7e0;
+
+  /* Deepest background in the ramp, held constant. Used where something needs
+     to read as a hole punched through the accent regardless of where the
+     background currently sits. */
+  --hs-bg-deep: #0e0e0f;
+
+  /* The brief specifies this gold and asserts it clears 4.5:1 against every
+     --bg in the ramp. It does not: against the final light stop (#E9E4DA) it
+     measures 1.74:1, because both colours are light. So the accent is used for
+     fills only — bars, rules, the highlighter, the CTA plate — and never as
+     text colour. Anything that has to be *read* uses --hs-fg, which is defined
+     per stop against its own background and therefore cannot drift. */
+  --hs-accent: #d4a857;
+
+  /* Ink for text sitting on top of the accent. Fixed rather than inherited:
+     --hs-fg is light for three of the four stops, and light-on-gold is
+     1.78:1. This is 8.6:1 on the accent at every stop. */
+  --hs-on-accent: #14100c;
+
+  /* Both are derived from the foreground rather than fixed, so they invert
+     along with the ramp. A fixed white film is invisible once the background
+     reaches the daylight stop — which is exactly where the reservation card
+     lives, so the card would lose its container at the one moment it has to
+     read as one. The rgba values are the fallback for engines without
+     color-mix. */
+  --hs-surface: rgba(255, 255, 255, 0.06);
+  --hs-surface: color-mix(in srgb, currentColor 6%, transparent);
+  --hs-line: rgba(127, 127, 127, 0.28);
+  --hs-line: color-mix(in srgb, currentColor 24%, transparent);
+
+  --hs-serif: var(--vc-serif, "Zodiak", Georgia, serif);
+  --hs-sans: var(--ov-font-display, "Satoshi", sans-serif);
+  --hs-mono: var(--rs-mono, "JetBrains Mono", ui-monospace, monospace);
+
+  position: relative;
+  z-index: 4;
+  width: 100%;
+  overflow: hidden;
+  background-color: var(--hs-bg);
+  color: var(--hs-fg);
+  font-family: var(--hs-sans);
+  /* No transition on background-color. It looks harmless, but the ramp
+     rewrites --hs-bg on every scroll frame, so a transition restarts before
+     it can ever finish and the computed colour stays pinned to whatever it
+     was on the first frame — the section renders permanently at stop 0 while
+     the variable underneath it is updating correctly. The scrub already
+     smooths the ramp; this only broke it. */
+}
+
+/* ── Background field ────────────────────────────────────────────────── */
+.hscroll__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Contour lines — the relief of the hills around Bagua Grande, and the
+   deepest-moving layer in the parallax stack. Inherits currentColor so it
+   flips with the ramp instead of needing its own interpolation. */
+.hscroll__topo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 220%;
+  height: 100%;
+  opacity: 0.1;
+  color: var(--hs-fg);
+}
+
+/* ── Track ───────────────────────────────────────────────────────────── */
+/* Mobile-first: the track is a plain block and every beat stacks. The
+   horizontal layout is additive, inside the desktop query, so both the small
+   screen and the reduced-motion case fall back to this without undoing
+   anything. */
+.hscroll__track {
+  position: relative;
+  z-index: 1;
+  display: block;
+  padding: clamp(3.5rem, 9vh, 6rem) 0;
+}
+
+.beat {
+  position: relative;
+  padding: 0 clamp(1.25rem, 6vw, 3rem);
+  margin-bottom: clamp(3rem, 8vh, 5.5rem);
+}
+.beat:last-child { margin-bottom: 0; }
+
+/* ── Type ────────────────────────────────────────────────────────────── */
+.hs-eyebrow {
+  margin: 0 0 1.5rem;
+  font-family: var(--hs-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+
+/* Block title. Solid on small screens — an outline at this size turns to mush
+   once the strokes are only a couple of pixels apart. */
+.beat__backdrop {
+  margin: 0 0 1.5rem;
+  font-family: var(--hs-serif);
+  font-size: clamp(2.5rem, 12vw, 4rem);
+  font-weight: 700;
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+
+.beat__subtitle {
+  position: relative;
+  margin: clamp(1.5rem, 4vh, 2.25rem) 0;
+  font-family: var(--hs-serif);
+  font-style: italic;
+  font-size: clamp(1.2rem, 4.6vw, 1.35rem);
+  line-height: 1.35;
+}
+
+/* Highlighter.
+
+   The plate is a background gradient on the span itself, not an absolutely
+   positioned pseudo-element. That distinction matters: this text wraps, and
+   an absolute ::before resolves against a single inline fragment, so every
+   line but one was left with no plate behind it — and since the text is inked
+   near-black to sit on the gold, those lines rendered black on a near-black
+   background and simply vanished. box-decoration-break gives each line
+   fragment its own plate instead.
+
+   The wipe rides on --hs-mark: 100% is shut, 0% is fully painted. It defaults
+   to painted so the copy stays readable if the script never runs; hscroll.js
+   sets it to 100% when it builds the reveal. */
+.beat__subtitle .mark {
+  --hs-mark: 0%;
+  color: var(--hs-on-accent);
+  font-style: normal;
+  font-weight: 600;
+  padding: 0 0.18em;
+  background-image: linear-gradient(var(--hs-accent), var(--hs-accent));
+  background-repeat: no-repeat;
+  /* Sits on the baseline like a real marker — under the ascenders, not over
+     them. */
+  background-position: left bottom 0.02em;
+  background-size: calc(100% - var(--hs-mark)) 0.92em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+.beat__rule {
+  display: block;
+  width: 48px;
+  height: 2px;
+  margin-top: 1.25rem;
+  background: var(--hs-accent);
+  transform-origin: left center;
+}
+
+/* ── Photos ──────────────────────────────────────────────────────────── */
+.hs-photo {
+  position: relative;
+  margin: 0 0 clamp(1.5rem, 4vh, 2.5rem);
+}
+
+.hs-photo picture {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  /* The reveal wipes this open; see hscroll.js. */
+}
+
+.hs-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hs-label {
+  margin-bottom: 10px;
+  font-family: var(--hs-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+/* Duotone for the context shots, so heterogeneous material reads as one
+   set. Product shots — the room, the terrace, the salon — stay full colour. */
+.hs-photo--duo img { filter: grayscale(1) contrast(1.08); }
+.hs-photo--duo picture::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--hs-accent);
+  mix-blend-mode: color;
+  opacity: 0.35;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+.hs-photo--duo:hover picture::after { opacity: 0; }
+
+/* Editorial annotation mark on one restaurant frame. */
+.hs-tick {
+  display: block;
+  width: 28px;
+  height: 4px;
+  margin-top: 10px;
+  background: var(--hs-accent);
+  transform-origin: left center;
+}
+
+/* Gestural stroke over the intro photo. */
+.hs-stroke {
+  position: absolute;
+  inset: 12% 8% auto;
+  width: 84%;
+  height: auto;
+  color: var(--hs-accent);
+  pointer-events: none;
+}
+
+/* ── Intro marquees ──────────────────────────────────────────────────── */
+.hs-marquee {
+  margin-bottom: 2rem;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+
+.hs-marquee__line {
+  display: flex;
+  width: max-content;
+  font-family: var(--hs-serif);
+  font-size: clamp(2.5rem, 14vw, 4rem);
+  font-weight: 700;
+  line-height: 0.85;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0.9;
+}
+.hs-marquee__line--a { color: var(--hs-accent); }
+.hs-marquee__line--b { color: var(--hs-fg); opacity: 0.35; }
+
+/* ── Reservation card ────────────────────────────────────────────────── */
+.hs-card {
+  padding: 28px;
+  border: 1px solid var(--hs-line);
+  border-radius: 14px;
+  background: var(--hs-surface);
+}
+
+.hs-card__kicker {
+  margin: 0 0 0.75rem;
+  font-family: var(--hs-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+.hs-card__title {
+  margin: 0 0 1.25rem;
+  font-family: var(--hs-serif);
+  font-size: clamp(1.5rem, 5vw, 1.9rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.hs-card__data {
+  margin: 0 0 1.5rem;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.hs-card__data li {
+  padding: 0.6rem 0;
+  border-top: 1px solid var(--hs-line);
+  opacity: 0.8;
+}
+
+.hs-card__cta {
+  display: block;
+  padding: 14px 28px;
+  border-radius: 999px;
+  background: var(--hs-accent);
+  color: var(--hs-on-accent);
+  font-family: var(--hs-sans);
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  text-decoration: none;
+  /* 48px minimum touch target. */
+  min-height: 48px;
+  line-height: 20px;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hs-card__cta:focus-visible {
+  outline: 2px solid var(--hs-fg);
+  outline-offset: 3px;
+}
+
+.hs-card__alt {
+  display: inline-block;
+  margin-top: 1rem;
+  font-size: 13px;
+  color: inherit;
+  opacity: 0.7;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.hs-card__alt:hover { opacity: 1; }
+
+.hs-outro {
+  margin: 0;
+  font-family: var(--hs-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: center;
+  opacity: 0.45;
+}
+
+/* ── Progress rail ───────────────────────────────────────────────────── */
+/* Not decoration: without a visible sense of how much is left, a pinned
+   horizontal run reads as an unbounded hijack and people bail. */
+.hscroll__progress {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: clamp(0.75rem, 3vw, 1.5rem);
+  padding: 0.85rem clamp(1.25rem, 6vw, 3rem);
+  background: color-mix(in oklab, var(--hs-bg) 88%, transparent);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.hscroll__progress button {
+  padding: 0.4rem 0;
+  border: 0;
+  background: none;
+  color: var(--hs-fg);
+  font-family: var(--hs-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  opacity: 0.4;
+  transition: opacity 0.3s ease;
+}
+.hscroll__progress button:hover { opacity: 0.75; }
+.hscroll__progress button:focus-visible {
+  outline: 2px solid var(--hs-fg);
+  outline-offset: 3px;
+  opacity: 1;
+}
+/* The active state is carried by opacity and an accent underline rather than
+   by accent text: the gold is unreadable on the light end of the ramp
+   (1.74:1), while --hs-fg is contrast-safe at every stop by construction. */
+.hscroll__progress button[aria-current="true"] {
+  opacity: 1;
+  box-shadow: inset 0 -2px 0 var(--hs-accent);
+}
+
+.hscroll__bar {
+  flex: 1;
+  height: 2px;
+  background: var(--hs-line);
+}
+.hscroll__bar span {
+  display: block;
+  height: 100%;
+  background: var(--hs-accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+/* No flight below the horizontal breakpoint or under reduced motion, so the
+   strip that made room for it would just be dead space. */
+.beat--lead { display: none; }
+@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+  .beat--lead { display: block; }
+}
+
+/* ── Small-screen rhythm ─────────────────────────────────────────────── */
+/* The asymmetry of the desktop mosaic is kept by alternating widths and
+   indents rather than by absolute positions. */
+@media (max-width: 1023px) {
+  .hs-photo--h2,
+  .hs-photo--r2,
+  .hs-photo--s2 { width: 78%; margin-left: 22%; }
+  .hs-photo--h3,
+  .hs-photo--r1 { width: 88%; }
+  .beat--intro .hs-photo { width: 100%; }
+}
+
+/* ── Desktop: the horizontal run ─────────────────────────────────────── */
+/* Gated on reduced-motion as well as width, so the query matches the
+   matchMedia condition in hscroll.js exactly — one source of truth for
+   "is this section horizontal right now". */
+@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+  .hscroll { height: 100vh; }
+
+  .hscroll__track {
+    display: flex;
+    align-items: stretch;
+    width: max-content;
+    height: 100vh;
+    padding: 0;
+    will-change: transform;
+  }
+
+  .beat {
+    position: relative;
+    flex: none;
+    height: 100vh;
+    padding: 0;
+    margin: 0;
+  }
+
+  /* Widths are in viewport-widths. Total track ≈ 4.6 screens, so the travel
+     is ≈ 3.6 screens — which at a 1:1 gesture ratio is ≈ 6.4 viewport heights
+     of scroll on a 16:9 display, the depth the brief asks for. Adding width
+     here lengthens the section; the ratio must stay 1:1 either way. */
+  /* Exactly one screen: the width the finished cover image occupies as it is
+     carried off. It no longer has to make room for the growth as well — that
+     happens on the approach, before this pin opens — so the strip is only as
+     long as the exit, and the intro beat's left edge meets the picture's
+     right edge with nothing in between. */
+  .beat--lead { width: 100vw; }
+  .beat--intro { width: 90vw; }
+  .beat--hospedaje { width: 115vw; }
+  .beat--restaurante { width: 115vw; }
+  .beat--salon { width: 105vw; }
+  .beat--outro { width: 35vw; }
+
+  .beat--intro {
+    display: grid;
+    place-items: center;
+    /* The marquee lines are width:max-content and carry their own drift, so
+       without this they run out of the intro and collide with the outline
+       title of the next beat — two layers of giant type on top of each
+       other, which reads as a rendering fault rather than as depth. */
+    overflow: hidden;
+  }
+
+  .hs-eyebrow {
+    position: absolute;
+    top: 8vh;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  .hs-marquee {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    display: grid;
+    align-content: center;
+    gap: 2vh;
+    margin: 0;
+    overflow: visible;
+  }
+  .hs-marquee__line { font-size: clamp(4rem, 9vw, 11rem); }
+
+  .beat--intro .hs-photo {
+    position: relative;
+    z-index: 1;
+    width: 38vw;
+    margin: 0;
+  }
+  .beat--intro .hs-photo picture { height: auto; aspect-ratio: 16 / 10; }
+
+  /* Outline backdrop, riding slower than the photographs — that difference is
+     what puts it behind them in depth rather than merely behind them in
+     z-order. The differential is small (0.82, so 0.18) on purpose: with the
+     parallax now measured per beat it is bounded at roughly ±280px, which
+     stays inside the slack its own block leaves it. A stronger one drifted
+     the word into the next block. Set to 11vw for the same reason — the
+     longest of the three, RESTAURANTE, needs to fit its beat with room to
+     move. */
+  .beat__backdrop {
+    position: absolute;
+    top: 20vh;
+    /* Centred in its own beat (hscroll.js pairs this with xPercent: -50)
+       rather than pinned near its left edge. Left-anchored, all of the slack
+       sat on one side, so the parallax only had 4vw of room before the word
+       reached back into the previous block; centred, each title has half the
+       difference between its own width and its beat's on either side, which
+       is more than the drift can use. */
+    left: 50%;
+    z-index: 0;
+    margin: 0;
+    font-size: 11vw;
+    line-height: 0.85;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--hs-fg);
+    opacity: 0.28;
+    white-space: nowrap;
+  }
+
+  .hs-photo {
+    position: absolute;
+    z-index: 1;
+    margin: 0;
+  }
+  .hs-photo picture { height: calc(100% - 26px); }
+
+  .beat__subtitle {
+    position: absolute;
+    z-index: 2;
+    width: 22vw;
+    margin: 0;
+    font-size: clamp(1.4rem, 2.1vw, 2.2rem);
+  }
+
+  /* Hospedaje — the wide frame leads, then a small duotone low, the line, and
+     a mid frame to close. Tops are deliberately uneven. */
+  .hs-photo--h1 { left: 10vw; top: 12vh; width: 26vw; height: 60vh; }
+  .hs-photo--h2 { left: 42vw; top: 56vh; width: 15vw; height: 32vh; }
+  .beat--hospedaje .beat__subtitle { left: 62vw; top: 30vh; }
+  .hs-photo--h3 { left: 90vw; top: 22vh; width: 21vw; height: 44vh; }
+
+  /* Restaurante — same grammar, rhythm reversed: the line arrives before the
+     large frame instead of after it. */
+  .hs-photo--r1 { left: 8vw; top: 50vh; width: 17vw; height: 34vh; }
+  .hs-photo--r2 { left: 30vw; top: 16vh; width: 14vw; height: 28vh; }
+  .beat--restaurante .beat__subtitle { left: 49vw; top: 34vh; }
+  .hs-photo--r3 { left: 78vw; top: 18vh; width: 30vw; height: 66vh; }
+
+  /* Salón — the payoff, where the card appears. */
+  .hs-photo--s1 { left: 8vw; top: 14vh; width: 28vw; height: 58vh; }
+  .hs-photo--s2 { left: 41vw; top: 58vh; width: 16vw; height: 30vh; }
+
+  .hs-card {
+    position: absolute;
+    z-index: 2;
+    left: 66vw;
+    top: 24vh;
+    width: 24vw;
+    padding: 32px;
+  }
+  .hs-card__cta { display: inline-block; }
+
+  .beat--outro { display: grid; place-items: center; }
+
+  .hscroll__progress {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  /* Only the track and the parallax layers are promoted. Promoting the eight
+     photographs as well would hand the compositor eight large textures for no
+     gain. */
+  .hscroll__topo,
+  .beat__backdrop,
+  .hs-marquee__line { will-change: transform; }
+}
+
+/* ── Reduced motion ──────────────────────────────────────────────────── */
+/* A pinned section with continuous lateral movement is the exact pattern that
+   triggers vestibular discomfort, so this is a hard fallback rather than a
+   softened version: no pin, no parallax, no drifting marquees. */
+@media (prefers-reduced-motion: reduce) {
+  .hs-marquee__line { transform: none !important; }
+  .hs-photo picture { clip-path: none !important; }
+  .hs-photo img { transform: none !important; }
+  .beat__subtitle .mark { --hs-mark: 0% !important; }
+  .hscroll__topo { display: none; }
+  .hs-card__cta { transition: none; }
+}

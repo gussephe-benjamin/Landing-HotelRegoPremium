@@ -9,31 +9,37 @@
    medium lower landscape. Order here must match the .rooms-slide order in the
    markup.
 
-   TODO(REGO): images[1] and images[2] are stock stand-ins. Replace each pair
-   with the real photography for that unit; nothing else needs to change. */
+   All three rooms now use their real photography (room-2*.jpg, room-3*.jpg,
+   room-4*.jpg). */
 var ROOMS = [
   {
-    slug: "superior",
+    slug: "estudios",
     images: [
-      { src: "./img/room-2.jpg", alt: "Suite Superior con sala independiente" },
-      { src: "./img/room-2-b.jpg", alt: "Dormitorio de la Suite Superior con cama king" },
-      { src: "./img/room-2-c.jpg", alt: "Sala de la Suite Superior abierta al valle de Utcubamba" },
+      // ?v=2 forces a re-fetch on browsers that already cached these three
+      // under their old filenames — the files changed but the URLs didn't.
+      { src: "./img/room-2.jpg?v=2", alt: "Dormitorio de la Suite Estudio con clóset y aire acondicionado" },
+      { src: "./img/room-2-b.jpg?v=2", alt: "Baño de la Suite Estudio con ducha de vidrio" },
+      { src: "./img/room-2-c.jpg?v=2", alt: "Kitchenette de la Suite Estudio con barra desayunadora" },
     ],
   },
   {
-    slug: "familiar",
+    slug: "minidepartamentos",
     images: [
-      { src: "./img/room-3.jpg", alt: "Departamento Familiar de dos dormitorios" },
-      { src: "./img/room-3-b.jpg", alt: "Segundo dormitorio del Departamento Familiar" },
-      { src: "./img/room-3-c.jpg", alt: "Comedor y cocina completa del Departamento Familiar" },
+      // ?v=2: same cache-name collision as room-2* above — these three keep
+      // the original filenames, so a browser that already fetched them once
+      // needs the query bumped to notice the bytes changed.
+      { src: "./img/room-3.jpg?v=2", alt: "Dormitorio del Minidepartamento con balcón y vista a la ciudad" },
+      { src: "./img/room-3-b.jpg?v=2", alt: "Baño del Minidepartamento con ducha de vidrio templado" },
+      { src: "./img/room-3-c.jpg?v=2", alt: "Dormitorio del Minidepartamento con acceso directo a la cocina" },
     ],
   },
   {
-    slug: "penthouse",
+    slug: "departamentos",
     images: [
-      { src: "./img/room-4.jpg", alt: "Penthouse REGO en el último piso" },
-      { src: "./img/room-4-b.jpg", alt: "Dormitorio principal del Penthouse con vista a la ciudad" },
-      { src: "./img/room-4-c.jpg", alt: "Estar del Penthouse con terraza privada" },
+      // ?v=2: same cache-name collision as room-2*/room-3* above.
+      { src: "./img/room-4.jpg?v=2", alt: "Dormitorio del Departamento en el último piso con vista a la ciudad" },
+      { src: "./img/room-4-b.jpg?v=2", alt: "Sala y comedor del Departamento con balcón" },
+      { src: "./img/room-4-c.jpg?v=2", alt: "Terraza privada del Departamento con vista a Bagua Grande y los cerros" },
     ],
   },
 ];
@@ -112,6 +118,21 @@ document.addEventListener("DOMContentLoaded", function () {
     return inners;
   }
 
+  // ── Engine choice ──────────────────────────────────────────────────
+  // The shader runs on desktop only. On a phone it costs more than it is
+  // worth and actively misbehaves: the canvas is viewport-fixed and re-reads
+  // the element's live rect every frame, but a phone scrolls on the
+  // compositor, which runs ahead of that read — so the photograph visibly
+  // shakes against the page in both directions. It is also the heaviest thing
+  // in the section on a low-end device, and what it buys is a pointer-driven
+  // ripple on a machine with no pointer. Below the breakpoint a plain <img>
+  // is used instead: it scrolls with the page because it *is* the page.
+  // One test for everything in this section that is expensive enough to cost
+  // frames on a phone: the shader, the scrubbed cover effect on the section
+  // above, and the scrubbed box-shadow.
+  var RICH = window.matchMedia("(min-width: 1101px)").matches && !reduced;
+  var USE_GL = RICH;
+
   // ── WebGL stage ────────────────────────────────────────────────────
   var vertexShader = document.getElementById("roomsVertexShader").textContent;
   var fragmentShader = document.getElementById("roomsFragmentShader").textContent;
@@ -120,12 +141,36 @@ document.addEventListener("DOMContentLoaded", function () {
   var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
   camera.position.z = 50;
 
-  var renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setClearColor(0x000000, 0);
-  renderer.domElement.className = "rooms-gl";
-  root.appendChild(renderer.domElement);
+  // Null on phones. Everything downstream guards on it, so no context is
+  // created and no shader is ever compiled there.
+  var renderer = null;
+  if (USE_GL) {
+    renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x000000, 0);
+    renderer.domElement.className = "rooms-gl";
+    root.appendChild(renderer.domElement);
+    // The stylesheet hides the flat photograph while the canvas is painting.
+    root.classList.add("rooms--gl");
+  }
+
+  // ── Flat photograph, used wherever the shader is not ────────────────
+  var flatImg = null;
+  if (!USE_GL) {
+    flatImg = document.createElement("img");
+    flatImg.className = "rooms-flat";
+    flatImg.decoding = "async";
+    mediaEl.appendChild(flatImg);
+  }
+
+  function updateFlatImage(index) {
+    if (!flatImg || !ROOMS[index]) return;
+    var data = ROOMS[index].images[0];
+    if (flatImg.getAttribute("src") === data.src) return;
+    flatImg.src = data.src;
+    flatImg.alt = data.alt;
+  }
 
   var clock = new THREE.Clock();
 
@@ -194,6 +239,7 @@ document.addEventListener("DOMContentLoaded", function () {
   var onScreen = false;
 
   function updateGlVisibility() {
+    if (!renderer) return;
     gsap.to(renderer.domElement, {
       opacity: texturesReady && onScreen ? 1 : 0,
       duration: 0.5,
@@ -202,6 +248,9 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function loadTextures() {
+    // Skipped without a renderer: nothing would consume them, and
+    // switchTextures already no-ops on an empty textures array.
+    if (!USE_GL) return;
     var loader = new THREE.TextureLoader();
     var pending = ROOMS.length;
 
@@ -224,6 +273,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function render() {
+    if (!renderer) return;
     requestAnimationFrame(render);
     if (!onScreen) return;
 
@@ -250,6 +300,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   window.addEventListener("resize", function () {
+    if (!renderer) return;
     renderer.setSize(window.innerWidth, window.innerHeight);
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
@@ -262,6 +313,7 @@ document.addEventListener("DOMContentLoaded", function () {
   window.addEventListener("mouseup", function () { mouseDown = false; });
   mediaEl.addEventListener("click", function () { step(1); });
 
+  updateFlatImage(0);
   loadTextures();
   syncMeshToElement();
   render();
@@ -270,15 +322,36 @@ document.addEventListener("DOMContentLoaded", function () {
   var slides = [];
   var ready = false;
 
+  // The outline title shares one font-size across every room name. That was
+  // never a problem while they were all 8-9 letters (SUPERIOR, FAMILIAR,
+  // PENTHOUSE) — at the current size the box is exactly wide enough for a
+  // word that length. A longer name just overflows it: .rooms-title clips
+  // (overflow:hidden, white-space:nowrap), so instead of wrapping it silently
+  // truncates mid-word. Shrinking only the titles that actually need it, by
+  // exactly the amount that need it, keeps SUPERIOR-length words at their
+  // original full size.
+  function fitTitle(el) {
+    el.style.removeProperty("--rm-title-fit");
+    var overflow = el.scrollWidth - el.clientWidth;
+    if (overflow <= 0) return;
+    // A hair under the exact ratio so the longest word still keeps a sliver
+    // of the frame's edge padding instead of touching it exactly.
+    var scale = (el.clientWidth / el.scrollWidth) * 0.96;
+    el.style.setProperty("--rm-title-fit", scale.toFixed(4));
+  }
+
   // Splitting measures text on a canvas, so it must wait for the webfont and
   // a settled layout — otherwise every word lands on its own line.
   function buildSlides() {
     if (ready) return;
     slides = slideEls.map(function (el) {
+      var titleEl = el.querySelector(".rooms-title");
+      var title = splitChars(titleEl);
+      fitTitle(titleEl);
       return {
         el: el,
         index: splitChars(el.querySelector(".rooms-index")),
-        title: splitChars(el.querySelector(".rooms-title")),
+        title: title,
         lines: splitLines(el.querySelector(".rooms-desc")),
         panel: el.querySelector(".rooms-panel"),
       };
@@ -301,12 +374,12 @@ document.addEventListener("DOMContentLoaded", function () {
   var bgEl = root.querySelector(".rooms-bg");
   // One entry per room, in slide order. Removing ESTUDIO from the model left
   // its colour (#17120f) at the head of this list, which shifted every
-  // remaining room onto its predecessor's background — SUPERIOR lost the
-  // green, and PENTHOUSE lost the grey-black.
+  // remaining room onto its predecessor's background — ESTUDIOS lost the
+  // green, and DEPARTAMENTOS lost the grey-black.
   var bgColors = [
-    "#141a18", // SUPERIOR  — green
-    "#1b1512", // FAMILIAR  — warm brown
-    "#101418", // PENTHOUSE — grey-black
+    "#141a18", // ESTUDIOS  — green
+    "#1b1512", // MINIDEPARTAMENTOS — warm brown
+    "#101418", // DEPARTAMENTOS — grey-black
   ];
 
   // ── Secondary images ─────────────────────────────────────────────────
@@ -434,6 +507,7 @@ document.addEventListener("DOMContentLoaded", function () {
         defaults: { duration: 1, ease: "power4.inOut" },
         onStart: function () {
           switchTextures(index, direction);
+          updateFlatImage(index);
           current = index;
           syncChrome();
         },
@@ -559,24 +633,34 @@ document.addEventListener("DOMContentLoaded", function () {
       // canvas fixed *to that ancestor* instead of the viewport, silently
       // detaching the photo from the slider. Only `.offering-inner` (an
       // unrelated subtree) and elements below get transformed/filtered.
-      gsap.to(".offering-inner", {
-        scale: 0.9,
-        opacity: 0.3,
-        ease: "none",
-        scrollTrigger: { trigger: ".rooms", start: "top bottom", end: "top 15%", scrub: true },
-      });
-
-      // Shadow intensifies as the panel settles into place, reinforcing that
-      // it just landed on top of something.
-      gsap.fromTo(
-        root,
-        { boxShadow: "0 -10px 30px rgba(0,0,0,0)" },
-        {
-          boxShadow: "0 -34px 90px rgba(0,0,0,0.6)",
+      // Both of these are desktop-only. They are the two heaviest scrubbed
+      // effects here and neither survives contact with a mid-range phone:
+      // scaling and fading a whole section re-composites it every frame, and
+      // animating a 90px-blur box-shadow repaints a shadow the width of the
+      // page every frame — box-shadow is not a compositor property, so there
+      // is no cheap path for it. Skipping them leaves the static shadow the
+      // stylesheet already sets, so nothing is missing on a phone, it simply
+      // does not animate.
+      if (RICH) {
+        gsap.to(".offering-inner", {
+          scale: 0.9,
+          opacity: 0.3,
           ease: "none",
-          scrollTrigger: { trigger: root, start: "top bottom", end: "top 40%", scrub: true },
-        }
-      );
+          scrollTrigger: { trigger: ".rooms", start: "top bottom", end: "top 15%", scrub: true },
+        });
+
+        // Shadow intensifies as the panel settles into place, reinforcing
+        // that it just landed on top of something.
+        gsap.fromTo(
+          root,
+          { boxShadow: "0 -10px 30px rgba(0,0,0,0)" },
+          {
+            boxShadow: "0 -34px 90px rgba(0,0,0,0.6)",
+            ease: "none",
+            scrollTrigger: { trigger: root, start: "top bottom", end: "top 40%", scrub: true },
+          }
+        );
+      }
 
       // Continuous, scroll-scrubbed parallax (not a one-shot trigger fade) on
       // the chrome that ISN'T an ancestor of the canvas, so it's safe to

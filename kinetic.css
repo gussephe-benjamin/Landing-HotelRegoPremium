@@ -66,7 +66,11 @@
   will-change: transform, opacity;
 }
 
-/* ── The single image ────────────────────────────────────────────────── */
+/* ── Editorial close ─────────────────────────────────────────────────── */
+/* The positioning block below is untouched from when this held a single
+   centred figure: kinetic.js tweens this element's opacity and scale, and
+   GSAP parses the existing translate, so top/left/transform/z-index stay
+   exactly as they were. Only the box it lays out changed. */
 .kinetic-item {
   position: absolute;
   top: 50%;
@@ -74,43 +78,198 @@
   transform: translate(-50%, -50%);
   z-index: 2;
   margin: 0;
-  width: clamp(260px, 30vw, 430px);
-  text-align: center;
+  width: min(92vw, 1180px);
   will-change: transform, opacity;
+  /* Reversed, so the closing line reads on the left while the cards keep the
+     right half — the images stay first in the DOM for the mobile stack. */
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1.75rem, 4vw, 3.75rem);
+  text-align: left;
 }
 
-/* Cutout PNG (transparent background), not a photo — object-fit: cover with
-   a rounded card frame was built for the earlier rectangular photograph and
-   would crop straight through the building's silhouette. `contain` shows the
-   whole cutout, no border-radius since there is no card edge to round, and
-   the aspect-ratio matches the source file (594:420) instead of forcing it
-   into a portrait box with dead space above and below. */
-.kinetic-item img {
+/* ── The two cards ───────────────────────────────────────────────────── */
+/* Staggered rather than gridded: the small portrait sits low, the wide one
+   rides up and forward over it, and they overlap enough to read as one
+   piece. */
+.kc-gallery {
+  position: relative;
+  flex: none;
+  display: flex;
+  align-items: flex-start;
+}
+
+.kc-card {
+  position: relative;
+  margin: 0;
+}
+
+.kc-card-a {
+  z-index: 1;
+  width: clamp(168px, 18vw, 250px);
+  /* The vertical offset. */
+  margin-top: clamp(80px, 10vh, 120px);
+}
+
+.kc-card-b {
+  z-index: 2;
+  width: clamp(288px, 32vw, 440px);
+  /* The horizontal overlap — negative, so it bites back over card A. */
+  margin-left: clamp(-58px, -4vw, -42px);
+}
+
+.kc-frame {
+  position: relative;
+  overflow: hidden;
+  /* Same 30px corner the location card uses, so this reads as the same
+     hardware rather than a second radius language. */
+  border-radius: 30px;
+}
+
+/* The inverted notch. Same quarter-disc-punched-out geometry as
+   .location-fillet, but driven through a mask instead of a painted radial
+   gradient: the cut has to stay genuinely transparent so the section's giant
+   background type keeps showing through it. */
+.kc-card-b .kc-frame {
+  --kc-notch: 54px;
+  -webkit-mask-image: radial-gradient(circle var(--kc-notch) at 0 100%, transparent 0 var(--kc-notch), #000 calc(var(--kc-notch) + 0.5px));
+  mask-image: radial-gradient(circle var(--kc-notch) at 0 100%, transparent 0 var(--kc-notch), #000 calc(var(--kc-notch) + 0.5px));
+}
+/* Card A's own notch sits on the bottom-right — the same seam the two cards
+   share. Its top-right corner is the one that slots into B's notch, and that
+   corner is behind B, so a cut there would never be seen. */
+.kc-card-a .kc-frame {
+  --kc-notch: 34px;
+  -webkit-mask-image: radial-gradient(circle var(--kc-notch) at 100% 100%, transparent 0 var(--kc-notch), #000 calc(var(--kc-notch) + 0.5px));
+  mask-image: radial-gradient(circle var(--kc-notch) at 100% 100%, transparent 0 var(--kc-notch), #000 calc(var(--kc-notch) + 0.5px));
+}
+
+.kc-card img {
   display: block;
   width: 100%;
-  aspect-ratio: 594 / 420;
-  object-fit: contain;
+  height: 100%;
+  object-fit: cover;
+  /* Pulled back so the photographs sit behind the type instead of competing
+     with it. */
+  filter: saturate(0.7) brightness(0.82);
 }
 
-.kinetic-caption {
-  margin-top: 1.25rem;
+/* Different ratios on purpose — the symmetry is what would make this read as
+   a grid. */
+.kc-card-a img { aspect-ratio: 4 / 5; }
+.kc-card-b img {
+  aspect-ratio: 16 / 10;
+  /* The source has a REGO wordmark set across its sky. A cover crop cannot
+     reach past it — the file is 1.42:1 against a 1.6:1 box, so barely a tenth
+     of the height is croppable — so the frame pushes in instead, anchored low
+     enough that only the lit building and street are left. At 2984px wide
+     into a 440px box there is resolution to spare for it. */
+  transform: scale(1.85);
+  transform-origin: 50% 88%;
 }
 
-.kinetic-caption h2 {
-  margin: 0 0 0.5rem;
-  font-size: 0.95rem;
-  font-weight: 500;
-  letter-spacing: 0.02em;
+/* Sub-overlay, kept very light — the filter above does most of the work. */
+.kc-frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(to top, rgba(18, 22, 26, 0.45), rgba(18, 22, 26, 0.08));
 }
 
-.kinetic-caption p {
+/* Hairline, so each card separates from the near-black field behind it. */
+.kc-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: inherit;
+}
+
+.kc-label {
+  margin-top: 0.85rem;
+  font-family: var(--rs-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: rgba(244, 248, 251, 0.6);
+}
+/* Card B rides up and its caption lands back over card A's photograph, which
+   reads as a collision. Pushed to B's outer edge it clears A entirely. */
+.kc-card-b .kc-label { text-align: right; }
+
+/* ── Closing line ────────────────────────────────────────────────────── */
+.kc-say {
+  flex: 0 1 auto;
+  max-width: 36ch;
+}
+
+.kc-ask {
+  margin: 0 0 1.1rem;
+  font-family: "Norican", var(--ov-font-display), cursive;
+  /* Norican ships a single 400 weight — asking for 700 would synthesise the
+     bold and thicken a script face unevenly. */
+  font-weight: 400;
+  font-size: clamp(2.5rem, 5.2vw, 4.5rem);
+  /* A connected script needs its own metrics: the tight tracking the sans
+     wanted collides the joins, and 1.02 clipped the descenders on ¿ and q. */
+  line-height: 1.15;
+  letter-spacing: 0;
+  color: var(--kn-type);
+}
+
+.kc-line {
   margin: 0;
-  font-size: 0.82rem;
-  line-height: 1.5;
+  font-family: var(--rs-mono);
+  font-size: 11px;
+  line-height: 1.8;
+  text-transform: uppercase;
+  /* Tracked tighter than the labels so the sentence still lands on one line
+     in the space the cards leave. */
+  letter-spacing: 0.15em;
   color: rgba(244, 248, 251, 0.55);
+}
+
+/* Tablet: same composition, less of it — a full-size stagger plus overlap
+   starts to crowd once the row loses its slack. */
+@media (max-width: 1024px) {
+  .kinetic-item { width: min(92vw, 760px); gap: clamp(1.25rem, 3vw, 2rem); }
+  .kc-card-a { margin-top: clamp(48px, 7vh, 72px); }
+  .kc-card-b { margin-left: clamp(-34px, -2.6vw, -24px); }
+  .kc-card-b .kc-frame { --kc-notch: 40px; }
+  .kc-frame { border-radius: 24px; }
 }
 
 @media (max-width: 720px) {
   .kinetic-line { font-size: clamp(2.5rem, 10vh, 6rem); }
-  .kinetic-item { width: min(70vw, 300px); }
+
+  /* Stacked, overlap dropped: side by side at this width neither card would
+     be large enough to read. The notch stays — it is the section's corner
+     language, not a side effect of the overlap. */
+  .kinetic-item {
+    width: min(86vw, 420px);
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.75rem;
+  }
+  .kc-gallery {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.25rem;
+  }
+  .kc-card-a,
+  .kc-card-b {
+    width: 100%;
+    margin-top: 0;
+    margin-left: 0;
+  }
+  .kc-card-a { width: 62%; }
+  .kc-card-b { width: 82%; align-self: flex-end; }
+  .kc-card-b .kc-frame { --kc-notch: 34px; }
+  .kc-say { max-width: none; }
 }

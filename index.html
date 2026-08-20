@@ -9,18 +9,19 @@
    <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,401,500,700&f[]=zodiak@300,301,400,401,700,701&display=swap" rel="stylesheet" />
    <link rel="stylesheet" href="style.css" />
    <link rel="stylesheet" href="overlay.css" />
-   <link rel="stylesheet" href="story.css?v=12" />
+   <link rel="stylesheet" href="story.css?v=13" />
    <link rel="stylesheet" href="masked-heading.css" />
    <link rel="stylesheet" href="offering.css?v=5" />
-   <link rel="stylesheet" href="rooms.css?v=5" />
+   <link rel="stylesheet" href="rooms.css?v=10" />
    <link rel="stylesheet" href="values.css" />
    <link rel="stylesheet" href="voices.css?v=6" />
-   <link rel="stylesheet" href="location.css?v=4" />
-   <link rel="stylesheet" href="reserve.css?v=8" />
+   <link rel="stylesheet" href="location.css?v=6" />
+   <link rel="stylesheet" href="reserve.css?v=9" />
    <link rel="stylesheet" href="menu.css?v=1" />
-   <link rel="stylesheet" href="kinetic.css?v=5" />
-   <link rel="stylesheet" href="footer-trail.css?v=2" />
-   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Anton&family=Lobster+Two:wght@400;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
+   <link rel="stylesheet" href="kinetic.css?v=8" />
+   <link rel="stylesheet" href="footer-trail.css?v=4" />
+   <link rel="stylesheet" href="hscroll.css?v=12" />
+   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Anton&family=Lobster+Two:wght@400;700&family=Inter:wght@400;500;700&family=Norican&display=swap" rel="stylesheet" />
 </head>
 
 <body class="is-intro">
@@ -162,60 +163,201 @@
          </div>
       </section>
 
-      <section class="story-hscroll">
-         <div class="obsess-header">
-            <h1>Studios <span data-mh-src="./img/lobby-rego.jpg" data-mh-fill="1.3" data-mh-parallax="30" data-mh-drift="20" data-mh-saturation="1.2">REGO</span></h1>
+   </div>
+
+   <!-- ── (01) Los espacios ────────────────────────────────────────────
+        Horizontal editorial replacing the old "Studios REGO" card run. The
+        facade-to-fullscreen Flip that used to live in that pin now runs as a
+        prelude on .story-marquee (see story.js).
+
+        TODO(REGO): the restaurant and events-hall beats are built but not
+        sourced. Two things are still placeholders there:
+          · photography — img/hotel-comedor, hotel-cocina, hotel-sala and
+            lobby-rego are apartment interiors and the lobby, standing in for
+            rooms that have no photos yet. Their alt text describes what the
+            picture actually shows, not what the beat claims.
+          · the reservation card deliberately states no capacity, service or
+            schedule, because none of it was confirmed. Fill in real figures
+            before this goes live; the layout has room for three data lines.
+   -->
+   <section class="hscroll" id="experiencia" aria-label="Los espacios de REGO">
+      <div class="hscroll__bg" aria-hidden="true">
+         <svg class="hscroll__topo" viewBox="0 0 1600 900" preserveAspectRatio="none">
+            <g fill="none" stroke="currentColor" stroke-width="1">
+               <path d="M-100 120 C 220 40, 420 210, 700 150 S 1180 20, 1500 130 S 1760 250, 1900 190"/>
+               <path d="M-100 210 C 240 130, 440 300, 720 240 S 1200 110, 1520 220 S 1780 340, 1900 280"/>
+               <path d="M-100 320 C 260 240, 470 400, 750 345 S 1230 215, 1545 330 S 1800 445, 1900 390"/>
+               <path d="M-100 450 C 200 380, 500 540, 780 470 S 1260 350, 1570 460 S 1820 570, 1900 520"/>
+               <path d="M-100 580 C 230 500, 520 665, 800 600 S 1290 470, 1600 585 S 1840 700, 1900 650"/>
+               <path d="M-100 710 C 260 630, 545 790, 830 725 S 1320 600, 1625 710 S 1860 820, 1900 780"/>
+               <path d="M-100 840 C 290 760, 570 915, 860 850 S 1350 725, 1650 835"/>
+            </g>
+         </svg>
+      </div>
+
+      <div class="hscroll__track">
+         <!-- ── Beat -01 — the facade's landing strip ─────────────────
+              Empty on purpose. The marquee's facade photograph is flown into
+              this section as a fixed, full-screen clone (see hscroll.js), and
+              this beat is the width of track that passes underneath while
+              that happens — first while it grows to full screen, then while
+              it slides back out. Giving it real width is what lets the whole
+              thing live inside one pin: the flight is not a separate act
+              before the horizontal run, it is the first stretch of it. -->
+         <div class="beat beat--lead" aria-hidden="true"></div>
+
+         <!-- ── Beat 00 — intro ──────────────────────────────────────── -->
+         <div class="beat beat--intro">
+            <div class="hs-marquee" aria-hidden="true">
+               <div class="hs-marquee__line hs-marquee__line--a" data-drift="-0.35">
+                  <span>Tu descanso en Bagua Grande &mdash;&nbsp;</span>
+                  <span>Tu descanso en Bagua Grande &mdash;&nbsp;</span>
+               </div>
+               <div class="hs-marquee__line hs-marquee__line--b" data-drift="0.25">
+                  <span>Valle de Utcubamba &mdash;&nbsp;</span>
+                  <span>Valle de Utcubamba &mdash;&nbsp;</span>
+               </div>
+            </div>
+
+            <p class="hs-eyebrow">(01) &mdash; Los espacios</p>
+
+            <figure class="hs-photo hs-photo--duo beat__hero" data-speed="1.00">
+               <picture>
+                  <img src="./img/espacios-fachada.jpg" width="1800" height="864"
+                       fetchpriority="high"
+                       alt="Fachada de REGO Premium Apart Hotel iluminada al anochecer" />
+               </picture>
+               <svg class="hs-stroke" viewBox="0 0 400 160" aria-hidden="true">
+                  <path d="M18 128 C 96 44, 172 150, 250 78 S 356 30, 384 62"
+                        fill="none" stroke="currentColor" stroke-width="3"
+                        stroke-linecap="round" />
+               </svg>
+            </figure>
          </div>
 
-         <article class="obsess-card">
-            <div class="obsess-img"><img src="./img/hotel-dormitorio.jpg" alt="Dormitorio con cl&oacute;set" /></div>
-            <div class="obsess-body">
-               <h6>Estudio</h6>
-               <p>28 m&sup2; con cocina, escritorio y balc&oacute;n. Compacto, luminoso y listo para trabajar.</p>
-            </div>
-         </article>
+         <!-- ── Beat 01 — hospedaje ──────────────────────────────────── -->
+         <div class="beat beat--hospedaje" data-beat="hospedaje">
+            <h2 class="beat__backdrop" data-speed="0.88">Hospedaje</h2>
 
-         <article class="obsess-card">
-            <div class="obsess-img"><img src="./img/hotel-sala.jpg" alt="Sala con balc&oacute;n y vista" /></div>
-            <div class="obsess-body">
-               <h6>Superior</h6>
-               <p>Sala independiente y cama king, con terraza abierta al valle de Utcubamba.</p>
-            </div>
-         </article>
+            <figure class="hs-photo hs-photo--h1" data-speed="1.00">
+               <figcaption class="hs-label">Suite &mdash; Vista al valle</figcaption>
+               <picture>
+                  <img src="./img/room-4.jpg?v=2" width="1600" height="1067"
+                       fetchpriority="high"
+                       alt="Dormitorio con cama matrimonial, balc&oacute;n y vista a la ciudad" />
+               </picture>
+            </figure>
 
-         <article class="obsess-card">
-            <div class="obsess-img"><img src="./img/hotel-comedor.jpg" alt="Comedor del departamento" /></div>
-            <div class="obsess-body">
-               <h6>Familiar</h6>
-               <p>Dos dormitorios y comedor completo. Pensado para estad&iacute;as largas sin renunciar a nada.</p>
-            </div>
-         </article>
+            <figure class="hs-photo hs-photo--duo hs-photo--h2" data-speed="1.12">
+               <figcaption class="hs-label">Detalle &mdash; Ba&ntilde;o privado</figcaption>
+               <picture>
+                  <img src="./img/room-2-b.jpg?v=2" width="640" height="960" loading="lazy"
+                       alt="Ba&ntilde;o privado con ducha de vidrio templado" />
+               </picture>
+            </figure>
 
-         <article class="obsess-card">
-            <div class="obsess-img"><img src="./img/hotel-cocina.jpg" alt="Cocina equipada" /></div>
-            <div class="obsess-body">
-               <h6>Cocina propia</h6>
-               <p>Refrigeradora, microondas y vajilla completa en cada departamento.</p>
-            </div>
-         </article>
+            <p class="beat__subtitle">
+               Dormir bien no deber&iacute;a ser un lujo.
+               <span class="mark">Ac&aacute; es el punto de partida.</span>
+               <i class="beat__rule" aria-hidden="true"></i>
+            </p>
 
-         <article class="obsess-card">
-            <div class="obsess-img"><img src="./img/hotel-cama.jpg" alt="Cama matrimonial" /></div>
-            <div class="obsess-body">
-               <h6>Penthouse</h6>
-               <p>El &uacute;ltimo piso entero, con terraza privada sobre Bagua Grande.</p>
-            </div>
-         </article>
+            <figure class="hs-photo hs-photo--h3" data-speed="1.06">
+               <figcaption class="hs-label">Terraza &mdash; Valle de Utcubamba</figcaption>
+               <picture>
+                  <img src="./img/room-4-c.jpg?v=2" width="960" height="640" loading="lazy"
+                       alt="Terraza privada con vista a Bagua Grande y a los cerros" />
+               </picture>
+            </figure>
+         </div>
 
-         <article class="obsess-card">
-            <div class="obsess-img"><img src="./img/img5.jpg" alt="Piscina con vista al valle" /></div>
-            <div class="obsess-body">
-               <h6>Vista al valle</h6>
-               <p>Terrazas abiertas al valle de Utcubamba, para ver caer la tarde sobre los cerros.</p>
+         <!-- ── Beat 02 — restaurante ────────────────────────────────── -->
+         <!-- Rhythm inverted on purpose: the wide photo lands at the end of
+              this beat instead of the start, so the two middle beats do not
+              read as the same layout twice. -->
+         <div class="beat beat--restaurante" data-beat="restaurante">
+            <h2 class="beat__backdrop" data-speed="0.88">Restaurante</h2>
+
+            <figure class="hs-photo hs-photo--r1" data-speed="1.10">
+               <figcaption class="hs-label">Comedor &mdash; Planta baja</figcaption>
+               <picture>
+                  <img src="./img/hotel-comedor.jpg" width="880" height="660" loading="lazy"
+                       alt="Comedor con mesa para cuatro y ventanal al exterior" />
+               </picture>
+            </figure>
+
+            <figure class="hs-photo hs-photo--duo hs-photo--r2" data-speed="1.14">
+               <figcaption class="hs-label">Cocina</figcaption>
+               <picture>
+                  <img src="./img/hotel-cocina.jpg" width="880" height="660" loading="lazy"
+                       alt="Cocina equipada con refrigeradora, microondas y vajilla" />
+               </picture>
+               <i class="hs-tick" aria-hidden="true"></i>
+            </figure>
+
+            <p class="beat__subtitle">
+               El d&iacute;a empieza abajo,
+               <span class="mark">con el valle en la ventana.</span>
+               <i class="beat__rule" aria-hidden="true"></i>
+            </p>
+
+            <figure class="hs-photo hs-photo--r3" data-speed="1.00">
+               <figcaption class="hs-label">Sal&oacute;n &mdash; Espacio com&uacute;n</figcaption>
+               <picture>
+                  <img src="./img/hotel-sala.jpg" width="880" height="660" loading="lazy"
+                       alt="Sala con sof&aacute;, televisor y balc&oacute;n abierto a la ciudad" />
+               </picture>
+            </figure>
+         </div>
+
+         <!-- ── Beat 03 — salón + reserva ────────────────────────────── -->
+         <div class="beat beat--salon" data-beat="salon">
+            <h2 class="beat__backdrop" data-speed="0.88">Sal&oacute;n</h2>
+
+            <figure class="hs-photo hs-photo--s1" data-speed="1.00">
+               <figcaption class="hs-label">Sal&oacute;n principal</figcaption>
+               <picture>
+                  <img src="./img/lobby-rego.jpg" width="1800" height="1013" loading="lazy"
+                       alt="Recepci&oacute;n de REGO iluminada con luz c&aacute;lida" />
+               </picture>
+            </figure>
+
+            <figure class="hs-photo hs-photo--duo hs-photo--s2" data-speed="1.12">
+               <figcaption class="hs-label">Montaje</figcaption>
+               <picture>
+                  <img src="./img/room-4-b.jpg?v=2" width="720" height="960" loading="lazy"
+                       alt="Sala y comedor con sof&aacute;, mesa redonda y balc&oacute;n" />
+               </picture>
+            </figure>
+
+            <div class="hs-card">
+               <p class="hs-card__kicker">Reserva de sal&oacute;n</p>
+               <h3 class="hs-card__title">&iquest;Organiz&aacute;s algo?</h3>
+               <!-- TODO(REGO): replace with the real capacity, services and
+                    schedule once confirmed. Three <li> fit without reflowing
+                    the card. Nothing here states a figure on purpose. -->
+               <ul class="hs-card__data">
+                  <li>Espacio para eventos y reuniones</li>
+                  <li>Contanos qu&eacute; necesit&aacute;s y lo armamos</li>
+               </ul>
+               <a class="hs-card__cta" href="#contact">Consultar por el sal&oacute;n</a>
+               <a class="hs-card__alt" href="#contact">Ver disponibilidad</a>
             </div>
-         </article>
-      </section>
-   </div>
+         </div>
+
+         <!-- ── Beat 04 — salida ─────────────────────────────────────── -->
+         <div class="beat beat--outro">
+            <p class="hs-outro">(Fin del recorrido)</p>
+         </div>
+      </div>
+
+      <nav class="hscroll__progress" aria-label="Progreso de la secci&oacute;n">
+         <button type="button" data-goto="hospedaje">Hospedaje</button>
+         <button type="button" data-goto="restaurante">Restaurante</button>
+         <button type="button" data-goto="salon">Sal&oacute;n</button>
+         <div class="hscroll__bar" aria-hidden="true"><span></span></div>
+      </nav>
+   </section>
 
    <section class="offering" id="amenities">
       <!-- Video and scrim share one wrapper so the reveal clips them together;
@@ -273,7 +415,7 @@
          <div class="rooms-info">
             <article class="rooms-slide is-current">
                <h3 class="rooms-index">01</h3>
-               <h3 class="rooms-title">SUPERIOR</h3>
+               <h3 class="rooms-title">ESTUDIOS</h3>
                <div class="rooms-panel">
                   <p class="rooms-desc">
                      M&aacute;s espacio y mejor vista. Sala independiente, cama king
@@ -306,7 +448,7 @@
 
             <article class="rooms-slide">
                <h3 class="rooms-index">02</h3>
-               <h3 class="rooms-title">FAMILIAR</h3>
+               <h3 class="rooms-title">MINIDEPARTAMENTOS</h3>
                <div class="rooms-panel">
                   <p class="rooms-desc">
                      Dos dormitorios, comedor y cocina completa. Pensado para
@@ -339,7 +481,7 @@
 
             <article class="rooms-slide">
                <h3 class="rooms-index">03</h3>
-               <h3 class="rooms-title">PENTHOUSE</h3>
+               <h3 class="rooms-title">DEPARTAMENTOS</h3>
                <div class="rooms-panel">
                   <p class="rooms-desc">
                      El &uacute;ltimo piso, entero. Terraza privada con vista abierta
@@ -380,9 +522,9 @@
       </div>
 
       <div class="rooms-tabs">
-         <button class="rooms-tab is-active" type="button">Superior</button>
-         <button class="rooms-tab" type="button">Familiar</button>
-         <button class="rooms-tab" type="button">Penthouse</button>
+         <button class="rooms-tab is-active" type="button">Estudios</button>
+         <button class="rooms-tab" type="button">Minidepartamentos</button>
+         <button class="rooms-tab" type="button">Departamentos</button>
       </div>
 
       <div class="rooms-progress"><i></i></div>
@@ -614,6 +756,12 @@
                   </div>
                   <div class="rsv-cal-grid"></div>
                   <p class="rsv-cal-hint"></p>
+                  <!-- Only shown in the mobile sheet: on a phone the panel
+                       covers the rest of the bar, so it needs its own way out. -->
+                  <div class="rsv-cal-actions">
+                     <button class="rsv-cal-clear" type="button">Borrar</button>
+                     <button class="rsv-cal-done" type="button">Listo</button>
+                  </div>
                </div>
             </div>
 
@@ -669,13 +817,34 @@
          <div class="kinetic-line">premium premium premium</div>
       </div>
 
-      <figure class="kinetic-item">
-         <img src="./img/hotel-rego-cutout.png" alt="REGO Premium Apart Hotel al atardecer" />
-         <figcaption class="kinetic-caption">
-            <h2>REGO Premium Apart Hotel</h2>
-            <p>Jr. Miguel Grau 672 &middot; Bagua Grande, Amazonas</p>
-         </figcaption>
-      </figure>
+      <!-- Editorial close. Still the same element kinetic.js fades out as the
+           type sweeps off (.kinetic-item), only its contents are restructured:
+           two staggered cards that interlock at the corner, and the closing
+           line in the negative space beside them. -->
+      <div class="kinetic-item">
+         <div class="kc-gallery">
+            <figure class="kc-card kc-card-a">
+               <div class="kc-frame">
+                  <img src="./img/lobby-rego.jpg" loading="lazy"
+                       alt="Recepci&oacute;n de REGO Premium Apart Hotel iluminada con luz c&aacute;lida por la noche" />
+               </div>
+               <figcaption class="kc-label">01 &mdash; Hospitalidad</figcaption>
+            </figure>
+
+            <figure class="kc-card kc-card-b">
+               <div class="kc-frame">
+                  <img src="./img/hotel-rego-sunset.jpg" loading="lazy"
+                       alt="Fachada del edificio de REGO Premium Apart Hotel encendida al anochecer" />
+               </div>
+               <figcaption class="kc-label">02 &mdash; El edificio</figcaption>
+            </figure>
+         </div>
+
+         <div class="kc-say">
+            <h2 class="kc-ask">&iquest;Y qu&eacute; esperas?</h2>
+            <p class="kc-line">Tu descanso en Bagua Grande empieza ac&aacute;</p>
+         </div>
+      </div>
 
       <div class="trail-stage" data-effect="flame">
          <nav class="ft-effects">
@@ -755,6 +924,18 @@
 
          <div class="ft-speed"></div>
          <div class="ft-hint">Mov&eacute; el cursor para ver el rastro</div>
+
+         <div class="ft-social" aria-label="Redes sociales">
+            <a href="https://www.instagram.com/rego_premium_apart_hotel" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+               <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.6" fill="currentColor"/></svg>
+            </a>
+            <a href="https://www.facebook.com/profile.php?id=61592640328745" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 8.5V7a1.5 1.5 0 0 1 1.5-1.5H17V3h-2a4 4 0 0 0-4 4v1.5H9V11h2v10h3V11h2.2l.3-2.5z"/></svg>
+            </a>
+            <a href="https://www.tiktok.com/@regopremium_" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
+               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3v10.7a4.3 4.3 0 1 1-3.8-4.27"/><path d="M16 3a5 5 0 0 0 5 5"/></svg>
+            </a>
+         </div>
          </div>
    </section>
 
@@ -980,16 +1161,17 @@
       });
    </script>
    <script src="overlay.js"></script>
-   <script src="story.js?v=16"></script>
+   <script src="story.js?v=19"></script>
+   <script src="hscroll.js?v=14"></script>
    <script src="masked-heading.js"></script>
    <script src="offering.js?v=6"></script>
-   <script src="rooms.js?v=8"></script>
+   <script src="rooms.js?v=15"></script>
    <script src="values.js"></script>
    <script src="band-shader.js"></script>
    <script src="voices.js?v=3"></script>
    <script src="location.js"></script>
-   <script src="reserve.js?v=2"></script>
-   <script src="reserve-bar.js?v=3"></script>
+   <script src="reserve.js?v=3"></script>
+   <script src="reserve-bar.js?v=4"></script>
    <script src="menu.js?v=2"></script>
    <script src="kinetic.js?v=6"></script>
    <script src="footer-trail.js?v=3"></script>

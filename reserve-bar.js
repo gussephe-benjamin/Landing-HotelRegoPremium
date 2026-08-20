@@ -118,7 +118,9 @@ document.addEventListener("DOMContentLoaded", function () {
       });
 
       title.textContent = MONTHS[anchorMonth.getMonth()] + " " + anchorMonth.getFullYear();
-      section.querySelector('.rsv-cal-nav[data-dir="-1"]').disabled =
+      // Queried off the panel, not the section: in sheet mode the panel is
+      // parked on <body> and is no longer inside .reserve.
+      panel.querySelector('.rsv-cal-nav[data-dir="-1"]').disabled =
         anchorMonth <= new Date(TODAY.getFullYear(), TODAY.getMonth(), 1);
 
       // Monday-first: getDay() is Sunday-first, so shift by 6 and wrap.
@@ -165,7 +167,12 @@ document.addEventListener("DOMContentLoaded", function () {
         btn.classList.toggle("in-range", isStart || isEnd || !!(start && end && d > start && d < end));
       });
 
-      hint.textContent = checkin && !checkout ? "Elige la salida" : "Elige la llegada";
+      if (checkin && checkout) {
+        var nights = Math.round((checkout - checkin) / 86400000);
+        hint.textContent = nights + (nights === 1 ? " noche" : " noches");
+      } else {
+        hint.textContent = checkin ? "Elige la salida" : "Elige la llegada";
+      }
     }
 
     function syncLabel() {
@@ -182,7 +189,36 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
 
+    // ── Sheet mode ─────────────────────────────────────────────────────
+    // On a phone the panel cannot stay anchored to the field: .reserve is
+    // 100svh with overflow:hidden, and the bar itself keeps a filter from its
+    // entrance animation, which makes it a containing block for fixed
+    // children. Both are sidestepped by moving the panel to <body> while it
+    // is open and putting it back on close.
+    var sheetQuery = window.matchMedia("(max-width: 720px)");
+    var home = panel.parentNode;
+    var scrim = null;
+    var isSheet = false;
+
+    function getScrim() {
+      if (scrim) return scrim;
+      scrim = document.createElement("div");
+      scrim.className = "rsv-cal-scrim";
+      scrim.addEventListener("click", close);
+      // Keeps the page from scrolling under the sheet on touch.
+      scrim.addEventListener("touchmove", function (e) { e.preventDefault(); }, { passive: false });
+      return scrim;
+    }
+
     function open() {
+      isSheet = sheetQuery.matches;
+      if (isSheet) {
+        var s = getScrim();
+        document.body.appendChild(s);
+        document.body.appendChild(panel);
+        panel.classList.add("is-sheet");
+        requestAnimationFrame(function () { s.classList.add("is-in"); });
+      }
       panel.hidden = false;
       trigger.setAttribute("aria-expanded", "true");
       render();
@@ -191,7 +227,31 @@ document.addEventListener("DOMContentLoaded", function () {
       panel.hidden = true;
       trigger.setAttribute("aria-expanded", "false");
       hover = null;
+      if (isSheet) {
+        panel.classList.remove("is-sheet");
+        home.appendChild(panel);
+        if (scrim && scrim.parentNode) {
+          scrim.classList.remove("is-in");
+          scrim.parentNode.removeChild(scrim);
+        }
+        isSheet = false;
+      }
     }
+
+    // Rotating or resizing across the breakpoint would leave the panel in the
+    // wrong mode; simplest correct answer is to put it away.
+    var onQuery = function () { if (!panel.hidden) close(); };
+    if (sheetQuery.addEventListener) sheetQuery.addEventListener("change", onQuery);
+    else if (sheetQuery.addListener) sheetQuery.addListener(onQuery);
+
+    panel.querySelector(".rsv-cal-done").addEventListener("click", close);
+    panel.querySelector(".rsv-cal-clear").addEventListener("click", function () {
+      checkin = null;
+      checkout = null;
+      hover = null;
+      paint();
+      syncLabel();
+    });
 
     trigger.addEventListener("click", function () {
       panel.hidden ? open() : close();
@@ -220,7 +280,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
       paint();
       syncLabel();
-      if (checkin && checkout) close();
+      // The sheet waits for "Listo" — on a phone the panel is the only thing
+      // on screen, so snapping it shut mid-tap reads as a glitch.
+      if (checkin && checkout && !isSheet) close();
     });
 
     grid.addEventListener("mouseover", function (e) {
