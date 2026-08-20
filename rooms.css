@@ -11,6 +11,33 @@
    new panel riding up over the page. The negative margin keeps this purely a
    layout offset — a transform here would re-root the fixed canvas below. */
 .rooms {
+  /* Single source of truth for the main image's box. It was repeated three
+     times (media, info, and now the secondary rail) and all three must stay
+     pixel-identical or the secondaries drift off the photo. */
+  --rm-main-w: clamp(240px, 30vw, 420px);
+
+  /* Secondary images, sized as fractions of the main image rather than in
+     fixed px. The brief's absolute widths (210 / 320) do not fit: at the main
+     image's capped 420x560 box the two stacked frames plus the 15% top offset
+     come to 604px against 560px available, so they would collide instead of
+     leaving the required 40-56px gap. These fractions keep the gap at ~41px
+     and hold it at every viewport width. */
+  --rm-sec-a-w: calc(var(--rm-main-w) * 0.40);
+  --rm-sec-b-w: calc(var(--rm-main-w) * 0.64);
+  /* 17%, not 15%. The outline room name runs across the top of this same
+     column and grows to 72px at the widest breakpoint, which left only 12px
+     of air above the frame. Trimming the upper frame from 0.42 to 0.40 pays
+     for the extra offset, so the clearance roughly doubles without eating
+     into the gap between the two frames. */
+  --rm-sec-a-top: 17%;
+  --rm-sec-overlap: 28px;
+
+  /* Cut-out frame */
+  --rm-frame-pad: 11px;
+  --rm-frame-r: 24px;
+  --rm-img-r: 16px;
+  --rm-notch-r: 40px;
+
   position: relative;
   z-index: 5;
   width: 100%;
@@ -119,7 +146,7 @@
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: clamp(240px, 30vw, 420px);
+  width: var(--rm-main-w);
   aspect-ratio: 3 / 4;
   overflow: hidden;
   z-index: 1;
@@ -137,13 +164,28 @@
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: clamp(240px, 30vw, 420px);
+  width: var(--rm-main-w);
   aspect-ratio: 3 / 4;
   z-index: 2;
   pointer-events: none;
 }
 
+/* All four slides occupy the same box. They used to sit in normal flow, and
+   because .rooms-index and .rooms-panel are absolute but .rooms-title is not,
+   each article contributed exactly one title's height to the stack — so the
+   room name drifted 64px further down on every slide (ESTUDIO at y0,
+   PENTHOUSE at y191) and the lower ones ran straight into the secondary
+   frame. inset:0 of .rooms-info gives .rooms-panel the identical containing
+   block it had before, so the right-hand column does not move. */
 .rooms-slide {
+  position: absolute;
+  inset: 0;
+  /* The articles now overlap the whole photo, so an `auto` here would let the
+     topmost one swallow the main image's click-to-advance. Only the live
+     panel needs to be interactive — that is where the Reservar button is. */
+  pointer-events: none;
+}
+.rooms-slide.is-current .rooms-panel {
   pointer-events: auto;
 }
 .rooms-slide:not(.is-current) .rooms-index,
@@ -288,6 +330,92 @@
   background: var(--rm-accent);
 }
 
+/* ── Secondary images (desktop only) ─────────────────────────────────── */
+/* The rail is an invisible box laid exactly over the main image, so the two
+   frames can be placed in percentages of the photo's own geometry and track
+   it at any width. Built by rooms.js only above 1100px — below that the two
+   images are never inserted into the DOM, so their bytes are never fetched.
+
+   z-index 3 puts it above .rooms-info (2), which carries the outline number
+   and the outline room name, satisfying "outline behind everything"; the
+   arrows sit at 5 and stay clickable. pointer-events:none keeps the whole
+   rail out of the way of the main image's click-to-advance. */
+.rooms-aside {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: var(--rm-main-w);
+  aspect-ratio: 3 / 4;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.rooms-sec {
+  position: absolute;
+  /* Right edge parked `--rm-sec-overlap` in from the main image's left edge,
+     so each frame bites into the photo by exactly that much. */
+  right: calc(100% - var(--rm-sec-overlap));
+  margin: 0;
+  padding: var(--rm-frame-pad);
+  border-radius: var(--rm-frame-r);
+  /* Opaque, and matched to the section background, which rooms.js re-tweens
+     per slide. That opacity is the point: it is what opens a visible gap
+     between the frame and the main photo underneath. */
+  background: var(--rm-bg);
+  /* Concave corner. A radial-gradient mask with a transparent core punches a
+     quarter-circle out of the corner facing the main image. Chosen over the
+     box-shadow-spread trick because a mask removes real pixels instead of
+     painting a matching-coloured disc on top — so it cannot leave a halo or a
+     1px seam, and it does not care what is behind the section. The half-pixel
+     feather on the first stop is what keeps the arc from aliasing. */
+  -webkit-mask-image: var(--rm-notch);
+  mask-image: var(--rm-notch);
+}
+
+.rooms-sec img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: var(--rm-img-r);
+}
+
+/* Upper: small portrait, notch on its bottom-right. */
+.rooms-sec-a {
+  top: var(--rm-sec-a-top);
+  width: var(--rm-sec-a-w);
+  --rm-notch: radial-gradient(
+    circle at 100% 100%,
+    transparent 0 calc(var(--rm-notch-r) - 0.5px),
+    #000 var(--rm-notch-r)
+  );
+}
+.rooms-sec-a img { aspect-ratio: 3 / 4; }
+
+/* Lower: medium landscape, bottom flush with the main image, notch on its
+   top-right. */
+.rooms-sec-b {
+  bottom: 0;
+  width: var(--rm-sec-b-w);
+  --rm-notch: radial-gradient(
+    circle at 100% 0,
+    transparent 0 calc(var(--rm-notch-r) - 0.5px),
+    #000 var(--rm-notch-r)
+  );
+}
+.rooms-sec-b img { aspect-ratio: 4 / 3; }
+
+@media (min-width: 1440px) {
+  .rooms { --rm-frame-r: 28px; --rm-notch-r: 44px; }
+}
+
+/* Belt and braces: JS is what actually keeps the rail out of the DOM below
+   this width, but if it ever runs before a resize settles, nothing shows. */
+@media (max-width: 1100px) {
+  .rooms-aside { display: none; }
+}
+
 /* ── Navigation ──────────────────────────────────────────────────────── */
 .rooms-nav {
   position: absolute;
@@ -355,7 +483,8 @@
 .rooms-progress i {
   display: block;
   height: 100%;
-  width: 25%;
+  /* Starting value only — rooms.js overwrites it with 100/roomCount%. */
+  width: 33.3333%;
   background: var(--rm-accent);
   transform-origin: left;
   transition: transform 0.6s cubic-bezier(0.65, 0, 0.35, 1);

@@ -1,19 +1,72 @@
-/* "Qué ofrecemos" section. Inherits the hero's tokens (--ov-font-display,
-   --ov-ease) rather than redefining them; only the section-local ink and
-   canvas colours are new. */
+/* "Experiencia" — full-bleed video statement.
+   Replaces the earlier image-card-and-copy layout entirely; the only pieces
+   kept are the grain and the registration marks, which are the section's link
+   to the rest of the page. Inherits the hero's tokens rather than redefining
+   them. */
 :root {
-  --of-canvas: #f4f1ec;
-  --of-ink: 20, 16, 12;
+  /* Was a cream canvas. The section is now a full-screen video sitting
+     between two dark neighbours (the story ends dark, .rooms starts dark), so
+     a light ground would have read as a flash between them. */
+  --of-canvas: #0d0d0f;
+  --of-ink: 244, 239, 232;
 }
 
 .offering {
   position: relative;
   width: 100%;
-  padding: clamp(6rem, 14vh, 12rem) 0;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
   background-color: var(--of-canvas);
   color: rgb(var(--of-ink));
   font-family: var(--ov-font-display);
   overflow: hidden;
+  isolation: isolate;
+}
+
+/* ── Video ───────────────────────────────────────────────────────────── */
+/* The reveal lives here. A single clip-path inset opening from the centre
+   line outward: one property, on one element, no layout and no extra copies
+   of the video — which is why it costs almost nothing per frame compared to
+   sliding two duplicated halves apart. */
+.offering-frame {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  clip-path: inset(50% 0% 50% 0%);
+  will-change: clip-path;
+}
+
+.offering-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Slightly oversized so the parallax drift in offering.js never exposes an
+     edge. */
+  transform: scale(1.06);
+  will-change: transform;
+}
+
+/* The source is an aerial shot under a bright sky — white type would not hold
+   against it unaided. Heavier top and bottom so the type sits in the calmer
+   middle, and a light overall wash to keep contrast without dulling the
+   greens. */
+.offering-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(70% 50% at 50% 50%, rgba(8, 10, 12, 0.42) 0%, transparent 75%),
+    linear-gradient(
+      to bottom,
+      rgba(8, 10, 12, 0.55) 0%,
+      rgba(8, 10, 12, 0.12) 32%,
+      rgba(8, 10, 12, 0.18) 62%,
+      rgba(8, 10, 12, 0.72) 100%
+    );
 }
 
 .offering-grain {
@@ -21,242 +74,82 @@
   inset: 0;
   width: 100%;
   height: 100%;
-  opacity: 0.05;
-  mix-blend-mode: multiply;
+  z-index: 2;
+  opacity: 0.06;
+  mix-blend-mode: overlay;
   pointer-events: none;
 }
 
-/* Registration marks, same device as the hero but dark on the light canvas */
+/* Registration marks, now light on the darkened video. */
 .offering-corner {
   position: absolute;
   width: 14px;
   height: 14px;
+  z-index: 3;
   pointer-events: none;
 }
 .offering-corner::before,
 .offering-corner::after {
   content: "";
   position: absolute;
-  background: rgba(var(--of-ink), 0.3);
+  background: rgba(var(--of-ink), 0.5);
 }
 .offering-corner::before { width: 1px; height: 14px; left: 50%; top: 0; transform: translateX(-50%); }
 .offering-corner::after { width: 14px; height: 1px; top: 50%; left: 0; transform: translateY(-50%); }
 .offering-corner-tl { top: 32px; left: 32px; }
 .offering-corner-br { bottom: 32px; right: 32px; }
 
+/* ── Statement ───────────────────────────────────────────────────────── */
+/* Kept as `.offering-inner` on purpose: rooms.js scales and fades this exact
+   selector as the rooms panel rides up over the section. */
 .offering-inner {
   position: relative;
-  max-width: 1180px;
-  margin: 0 auto;
-  padding: 0 5vw;
-}
-
-/* ── Image: asymmetric corner radii (curved on one diagonal only) ────── */
-.offering-media {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 3 / 2;
-  overflow: hidden;
-  border-radius: 0 clamp(48px, 9vw, 180px) 0 clamp(48px, 9vw, 180px);
-  /* Shadow and scale are set by the entrance timeline, which grows both from
-     nothing. The card is only clipped on the inner wrapper, never here: a
-     clip-path on this element would cut off its own drop shadow. */
-  will-change: transform;
-}
-
-/* Carries the reveal. Kept separate from .offering-media so the wipe can run
-   without clipping the card's shadow, and separate from the image so the
-   image is free to scale underneath the moving edge. */
-.offering-clip {
-  position: absolute;
-  inset: 0;
-  clip-path: inset(0% 0% 100% 0%);
-  will-change: clip-path;
-}
-
-/* A band of light that rides just ahead of the reveal edge, so the card reads
-   as being drawn onto the page rather than uncovered by a moving rectangle. */
-.offering-sweep {
-  position: absolute;
-  left: -10%;
-  right: -10%;
-  top: 0;
-  height: 40%;
-  z-index: 2;
-  pointer-events: none;
-  opacity: 0;
-  transform: translateY(-100%);
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.35) 55%,
-    rgba(255, 255, 255, 0.75) 88%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  will-change: transform, opacity;
-}
-
-/* Oversized so the parallax shift never exposes an edge: 124% tall with
-   -12% offset leaves 12% of slack on each side for a ±8% travel. */
-.offering-img {
-  position: absolute;
-  top: -12%;
-  left: 0;
-  width: 100%;
-  height: 124%;
-  object-fit: cover;
-  will-change: transform;
-}
-
-/* ── Connector line from the image down to the copy ──────────────────── */
-.offering-line {
-  display: block;
-  width: 1px;
-  height: clamp(3rem, 7vh, 5.5rem);
-  margin: 0 auto;
-  background: rgba(var(--of-ink), 0.15);
-  transform: scaleY(0);
-  transform-origin: top;
-  will-change: transform;
-}
-
-/* ── Copy block ──────────────────────────────────────────────────────── */
-.offering-copy {
-  position: relative;
+  z-index: 4;
   text-align: center;
-  padding-top: clamp(1.5rem, 4vh, 3rem);
-}
-
-/* Ghost section number, sitting behind the headline */
-.offering-ghost {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: clamp(8rem, 18vw, 16rem);
-  font-weight: 600;
-  line-height: 1;
-  color: rgba(var(--of-ink), 0.04);
-  pointer-events: none;
-  user-select: none;
-  z-index: 0;
-  will-change: transform;
-}
-
-/* Each mask clips its child so the line can start fully out of sight. */
-.offering-mask {
-  display: block;
-  overflow: hidden;
-  position: relative;
-  z-index: 1;
-}
-.offering-mask > * {
-  display: block;
-  transform: translateY(100%);
-  opacity: 0;
-  filter: blur(6px);
-  will-change: transform, opacity, filter;
-}
-
-/* Subdued tone comes from the colour alpha, not `opacity` — the opacity
-   property is reserved for the reveal animation on the mask children. */
-.offering-eyebrow {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.25em;
-  color: rgba(var(--of-ink), 0.5);
-  margin: 0;
-}
-
-.offering-title {
-  position: relative;
-  z-index: 1;
-  font-size: clamp(2.25rem, 5.5vw, 4.5rem);
-  line-height: 0.98;
-  letter-spacing: -0.03em;
-  font-weight: 500;
-  margin: 1.25rem 0 0;
-}
-.offering-title em {
-  font-style: italic;
-  font-weight: 400;
-}
-
-.offering-sub {
-  font-size: 16px;
-  line-height: 1.5;
-  color: rgba(var(--of-ink), 0.65);
-  max-width: 46ch;
-  margin: 1.75rem auto 0;
-}
-
-.offering-chips {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.75rem;
-  margin-top: 2.5rem;
-}
-
-.offering-chip {
-  border: 1px solid rgba(var(--of-ink), 0.18);
-  background: transparent;
-  color: rgb(var(--of-ink));
-  border-radius: 999px;
-  padding: 0.65em 1.35em;
-  font-family: inherit;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  cursor: default;
-  opacity: 0;
-  transform: translateY(14px);
+  padding: 0 1.5rem;
   will-change: transform, opacity;
-  transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease;
 }
-.offering-chip:hover {
-  background-color: rgb(var(--of-ink));
-  border-color: rgb(var(--of-ink));
-  color: var(--of-canvas);
+
+.offering-kicker {
+  margin: 0 0 0.35rem;
+  font-family: var(--vc-serif);
+  font-weight: 400;
+  font-size: clamp(0.6rem, 0.92vw, 0.8rem);
+  text-transform: uppercase;
+  letter-spacing: 0.42em;
+  /* The tracking is applied to the right of every glyph including the last,
+     which visually pushes the line off-centre; this pulls it back. */
+  text-indent: 0.42em;
+  color: rgba(var(--of-ink), 0.92);
+  text-shadow: 0 2px 20px rgba(8, 10, 12, 0.5);
+}
+
+.offering-word {
+  margin: 0;
+  font-family: var(--vc-serif);
+  font-style: italic;
+  /* Zodiak Bold Italic (701) is loaded explicitly in the document head. Asking
+     for 700 without it would have produced a synthesised bold, which smears a
+     high-contrast serif italic. */
+  font-weight: 700;
+  font-size: clamp(2.5rem, 9vw, 7.25rem);
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+  color: rgb(var(--of-ink));
+  text-shadow: 0 4px 40px rgba(8, 10, 12, 0.55);
+}
+
+.offering-char {
+  display: inline-block;
+  will-change: transform, opacity;
 }
 
 @media (max-width: 767px) {
-  .offering-inner { padding: 0 20px; }
-
-  .offering-media {
-    border-radius: 0 48px 0 48px;
-    box-shadow: 0 20px 40px -12px rgba(var(--of-ink), 0.3);
-  }
-
-  .offering-ghost { display: none; }
-
-  /* Blur is dropped on small screens — it is the expensive part of the
-     reveal and barely reads at this size. */
-  .offering-mask > * { filter: none; }
-
-  .offering-chips { gap: 0.5rem; }
-  .offering-chip { padding: 0.6em 1em; }
+  .offering-corner { display: none; }
+  .offering-kicker { letter-spacing: 0.3em; text-indent: 0.3em; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .offering-media {
-    transform: none;
-    box-shadow:
-      0 2px 8px rgba(var(--of-ink), 0.08),
-      0 40px 80px -20px rgba(var(--of-ink), 0.35);
-  }
-  .offering-clip { clip-path: none; }
-  .offering-sweep { display: none; }
-  .offering-line { transform: scaleY(1); }
-  .offering-mask > * {
-    transform: none;
-    opacity: 1;
-    filter: none;
-  }
-  .offering-chip {
-    opacity: 1;
-    transform: none;
-  }
+  .offering-video { transform: none; }
+  .offering-frame { clip-path: none; }
 }

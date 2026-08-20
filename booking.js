@@ -703,6 +703,39 @@ document.addEventListener("DOMContentLoaded", function () {
   // Re-lay the calendar when crossing the one/two month breakpoint.
   twoUp.addEventListener("change", function () { if (state.picking) { renderCal(); gsap.set(calWrap, { height: "auto" }); } });
 
+  // ── "Reservar" shortcuts ─────────────────────────────────────────────
+  // The button in the hero topbar and the one on every room card had no
+  // behaviour at all. They jump here instantly rather than smooth-scrolling:
+  // this page is long and pinned in several places, so animating down would
+  // take many seconds and replay every effect between here and there.
+  function jumpToBooking() {
+    var section = document.querySelector(".reserve");
+    if (!section) return;
+
+    // The intro locks the document (body.is-intro sets overflow:hidden), so a
+    // click during it would otherwise scroll nowhere.
+    if (window.unlockScroll) window.unlockScroll();
+
+    // Measure after a refresh: the pins above own a lot of scroll distance,
+    // and a stale pin-spacer height puts the target hundreds of pixels off.
+    if (typeof ScrollTrigger !== "undefined") ScrollTrigger.refresh();
+
+    window.scrollTo({
+      top: section.getBoundingClientRect().top + window.scrollY,
+      behavior: "auto",
+    });
+
+    if (typeof ScrollTrigger !== "undefined") ScrollTrigger.update();
+
+    // Leaves the address bar on #contact, so the position is shareable and the
+    // back button behaves the way it would for a real link.
+    if (window.history && history.replaceState) history.replaceState(null, "", "#contact");
+  }
+
+  [].slice.call(document.querySelectorAll(".btn-book, .rooms-cta")).forEach(function (btn) {
+    btn.addEventListener("click", jumpToBooking);
+  });
+
   // ── Init ─────────────────────────────────────────────────────────────
   gsap.set(calWrap, { height: 0 });
   gsap.set(extra, { height: 0 });

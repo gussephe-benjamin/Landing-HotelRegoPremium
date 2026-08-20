@@ -6,18 +6,17 @@
    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
    <title>Camillemormal.com Rebuild</title>
    <link rel="preconnect" href="https://api.fontshare.com" />
-   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,401,500,700&f[]=zodiak@300,301,400,401&display=swap" rel="stylesheet" />
+   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,401,500,700&f[]=zodiak@300,301,400,401,700,701&display=swap" rel="stylesheet" />
    <link rel="stylesheet" href="style.css" />
    <link rel="stylesheet" href="overlay.css" />
    <link rel="stylesheet" href="story.css?v=12" />
    <link rel="stylesheet" href="masked-heading.css" />
-   <link rel="stylesheet" href="offering.css?v=3" />
-   <link rel="stylesheet" href="rooms.css" />
+   <link rel="stylesheet" href="offering.css?v=5" />
+   <link rel="stylesheet" href="rooms.css?v=5" />
    <link rel="stylesheet" href="values.css" />
    <link rel="stylesheet" href="voices.css?v=6" />
    <link rel="stylesheet" href="location.css?v=4" />
-   <link rel="stylesheet" href="reserve.css?v=3" />
-   <link rel="stylesheet" href="booking.css?v=1" />
+   <link rel="stylesheet" href="reserve.css?v=8" />
    <link rel="stylesheet" href="menu.css?v=1" />
    <link rel="stylesheet" href="kinetic.css?v=5" />
    <link rel="stylesheet" href="footer-trail.css?v=2" />
@@ -219,6 +218,14 @@
    </div>
 
    <section class="offering" id="amenities">
+      <!-- Video and scrim share one wrapper so the reveal clips them together;
+           clipping the video alone would leave the scrim hanging in the air. -->
+      <div class="offering-frame">
+         <video class="offering-video" src="./media/experience-bg.mp4?v=3" poster="./img/experience-poster.jpg?v=3"
+                autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video>
+         <div class="offering-scrim" aria-hidden="true"></div>
+      </div>
+
       <svg class="offering-grain" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
          <filter id="offeringGrain">
             <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"></feTurbulence>
@@ -231,41 +238,8 @@
       <span class="offering-corner offering-corner-br" aria-hidden="true"></span>
 
       <div class="offering-inner">
-         <div class="offering-media">
-            <div class="offering-clip">
-               <img class="offering-img" src="./img/hotel-rego-sunset.jpg" alt="REGO Premium Apart Hotel al atardecer" />
-            </div>
-            <span class="offering-sweep" aria-hidden="true"></span>
-         </div>
-
-         <span class="offering-line" aria-hidden="true"></span>
-
-         <div class="offering-copy">
-            <span class="offering-ghost" aria-hidden="true">01</span>
-
-            <div class="offering-mask">
-               <p class="offering-eyebrow">(01) &mdash; La experiencia</p>
-            </div>
-
-            <h2 class="offering-title">
-               <span class="offering-mask"><span>&iquest;Qu&eacute; ofrecemos</span></span>
-               <span class="offering-mask"><em>para ti?</em></span>
-            </h2>
-
-            <div class="offering-mask">
-               <p class="offering-sub">
-                  Departamentos completos pensados para estad&iacute;as reales:
-                  cocina equipada, espacio propio y el servicio de un hotel.
-               </p>
-            </div>
-
-            <div class="offering-chips">
-               <span class="offering-chip">Cocina equipada</span>
-               <span class="offering-chip">Terraza privada</span>
-               <span class="offering-chip">Check-in 24h</span>
-               <span class="offering-chip">Wi-Fi 600 Mb</span>
-            </div>
-         </div>
+         <p class="offering-kicker">Vive una</p>
+         <h2 class="offering-word">Experiencia</h2>
       </div>
    </section>
 
@@ -288,49 +262,17 @@
       </div>
 
       <div class="rooms-stage">
-         <div class="rooms-media">
-            <img src="./img/room-1.jpg" alt="Estudio" />
-            <img src="./img/room-2.jpg" alt="Suite Superior" />
-            <img src="./img/room-3.jpg" alt="Departamento Familiar" />
-            <img src="./img/room-4.jpg" alt="Penthouse" />
-         </div>
+         <!-- The main photo is painted by the WebGL plane in rooms.js; the
+              texture URLs now live in the ROOMS model there, alongside the two
+              secondary images, so each room has a single images[] source. -->
+         <div class="rooms-media"></div>
+
+         <!-- Secondary frames are injected here, desktop only. -->
+         <div class="rooms-aside" aria-hidden="true"></div>
 
          <div class="rooms-info">
             <article class="rooms-slide is-current">
                <h3 class="rooms-index">01</h3>
-               <h3 class="rooms-title">ESTUDIO</h3>
-               <div class="rooms-panel">
-                  <p class="rooms-desc">
-                     Compacto y luminoso. Cocina equipada, escritorio y balc&oacute;n
-                     propio para estad&iacute;as cortas que no se sienten de paso.
-                  </p>
-                  <div class="rooms-specs">
-                     <div class="rooms-spec">
-                        <svg viewBox="0 0 24 24"><path d="M3 9V3h6M21 9V3h-6M3 15v6h6M21 15v6h-6"/></svg>
-                        <span><b>28</b> m&sup2;</span>
-                     </div>
-                     <div class="rooms-spec">
-                        <svg viewBox="0 0 24 24"><path d="M4 12h16v3a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4v-3z"/><path d="M7 12V6a2 2 0 0 1 4 0"/><path d="M7 19l-1 2M18 19l1 2"/></svg>
-                        <span><b>1</b> ba&ntilde;o</span>
-                     </div>
-                     <div class="rooms-spec">
-                        <svg viewBox="0 0 24 24"><path d="M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="9.5" cy="7" r="3.5"/><path d="M21 20v-2a4 4 0 0 0-3-3.87"/></svg>
-                        <span><b>2</b> hu&eacute;spedes</span>
-                     </div>
-                     <div class="rooms-spec">
-                        <svg viewBox="0 0 24 24"><path d="M2 18v-6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v6"/><path d="M2 15h20"/><path d="M6 10V7h6v3"/></svg>
-                        <span><b>1</b> queen</span>
-                     </div>
-                  </div>
-                  <div class="rooms-foot">
-                     <p class="rooms-price"><small>Desde</small><strong>S/ 160</strong> <i>/ noche</i></p>
-                     <button class="rooms-cta" type="button">Reservar</button>
-                  </div>
-               </div>
-            </article>
-
-            <article class="rooms-slide">
-               <h3 class="rooms-index">02</h3>
                <h3 class="rooms-title">SUPERIOR</h3>
                <div class="rooms-panel">
                   <p class="rooms-desc">
@@ -363,7 +305,7 @@
             </article>
 
             <article class="rooms-slide">
-               <h3 class="rooms-index">03</h3>
+               <h3 class="rooms-index">02</h3>
                <h3 class="rooms-title">FAMILIAR</h3>
                <div class="rooms-panel">
                   <p class="rooms-desc">
@@ -396,7 +338,7 @@
             </article>
 
             <article class="rooms-slide">
-               <h3 class="rooms-index">04</h3>
+               <h3 class="rooms-index">03</h3>
                <h3 class="rooms-title">PENTHOUSE</h3>
                <div class="rooms-panel">
                   <p class="rooms-desc">
@@ -438,14 +380,13 @@
       </div>
 
       <div class="rooms-tabs">
-         <button class="rooms-tab is-active" type="button">Estudio</button>
-         <button class="rooms-tab" type="button">Superior</button>
+         <button class="rooms-tab is-active" type="button">Superior</button>
          <button class="rooms-tab" type="button">Familiar</button>
          <button class="rooms-tab" type="button">Penthouse</button>
       </div>
 
       <div class="rooms-progress"><i></i></div>
-      <p class="rooms-counter"><b>01</b> / 04</p>
+      <p class="rooms-counter"><b>01</b> / 03</p>
    </section>
 
    <section class="values">
@@ -640,153 +581,77 @@
    <section class="reserve" id="contact">
       <video class="reserve-video" src="./media/reserve-bg.mp4" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
       <div class="reserve-scrim" aria-hidden="true"></div>
-      <div class="reserve-bloom" aria-hidden="true"></div>
 
       <div class="reserve-page">
-         <p class="reserve-kicker reserve-anim">Reserva directa</p>
+         <div class="reserve-head">
+            <p class="reserve-kicker">Comienza tu</p>
+            <h2 class="reserve-word">Reserva</h2>
+         </div>
 
-         <h2 class="reserve-title reserve-anim">Tu estad&iacute;a, a un mensaje.</h2>
+         <!-- A summary bar, not the booking engine. It collects the basics and
+              carries them to the reservation page as query parameters. -->
+         <form class="rsv-bar reserve-anim" action="./reserva.html" method="get">
+            <div class="rsv-field rsv-field-dates">
+               <span class="rsv-label" id="rsv-dates-label">Fechas</span>
+               <button class="rsv-control rsv-dates" type="button"
+                       aria-labelledby="rsv-dates-label" aria-expanded="false" aria-haspopup="dialog">
+                  <span class="rsv-dates-text is-empty">Llegada &mdash; Salida</span>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+               </button>
+               <!-- Carries the picked range into the form submission. -->
+               <input type="hidden" name="llegada" id="rsv-in" />
+               <input type="hidden" name="salida" id="rsv-out" />
 
-         <p class="reserve-sub reserve-anim">
-            Cont&aacute;nos tus fechas y te confirmamos disponibilidad el mismo d&iacute;a.
-            Sin intermediarios y con la mejor tarifa.
-         </p>
-
-         <div class="bk reserve-anim">
-            <span class="bk-notch" aria-hidden="true"></span>
-
-            <div class="bk-main">
-               <p class="bk-eyebrow">Disponibilidad</p>
-               <h3 class="bk-title">Consulta tu estad&iacute;a</h3>
-               <p class="bk-sub">Respondemos en menos de 2 horas. Sin pago por adelantado.</p>
-
-               <form class="bk-form" novalidate>
-                  <div>
-                     <div class="bk-dates">
-                        <button class="bk-date" type="button" data-which="in" aria-expanded="false">
-                           <span class="bk-date-label">Llegada</span>
-                           <span class="bk-date-value is-empty">Selecciona</span>
-                        </button>
-                        <span class="bk-date-sep" aria-hidden="true"></span>
-                        <button class="bk-date" type="button" data-which="out" aria-expanded="false">
-                           <span class="bk-date-label">Salida</span>
-                           <span class="bk-date-value is-empty">Selecciona</span>
-                        </button>
-                     </div>
-                     <span class="bk-err" id="bk-err-dates" aria-live="polite"></span>
-                  </div>
-
-                  <div class="bk-cal-wrap">
-                     <div class="bk-cal" role="application" aria-label="Calendario de fechas de estad&iacute;a">
-                        <div class="bk-cal-head">
-                           <button class="bk-cal-nav" type="button" data-dir="-1" aria-label="Mes anterior">
-                              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
-                           </button>
-                           <p class="bk-cal-title" aria-live="polite"></p>
-                           <button class="bk-cal-nav" type="button" data-dir="1" aria-label="Mes siguiente">
-                              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
-                           </button>
-                        </div>
-                        <div class="bk-cal-months"></div>
-                        <p class="bk-cal-hint"></p>
-                     </div>
-                  </div>
-
-                  <div class="bk-grid2">
-                     <div>
-                        <span class="bk-label" id="bk-guests-label">Hu&eacute;spedes</span>
-                        <div class="bk-stepper" role="group" aria-labelledby="bk-guests-label">
-                           <button class="bk-step" type="button" data-step="-1" aria-label="Quitar un hu&eacute;sped">&minus;</button>
-                           <output class="bk-step-val" aria-live="polite">2</output>
-                           <button class="bk-step" type="button" data-step="1" aria-label="Agregar un hu&eacute;sped">+</button>
-                        </div>
-                     </div>
-
-                     <div>
-                        <span class="bk-label" id="bk-unit-label">Unidad</span>
-                        <div class="bk-seg" role="radiogroup" aria-labelledby="bk-unit-label">
-                           <button class="bk-pill" type="button" role="radio" aria-checked="true" data-unit="suite">Suite</button>
-                           <button class="bk-pill" type="button" role="radio" aria-checked="false" data-unit="loft">Loft</button>
-                        </div>
-                        <p class="bk-unit-note"></p>
-                     </div>
-                  </div>
-
-                  <div class="bk-summary" hidden>
-                     <div>
-                        <b class="bk-sum-nights"></b>
-                        <span class="bk-sum-range"></span>
-                     </div>
-                     <div class="bk-sum-price">
-                        <b>Desde S/&nbsp;<span class="bk-price">0</span></b>
-                        <span>Precio referencial, sin impuestos</span>
-                     </div>
-                  </div>
-
-                  <div class="bk-contact" hidden>
-                     <div class="bk-reveal">
-                        <label class="bk-label" for="bk-name">Nombre completo</label>
-                        <input class="bk-input" id="bk-name" name="nombre" type="text" autocomplete="name" placeholder="Tu nombre y apellido" />
-                        <span class="bk-err" aria-live="polite"></span>
-                     </div>
-
-                     <div class="bk-reveal">
-                        <label class="bk-label" for="bk-email">Email</label>
-                        <input class="bk-input" id="bk-email" name="email" type="email" autocomplete="email" placeholder="tucorreo@ejemplo.com" />
-                        <span class="bk-err" aria-live="polite"></span>
-                     </div>
-
-                     <div class="bk-reveal">
-                        <label class="bk-label" for="bk-wa">WhatsApp</label>
-                        <div class="bk-tel">
-                           <span class="bk-tel-pre" aria-hidden="true">+51</span>
-                           <input class="bk-input" id="bk-wa" name="whatsapp" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="990 669 259" />
-                        </div>
-                        <span class="bk-err" aria-live="polite"></span>
-                     </div>
-
-                     <div class="bk-reveal">
-                        <button class="bk-extra-toggle" type="button" aria-expanded="false" aria-controls="bk-extra">+ Agregar un pedido especial</button>
-                        <div class="bk-extra" id="bk-extra">
-                           <textarea class="bk-input" id="bk-msg" name="mensaje" placeholder="Llegada tarde, cuna, estacionamiento&hellip;"></textarea>
-                        </div>
-                     </div>
-                  </div>
-
-                  <p class="bk-banner" role="alert" hidden></p>
-
-                  <div>
-                     <button class="bk-submit" type="submit" disabled>
-                        <span class="bk-submit-text">Selecciona tus fechas</span>
+               <div class="rsv-cal" role="dialog" aria-label="Elegir fechas" hidden>
+                  <div class="rsv-cal-head">
+                     <button class="rsv-cal-nav" type="button" data-dir="-1" aria-label="Mes anterior">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
                      </button>
-                     <p class="bk-micro">No se te cobra nada ahora.</p>
+                     <p class="rsv-cal-title" aria-live="polite"></p>
+                     <button class="rsv-cal-nav" type="button" data-dir="1" aria-label="Mes siguiente">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+                     </button>
                   </div>
-               </form>
-
-               <div class="bk-alt">
-                  <span>&iquest;Prefieres hablar? Escr&iacute;benos directo.</span>
-                  <a class="bk-wa" href="https://wa.me/51990669259" target="_blank" rel="noopener noreferrer">
-                     <i aria-hidden="true">
-                        <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1a13 13 0 0 1-5.6-4.6c-.4-.6-1-1.5-1-2.9 0-1.3.7-2 1-2.3.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 1.9c.1.2 0 .4-.1.5l-.4.5c-.1.2-.3.3-.1.6.6 1 1.3 1.8 2.4 2.4.3.2.5.1.6 0l.6-.7c.2-.2.3-.2.5-.1l1.8.9c.2.1.4.2.4.3.1.2.1.6 0 1z"/></svg>
-                     </i>
-                     WhatsApp
-                  </a>
+                  <div class="rsv-cal-grid"></div>
+                  <p class="rsv-cal-hint"></p>
                </div>
             </div>
 
-            <div class="bk-done" hidden>
-               <svg class="bk-check" viewBox="0 0 52 52" aria-hidden="true">
-                  <circle cx="26" cy="26" r="23"/>
-                  <path d="M15 27l8 8 15-16"/>
-               </svg>
-               <h3>Consulta enviada</h3>
-               <p>Te escribimos a <b class="bk-done-mail"></b> antes de las <b class="bk-done-time"></b>.</p>
-               <button class="bk-again" type="button">Hacer otra consulta</button>
+            <div class="rsv-field">
+               <label class="rsv-label" for="rsv-rooms">Habitaciones</label>
+               <div class="rsv-control">
+                  <select class="rsv-select" id="rsv-rooms" name="habitaciones">
+                     <option value="1" selected>1 habitaci&oacute;n</option>
+                     <option value="2">2 habitaciones</option>
+                     <option value="3">3 habitaciones</option>
+                     <option value="4">4 habitaciones</option>
+                  </select>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+               </div>
             </div>
-         </div>
+
+            <div class="rsv-field">
+               <label class="rsv-label" for="rsv-guests">Hu&eacute;spedes</label>
+               <div class="rsv-control">
+                  <select class="rsv-select" id="rsv-guests" name="huespedes">
+                     <option value="1">1 hu&eacute;sped</option>
+                     <option value="2" selected>2 hu&eacute;spedes</option>
+                     <option value="3">3 hu&eacute;spedes</option>
+                     <option value="4">4 hu&eacute;spedes</option>
+                     <option value="5">5 hu&eacute;spedes</option>
+                     <option value="6">6 hu&eacute;spedes</option>
+                  </select>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+               </div>
+            </div>
+
+            <button class="rsv-go" type="submit">
+               Reservar
+               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+            </button>
+         </form>
       </div>
 
-      <p class="reserve-caption reserve-anim">REGO Premium &middot; Bagua Grande, Amazonas</p>
    </section>
 
    <section class="kinetic">
@@ -1117,14 +982,14 @@
    <script src="overlay.js"></script>
    <script src="story.js?v=16"></script>
    <script src="masked-heading.js"></script>
-   <script src="offering.js?v=4"></script>
-   <script src="rooms.js?v=3"></script>
+   <script src="offering.js?v=6"></script>
+   <script src="rooms.js?v=8"></script>
    <script src="values.js"></script>
    <script src="band-shader.js"></script>
    <script src="voices.js?v=3"></script>
    <script src="location.js"></script>
    <script src="reserve.js?v=2"></script>
-   <script src="booking.js?v=3"></script>
+   <script src="reserve-bar.js?v=3"></script>
    <script src="menu.js?v=2"></script>
    <script src="kinetic.js?v=6"></script>
    <script src="footer-trail.js?v=3"></script>

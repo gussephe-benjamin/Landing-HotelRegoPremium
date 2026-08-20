@@ -9,35 +9,55 @@
    calendar is built by hand in booking.js against native Date. */
 
 .bk {
-  /* The brief asks for "verde cálido oscuro" AND for "nada de colores
-     nuevos". Those contradict: this landing has no green anywhere — its
-     palette is near-black plus a single warm gold. The second rule wins,
-     because a green card would read as imported from another brand. This is
-     the page's own dark, at the 88% the brief specifies. */
-  --bk-surface: rgba(18, 22, 26, 0.88);
-  --bk-accent: var(--rs-accent);
+  /* The video behind averages #a19ea6, a light grey. Rather than tinting over
+     it, the panel now leans on a very heavy blur — which is what actually
+     reads as Apple's glass — and carries only half the fill it used to. The
+     text tones below were raised to pay for it: at 50% fill, small copy needs
+     0.71 alpha to clear 4.5:1, so they sit at 0.74-0.88 with margin. */
+  --bk-surface: rgba(20, 24, 30, 0.5);
+  /* Was the page's gold. A warm accent fought the cool, colourless look of
+     the glass; a near-white reads as frosted light instead of a sticker. */
+  --bk-accent: rgba(244, 248, 251, 0.95);
+  --bk-accent-soft: rgba(244, 248, 251, 0.14);
+  --bk-accent-ring: rgba(244, 248, 251, 0.24);
   --bk-line: rgba(244, 248, 251, 0.12);
   --bk-line-hover: rgba(244, 248, 251, 0.24);
   /* Every text tone below clears 4.5:1 on --bk-surface. The old card ran
      labels at white/30, which was the legibility complaint. */
-  --bk-dim: rgba(244, 248, 251, 0.62);
-  --bk-mid: rgba(244, 248, 251, 0.78);
+  --bk-dim: rgba(244, 248, 251, 0.78);
+  --bk-mid: rgba(244, 248, 251, 0.88);
   --bk-bad: #e08b7d;
 
   position: relative;
   width: min(680px, 100%);
   margin-top: clamp(0.5rem, 1.5vh, 1rem);
-  padding: clamp(1.4rem, 3.2vw, 2rem);
+  padding: clamp(1rem, 2.2vw, 1.4rem);
   border-radius: 24px;
   text-align: left;
   background: var(--bk-surface);
-  -webkit-backdrop-filter: blur(24px) saturate(140%);
-  backdrop-filter: blur(24px) saturate(140%);
-  border: 1px solid rgba(244, 248, 251, 0.14);
+  -webkit-backdrop-filter: blur(64px) saturate(200%) brightness(0.86);
+  backdrop-filter: blur(64px) saturate(200%) brightness(0.86);
+  /* The bright hairline is doing most of the work now that the fill is thin:
+     a lit top edge and a faint bottom one is what makes a translucent sheet
+     read as a physical pane rather than as reduced opacity. */
+  border: 1px solid rgba(255, 255, 255, 0.22);
   box-shadow:
-    0 30px 70px -20px rgba(0, 0, 0, 0.75),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+    0 30px 80px -24px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.1),
+    inset 1px 0 0 rgba(255, 255, 255, 0.12);
   isolation: isolate;
+}
+
+/* Light catching the top-left edge of the sheet. */
+.bk::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(146deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.02) 38%, rgba(255, 255, 255, 0) 60%);
 }
 
 /* The brand's inverted notch, kept from the old card. A quarter disc punched
@@ -68,18 +88,22 @@
 }
 
 .bk-title {
-  margin: 0 0 0.45rem;
-  font-family: var(--vc-serif);
-  font-weight: 400;
-  font-size: clamp(1.5rem, 3.2vw, 2rem);
+  margin: 0 0 0.4rem;
+  /* Was the editorial serif. A high-contrast bookish face fights a glass
+     panel — the geometric sans the rest of the page already loads sits on it
+     the way Apple's own system face sits on their materials. */
+  font-family: var(--ov-font-display);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  font-size: clamp(1.05rem, 2vw, 1.3rem);
   line-height: 1.1;
   letter-spacing: -0.01em;
   color: var(--rs-ink);
 }
 
 .bk-sub {
-  margin: 0 0 1.25rem;
-  font-size: 0.88rem;
+  margin: 0 0 0.9rem;
+  font-size: 0.78rem;
   line-height: 1.5;
   color: var(--bk-dim);
 }
@@ -87,7 +111,7 @@
 /* ── Shared field furniture ──────────────────────────────────────────── */
 .bk-form {
   display: grid;
-  gap: 20px;
+  gap: 13px;
 }
 
 .bk-label {
@@ -113,13 +137,13 @@
   outline: none;
   transition: border-color 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease;
 }
-.bk-input::placeholder { color: rgba(244, 248, 251, 0.55); }
+.bk-input::placeholder { color: rgba(244, 248, 251, 0.74); }
 .bk-input:hover { border-color: var(--bk-line-hover); }
 .bk-input:focus-visible,
 .bk-input:focus {
   border-color: var(--bk-accent);
   background: rgba(244, 248, 251, 0.1);
-  box-shadow: 0 0 0 3px rgba(199, 154, 91, 0.15);
+  box-shadow: 0 0 0 3px var(--bk-accent-ring);
 }
 .bk-input[aria-invalid="true"] {
   border-color: var(--bk-bad);
@@ -154,8 +178,8 @@
 .bk-date {
   display: block;
   width: 100%;
-  min-height: 68px;
-  padding: 0.85em 1.1em;
+  min-height: 54px;
+  padding: 0.65em 0.95em;
   text-align: left;
   font-family: inherit;
   background: none;
@@ -166,7 +190,7 @@
   transition: background-color 0.25s ease;
 }
 .bk-date:hover { background: rgba(244, 248, 251, 0.05); }
-.bk-date.is-active { background: rgba(199, 154, 91, 0.12); }
+.bk-date.is-active { background: rgba(244, 248, 251, 0.12); }
 .bk-date:focus-visible {
   box-shadow: inset 0 0 0 2px var(--bk-accent);
 }
@@ -185,13 +209,15 @@
    magazine dateline rather than form output. */
 .bk-date-value {
   display: block;
-  font-family: var(--vc-serif);
-  font-size: 1.2rem;
+  font-family: var(--ov-font-display);
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
   line-height: 1.1;
   color: var(--rs-ink);
   font-variant-numeric: tabular-nums;
 }
-.bk-date-value.is-empty { color: rgba(244, 248, 251, 0.55); }
+.bk-date-value.is-empty { color: rgba(244, 248, 251, 0.74); }
 
 /* ── Calendar ────────────────────────────────────────────────────────── */
 /* Inline, per the booking brief — the card itself grows. The supplied
@@ -227,7 +253,7 @@
   margin: 0;
   flex: 1;
   text-align: center;
-  font-family: var(--vc-serif);
+  font-family: var(--ov-font-display);
   font-size: 1.05rem;
   color: var(--rs-ink);
   text-transform: capitalize;
@@ -254,7 +280,7 @@
 }
 .bk-cal-nav:focus-visible {
   border-color: var(--bk-accent);
-  box-shadow: 0 0 0 3px rgba(199, 154, 91, 0.15);
+  box-shadow: 0 0 0 3px var(--bk-accent-ring);
 }
 .bk-cal-nav:disabled { opacity: 0.3; cursor: not-allowed; }
 .bk-cal-nav svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.6; }
@@ -287,7 +313,7 @@
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: rgba(244, 248, 251, 0.55);
+  color: rgba(244, 248, 251, 0.74);
 }
 
 .bk-day {
@@ -335,7 +361,7 @@
   position: absolute;
   inset: 3px 0;
   z-index: 1;
-  background: rgba(199, 154, 91, 0.16);
+  background: var(--bk-accent-soft);
 }
 .bk-day.is-start::before { left: 50%; }
 .bk-day.is-end::before { right: 50%; }
@@ -361,7 +387,7 @@
 .bk-grid2 {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 20px;
+  gap: 15px;
 }
 
 .bk-stepper {
@@ -392,8 +418,9 @@
 
 .bk-step-val {
   text-align: center;
-  font-family: var(--vc-serif);
-  font-size: 1.15rem;
+  font-family: var(--ov-font-display);
+  font-size: 1rem;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
   color: var(--rs-ink);
 }
@@ -420,7 +447,7 @@
 .bk-pill:hover { border-color: var(--bk-line-hover); color: var(--rs-ink); }
 .bk-pill:focus-visible {
   border-color: var(--bk-accent);
-  box-shadow: 0 0 0 3px rgba(199, 154, 91, 0.15);
+  box-shadow: 0 0 0 3px var(--bk-accent-ring);
 }
 .bk-pill[aria-checked="true"] {
   background: var(--bk-accent);
@@ -437,22 +464,31 @@
 .bk-unit-note.is-warn { color: var(--bk-bad); }
 
 /* ── Row 3 · live summary ────────────────────────────────────────────── */
+/* An author-level `display` beats the browser's `[hidden] { display: none }`,
+   so these two blocks stayed in the layout while marked hidden — together
+   they were holding 376px of empty space open under the form. */
+.bk-summary[hidden],
+.bk-contact[hidden] {
+  display: none;
+}
+
 .bk-summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
-  padding: 0.9rem 1.1rem;
+  padding: 0.7rem 1rem;
   border-radius: 12px;
-  border: 1px solid rgba(199, 154, 91, 0.28);
-  background: rgba(199, 154, 91, 0.1);
+  border: 1px solid rgba(244, 248, 251, 0.26);
+  background: rgba(244, 248, 251, 0.08);
 }
 
 .bk-sum-nights {
   display: block;
-  font-family: var(--vc-serif);
-  font-size: 1.05rem;
+  font-family: var(--ov-font-display);
+  font-size: 0.95rem;
+  font-weight: 500;
   color: var(--rs-ink);
   font-variant-numeric: tabular-nums;
 }
@@ -466,7 +502,7 @@
 .bk-sum-price { text-align: right; }
 .bk-sum-price b {
   display: block;
-  font-family: var(--vc-serif);
+  font-family: var(--ov-font-display);
   font-size: 1.15rem;
   font-weight: 400;
   color: var(--rs-ink);
@@ -480,7 +516,7 @@
 }
 
 /* ── Row 4 · contact ─────────────────────────────────────────────────── */
-.bk-contact { display: grid; gap: 1rem; }
+.bk-contact { display: grid; gap: 0.8rem; }
 
 .bk-reveal { opacity: 0; }
 
@@ -497,7 +533,7 @@
 .bk-tel:hover { border-color: var(--bk-line-hover); }
 .bk-tel:focus-within {
   border-color: var(--bk-accent);
-  box-shadow: 0 0 0 3px rgba(199, 154, 91, 0.15);
+  box-shadow: 0 0 0 3px var(--bk-accent-ring);
 }
 .bk-tel[data-invalid="1"] {
   border-color: var(--bk-bad);
@@ -555,7 +591,7 @@ textarea.bk-input { min-height: 88px; resize: vertical; line-height: 1.5; }
   justify-content: center;
   gap: 0.6rem;
   width: 100%;
-  height: 56px;
+  height: 48px;
   border: none;
   border-radius: 999px;
   font-family: inherit;
@@ -572,8 +608,17 @@ textarea.bk-input { min-height: 88px; resize: vertical; line-height: 1.5; }
   background: #fff;
   box-shadow: 0 14px 32px -12px rgba(0, 0, 0, 0.6);
 }
-.bk-submit:focus-visible { box-shadow: 0 0 0 3px rgba(199, 154, 91, 0.4); }
-.bk-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+.bk-submit:focus-visible { box-shadow: 0 0 0 3px rgba(244, 248, 251, 0.38); }
+/* Disabled used to be the solid white pill at 40% — a grey slab across the
+   panel. As an outline it stays legible without becoming the heaviest object
+   on a sheet of glass. */
+.bk-submit:disabled {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: rgba(244, 248, 251, 0.82);
+  opacity: 1;
+  cursor: not-allowed;
+}
 
 .bk-spin {
   width: 16px;
@@ -599,8 +644,8 @@ textarea.bk-input { min-height: 88px; resize: vertical; line-height: 1.5; }
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
-  margin-top: 1.25rem;
-  padding-top: 1.25rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
   border-top: 1px solid var(--bk-line);
   font-size: 0.88rem;
   color: var(--bk-dim);
@@ -622,7 +667,7 @@ textarea.bk-input { min-height: 88px; resize: vertical; line-height: 1.5; }
   transition: background-color 0.25s ease, transform 0.25s ease;
 }
 .bk-wa:hover { background: rgba(244, 248, 251, 0.2); transform: translateY(-1px); }
-.bk-wa:focus-visible { box-shadow: 0 0 0 3px rgba(199, 154, 91, 0.35); }
+.bk-wa:focus-visible { box-shadow: 0 0 0 3px rgba(244, 248, 251, 0.32); }
 .bk-wa i {
   display: grid;
   place-items: center;
@@ -656,7 +701,7 @@ textarea.bk-input { min-height: 88px; resize: vertical; line-height: 1.5; }
 
 .bk-done h3 {
   margin: 0 0 0.5rem;
-  font-family: var(--vc-serif);
+  font-family: var(--ov-font-display);
   font-weight: 400;
   font-size: 1.5rem;
   color: var(--rs-ink);
@@ -684,11 +729,11 @@ textarea.bk-input { min-height: 88px; resize: vertical; line-height: 1.5; }
   transition: background-color 0.25s ease, border-color 0.25s ease;
 }
 .bk-again:hover { background: rgba(244, 248, 251, 0.08); }
-.bk-again:focus-visible { border-color: var(--bk-accent); box-shadow: 0 0 0 3px rgba(199, 154, 91, 0.15); }
+.bk-again:focus-visible { border-color: var(--bk-accent); box-shadow: 0 0 0 3px var(--bk-accent-ring); }
 
 /* ── Wider than a phone ──────────────────────────────────────────────── */
 @media (min-width: 720px) {
-  .bk { padding: 32px; }
+  .bk { padding: 22px; }
   .bk-grid2 { grid-template-columns: 1fr 1fr; }
   /* Two months side by side, per the brief. */
   .bk-cal-months { grid-template-columns: 1fr 1fr; gap: 1.25rem; }

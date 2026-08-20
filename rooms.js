@@ -3,11 +3,52 @@
    .frame chrome and the custom cursors — all three assumed they owned the
    whole page, which they don't here. Splitting.js was replaced by a local
    character splitter so the page keeps a single set of dependencies. */
+/* ── Room model ───────────────────────────────────────────────────────
+   images[0] is the main photo — the WebGL texture, and the only one that
+   exists below 1100px. images[1] is the small upper portrait, images[2] the
+   medium lower landscape. Order here must match the .rooms-slide order in the
+   markup.
+
+   TODO(REGO): images[1] and images[2] are stock stand-ins. Replace each pair
+   with the real photography for that unit; nothing else needs to change. */
+var ROOMS = [
+  {
+    slug: "superior",
+    images: [
+      { src: "./img/room-2.jpg", alt: "Suite Superior con sala independiente" },
+      { src: "./img/room-2-b.jpg", alt: "Dormitorio de la Suite Superior con cama king" },
+      { src: "./img/room-2-c.jpg", alt: "Sala de la Suite Superior abierta al valle de Utcubamba" },
+    ],
+  },
+  {
+    slug: "familiar",
+    images: [
+      { src: "./img/room-3.jpg", alt: "Departamento Familiar de dos dormitorios" },
+      { src: "./img/room-3-b.jpg", alt: "Segundo dormitorio del Departamento Familiar" },
+      { src: "./img/room-3-c.jpg", alt: "Comedor y cocina completa del Departamento Familiar" },
+    ],
+  },
+  {
+    slug: "penthouse",
+    images: [
+      { src: "./img/room-4.jpg", alt: "Penthouse REGO en el último piso" },
+      { src: "./img/room-4-b.jpg", alt: "Dormitorio principal del Penthouse con vista a la ciudad" },
+      { src: "./img/room-4-c.jpg", alt: "Estar del Penthouse con terraza privada" },
+    ],
+  },
+];
+
+/* Secondary frames only exist at and above this width. Matches the section's
+   own layout breakpoint — below it the copy panel drops under the photo and
+   there is no left column to put them in. */
+var ROOMS_DESKTOP = "(min-width: 1101px)";
+
 document.addEventListener("DOMContentLoaded", function () {
   var root = document.querySelector(".rooms");
   if (!root || typeof THREE === "undefined") return;
 
   var mediaEl = root.querySelector(".rooms-media");
+  var asideEl = root.querySelector(".rooms-aside");
   var slideEls = [].slice.call(root.querySelectorAll(".rooms-slide"));
   if (!mediaEl || !slideEls.length) return;
 
@@ -161,12 +202,11 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function loadTextures() {
-    var imgs = [].slice.call(mediaEl.querySelectorAll("img"));
     var loader = new THREE.TextureLoader();
-    var pending = imgs.length;
+    var pending = ROOMS.length;
 
-    imgs.forEach(function (img, i) {
-      loader.load(img.src, function (texture) {
+    ROOMS.forEach(function (room, i) {
+      loader.load(room.images[0].src, function (texture) {
         texture.minFilter = THREE.LinearFilter;
         texture.generateMipmaps = false;
         textures[i] = texture;
@@ -259,7 +299,81 @@ document.addEventListener("DOMContentLoaded", function () {
   var progressBar = root.querySelector(".rooms-progress i");
   var counterNow = root.querySelector(".rooms-counter b");
   var bgEl = root.querySelector(".rooms-bg");
-  var bgColors = ["#17120f", "#141a18", "#1b1512", "#101418"];
+  // One entry per room, in slide order. Removing ESTUDIO from the model left
+  // its colour (#17120f) at the head of this list, which shifted every
+  // remaining room onto its predecessor's background — SUPERIOR lost the
+  // green, and PENTHOUSE lost the grey-black.
+  var bgColors = [
+    "#141a18", // SUPERIOR  — green
+    "#1b1512", // FAMILIAR  — warm brown
+    "#101418", // PENTHOUSE — grey-black
+  ];
+
+  // ── Secondary images ─────────────────────────────────────────────────
+  // Created only while the desktop query matches. This is real conditional
+  // rendering, not `display: none`: below 1100px the <img> elements never
+  // enter the DOM, so their bytes are never requested.
+  var desktopQ = window.matchMedia(ROOMS_DESKTOP);
+  var secs = [];
+
+  function buildAside() {
+    if (secs.length || !asideEl) return;
+    [1, 2].forEach(function (slot) {
+      var frame = document.createElement("figure");
+      frame.className = "rooms-sec rooms-sec-" + (slot === 1 ? "a" : "b");
+      var img = document.createElement("img");
+      img.loading = "lazy";
+      img.decoding = "async";
+      frame.appendChild(img);
+      asideEl.appendChild(frame);
+      secs.push({ frame: frame, img: img, slot: slot });
+    });
+    paintAside(current);
+    syncFrameColor(0);
+  }
+
+  function destroyAside() {
+    secs = [];
+    if (asideEl) asideEl.innerHTML = "";
+  }
+
+  function paintAside(index) {
+    var imgs = ROOMS[index].images;
+    secs.forEach(function (s) {
+      var data = imgs[s.slot];
+      // Required fallback: a room with no images[1] or images[2] simply does
+      // not render that frame. The main photo's box is untouched either way —
+      // the rail is a separate absolutely-positioned layer.
+      s.frame.hidden = !data;
+      if (!data) return;
+      if (s.img.getAttribute("src") !== data.src) s.img.src = data.src;
+      s.img.alt = data.alt;
+    });
+  }
+
+  // The frame padding has to be the section's background exactly, and that
+  // colour is tweened per slide — a hard-coded value would drift out of sync
+  // and the "cut out of the page" illusion would break.
+  function syncFrameColor(duration) {
+    if (!secs.length) return;
+    var target = bgColors[current % bgColors.length];
+    var frames = secs.map(function (s) { return s.frame; });
+    if (duration) gsap.to(frames, { backgroundColor: target, duration: duration, ease: "power2.out" });
+    else gsap.set(frames, { backgroundColor: target });
+  }
+
+  function syncAsideToBreakpoint() {
+    if (desktopQ.matches) buildAside();
+    else destroyAside();
+  }
+
+  // Both listeners on purpose. The matchMedia `change` event is the precise
+  // one, but it does not fire in every environment (a headless viewport
+  // resize can change the query result without dispatching it), and a rail
+  // left mounted under 1100px would keep its images in the DOM. The resize
+  // event always fires, so it backstops the query.
+  desktopQ.addEventListener("change", syncAsideToBreakpoint);
+  window.addEventListener("resize", syncAsideToBreakpoint);
 
   var current = 0;
   // Counted from the DOM, not from `slides` — that array is only populated
@@ -268,9 +382,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function syncChrome() {
     tabs.forEach(function (t, i) { t.classList.toggle("is-active", i === current); });
-    if (progressBar) progressBar.style.transform = "scaleX(" + (current + 1) + ")";
+    if (progressBar) {
+      // Derived from the room count rather than a hard-coded 25% in the
+      // stylesheet, so removing or adding a room cannot leave the bar
+      // over- or under-filling its track.
+      progressBar.style.width = 100 / total + "%";
+      progressBar.style.transform = "scaleX(" + (current + 1) + ")";
+    }
     if (counterNow) counterNow.textContent = String(current + 1).padStart(2, "0");
     gsap.to(bgEl, { backgroundColor: bgColors[current % bgColors.length], duration: 1.2, ease: "power2.out" });
+    syncFrameColor(1.2);
   }
 
   function switchTextures(index, direction) {
@@ -308,7 +429,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var to = slides[index];
     var next = direction === 1;
 
-    gsap
+    var tl = gsap
       .timeline({
         defaults: { duration: 1, ease: "power4.inOut" },
         onStart: function () {
@@ -339,12 +460,54 @@ document.addEventListener("DOMContentLoaded", function () {
       .to([to.index, to.title], { yPercent: 0, rotation: 0, stagger: next ? 0.02 : -0.02 }, "in")
       .to(to.lines, { yPercent: 0, stagger: next ? 0.05 : -0.05 }, "in")
       .to(to.panel, { opacity: 1, y: 0, duration: 0.7 }, "in+=0.15");
+
+    // ── Secondary frames ride the same timeline ────────────────────────
+    // The brief asks the three images to move together with the main leading.
+    // The main is a 1s shader morph whose visible change peaks around its
+    // midpoint, which is where the "in" label already sits — so the two
+    // frames are offset from that label rather than from t=0, and all three
+    // resolve at the same moment instead of the frames snapping early.
+    if (secs.length) {
+      var frames = secs.map(function (s) { return s.frame; });
+      var shift = reduced ? 0 : 14;
+
+      // 0.35 + 0.06 of stagger lands the last frame at 0.41, just clear of the
+      // first entrance at "in"+0.08 = 0.48 — otherwise the out and in tweens
+      // overlap on the same element and fight for opacity.
+      tl.to(
+        frames,
+        { opacity: 0, y: next ? -shift : shift, duration: 0.35, stagger: 0.06, ease: "power2.in" },
+        "out"
+      );
+
+      tl.add(function () { paintAside(index); }, "in");
+
+      secs.forEach(function (sec, i) {
+        tl.fromTo(
+          sec.frame,
+          { opacity: 0, y: next ? shift : -shift },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.55,
+            ease: "power2.out",
+            // Without this the "from" state is applied the moment the timeline
+            // is built rather than when the tween starts, so the frames blinked
+            // straight to invisible and the fade-out above never rendered.
+            immediateRender: false,
+          },
+          "in+=" + (i === 0 ? 0.08 : 0.14)
+        );
+      });
+    }
   }
 
   function step(dir) {
     var index = (current + dir + total) % total;
     goTo(index, dir);
   }
+
+  if (desktopQ.matches) buildAside();
 
   root.querySelector(".rooms-nav-prev").addEventListener("click", function () { step(-1); });
   root.querySelector(".rooms-nav-next").addEventListener("click", function () { step(1); });
