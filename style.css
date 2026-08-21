@@ -121,7 +121,7 @@ footer {
 
 .preview img {
   position: relative;
-  top: 100px;
+  transform: translate3d(0, 100px, 0);
   width: 80px;
   height: 50px;
 }
@@ -135,7 +135,7 @@ footer {
 
 .slide-num p {
   position: relative;
-  top: 30px;
+  transform: translate3d(0, 30px, 0);
 }
 
 .container {
@@ -163,21 +163,44 @@ footer {
   overflow: hidden;
 }
 
+/* Opening positions for the intro, as transforms rather than as `top`.
+
+   They used to be `top: 100%` / `-100%`, and the timeline animated `top` on
+   all thirty elements — five columns and twenty-five tiles. `top` is a layout
+   property, so every frame of a three-second animation forced a reflow of the
+   whole grid, and the last stretch does it while .container is being scaled
+   six times. Blink absorbs that; WebKit does not, which is why the intro ran
+   smoothly in Chrome and stuttered in Safari.
+
+   The distance is unchanged: `top: 100%` on these resolves against the
+   containing block, and both .container and .col inherit the hero's height —
+   so 100% was already exactly 100svh. Transforms are compositor work: no
+   layout, no repaint, same picture. */
 .c-1,
 .c-3,
 .c-5 {
-  top: 100%;
+  transform: translate3d(0, 100svh, 0);
 }
 
 .c-1 .item,
 .c-3 .item,
 .c-5 .item {
-  top: 100%;
+  transform: translate3d(0, 100svh, 0);
 }
 
 .c-2 .item,
 .c-4 .item {
-  top: -100%;
+  transform: translate3d(0, -100svh, 0);
+}
+
+/* Only while the intro is running. body.is-intro is removed by unlockScroll()
+   in the timeline's final call, so these hints are dropped the moment they
+   stop being useful instead of holding thirty layers for the session. */
+body.is-intro .container,
+body.is-intro .col,
+body.is-intro .col .item {
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 @media (max-width: 900px) {

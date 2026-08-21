@@ -197,3 +197,40 @@
   .story-marquee-wrapper { width: 300%; }
 
 }
+
+/* ── Marquee drift, on the compositor ─────────────────────────────────── */
+/* The tilted strip slides sideways as it enters. Same motion as before; it
+   is who computes it that changed.
+   
+   A scrubbed tween is evaluated on the main thread from a scroll position the
+   compositor has already moved past, so the strip applies last frame's offset
+   to this frame's scroll. This strip shows that error more than most of the
+   page because it sits inside a rotate(-5deg): a rotated composited layer has
+   no axis-aligned edges, so a sub-pixel error lands on the diagonal boundary
+   of every photograph at once and reads as the whole band shimmering rather
+   than as one thing being slightly late.
+   
+   Driven from a view() timeline the offset is resolved by the compositor
+   alongside the scroll, so there is no error left to land anywhere.
+   
+   The range is the same window the scrub used — the strip's top edge reaching
+   the bottom of the viewport, through to it reaching the top. .story-marquee
+   is 50svh, so that window is the first two thirds of `cover` (one viewport
+   out of the viewport-plus-half-viewport that `cover` spans). The section's
+   height is a fixed fraction of the viewport, so that ratio holds at every
+   size, phones included. */
+@keyframes story-marquee-drift {
+  from { transform: translate(-75%, -50%); }
+  to { transform: translate(-50%, -50%); }
+}
+
+@supports (animation-timeline: view()) {
+  .story-marquee {
+    view-timeline: --story-marquee-in block;
+  }
+  .story-marquee-images {
+    animation: story-marquee-drift 1ms linear both;
+    animation-timeline: --story-marquee-in;
+    animation-range: cover 0% cover 66.6667%;
+  }
+}

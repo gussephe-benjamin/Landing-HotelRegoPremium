@@ -93,15 +93,21 @@ document.addEventListener("DOMContentLoaded", function () {
   })();
 
   // ── Marquee drifts sideways as the section enters ──────────────────
-  ScrollTrigger.create({
-    trigger: ".story-marquee",
-    start: "top bottom",
-    end: "top top",
-    scrub: true,
-    onUpdate: function (self) {
-      gsap.set(".story-marquee-images", { x: -75 + self.progress * 25 + "%" });
-    },
-  });
+  // story.css drives this from a view() timeline wherever the engine has
+  // one — on the compositor, so it cannot trail the scroll. This is the
+  // fallback, gated on the same condition as the @supports block there so
+  // only one of the two can ever be writing that transform.
+  if (!CSS.supports || !CSS.supports("animation-timeline: view()")) {
+    ScrollTrigger.create({
+      trigger: ".story-marquee",
+      start: "top bottom",
+      end: "top top",
+      scrub: true,
+      onUpdate: function (self) {
+        gsap.set(".story-marquee-images", { x: -75 + self.progress * 25 + "%" });
+      },
+    });
+  }
 
   // ── The tagged marquee image is cloned into a fixed-position copy, so it
   //    can leave the tilted strip and later Flip to fullscreen ───────────

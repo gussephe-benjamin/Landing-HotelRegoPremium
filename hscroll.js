@@ -59,6 +59,9 @@ document.addEventListener("DOMContentLoaded", function () {
   // against it.
   var FG_FLIP = 0.79;
 
+  var lastBg = "";
+  var lastFg = "";
+
   function setProgress(p) {
     p = gsap.utils.clamp(0, 1, p);
     var i = 0;
@@ -67,7 +70,18 @@ document.addEventListener("DOMContentLoaded", function () {
     var b = STOPS[i + 1];
     var t = (p - a.p) / (b.p - a.p);
 
-    section.style.setProperty("--hs-bg", blend(a.bg, b.bg, t));
+    // Guarded against rewriting the same string. --hs-bg and --hs-fg are
+    // inherited custom properties read by nine rules across the section, so
+    // touching either one invalidates the style of the whole subtree and
+    // repaints it. On the stretches where the ramp is flat — most of the
+    // first third — the computed colour does not actually change from frame
+    // to frame, and this skips that work entirely rather than handing the
+    // engine an identical value to re-resolve.
+    var bg = blend(a.bg, b.bg, t);
+    if (bg !== lastBg) {
+      section.style.setProperty("--hs-bg", bg);
+      lastBg = bg;
+    }
 
     // The foreground is stepped across the last segment rather than
     // interpolated. Interpolating it — which is what the brief's table
@@ -78,7 +92,10 @@ document.addEventListener("DOMContentLoaded", function () {
     // being light, then switching it outright, keeps the worst case at the
     // best value these two endpoints allow.
     var fg = i === 2 ? (p < FG_FLIP ? a.fg : b.fg) : blend(a.fg, b.fg, t);
-    section.style.setProperty("--hs-fg", fg);
+    if (fg !== lastFg) {
+      section.style.setProperty("--hs-fg", fg);
+      lastFg = fg;
+    }
   }
 
   // ── Shared reveals ───────────────────────────────────────────────────
@@ -203,14 +220,48 @@ document.addEventListener("DOMContentLoaded", function () {
     // derived from this, so an unstable measurement moves the end of the pin
     // underneath the visitor. offsetWidth comes from layout and ignores both
     // the overflow and the transforms.
+    // Memoised. offsetWidth is a layout-forcing read, and drive() called this
+    // first thing on every scroll frame — after it had just written sixteen
+    // transforms. Reading layout straight after writing style is what forces
+    // the engine to flush a synchronous layout mid-frame, and doing it once
+    // per frame for the whole pinned run is most of what made this section
+    // feel unsteady. The value only changes when the track is re-laid out, so
+    // it is computed on refresh and read from cache in between.
+    var distanceCache = -1;
     var distance = function () {
-      return Math.max(0, track.offsetWidth - window.innerWidth);
+      if (distanceCache < 0) distanceCache = Math.max(0, track.offsetWidth - window.innerWidth);
+      return distanceCache;
     };
 
-    var layers = [].slice.call(section.querySelectorAll("[data-speed]"));
-    var drifters = [].slice.call(section.querySelectorAll("[data-drift]"));
+    // Prepared once, not re-derived every frame.
+    //
+    // These two lists used to be plain element arrays, and drive() below read
+    // data-speed / data-drift off the DOM with getAttribute + parseFloat and
+    // called gsap.set() once per element, on every scroll frame. With fourteen
+    // layers that is fourteen attribute reads, fourteen string parses and
+    // fourteen full gsap.set() calls per frame — and gsap.set() re-resolves
+    // its target and re-reads the element's current transform each time it is
+    // called, which is exactly the work quickSetter exists to hoist out of the
+    // loop. The ratio is fixed at setup and the setter is built once, so the
+    // per-frame cost drops to one cached function call and one transform
+    // write per layer.
+    function prepare(selector, attribute, fallback) {
+      return [].slice.call(section.querySelectorAll(selector)).map(function (el) {
+        var raw = parseFloat(el.getAttribute(attribute));
+        return {
+          el: el,
+          k: isNaN(raw) ? fallback : raw,
+          set: gsap.quickSetter(el, "x", "px"),
+        };
+      });
+    }
+
+    var layers = prepare("[data-speed]", "data-speed", 1);
+    var drifters = prepare("[data-drift]", "data-drift", 0);
     var beats = [].slice.call(section.querySelectorAll("[data-beat]"));
     var topo = section.querySelector(".hscroll__topo");
+    var setTopo = topo ? gsap.quickSetter(topo, "x", "px") : null;
+    var setBar = bar ? gsap.quickSetter(bar, "scaleX") : null;
 
     // ── The facade's flight ────────────────────────────────────────────
     // The marquee above hands over a detached, fixed-position copy of its
@@ -278,23 +329,65 @@ document.addEventListener("DOMContentLoaded", function () {
       facade = null;
     }
 
+    // Thresholds, not elements. Reading b.offsetLeft inside the per-frame loop
+    // meant one forced layout per beat per frame — three more synchronous
+    // flushes on top of the one distance() was causing, and again immediately
+    // after a batch of transform writes. The trip point for each beat only
+    // moves when the track is re-laid out, so it is measured on refresh.
+    var anchors = new WeakMap();
+    var railAlpha = -1;
+
+    var navPoints = [];
+    function measureNav() {
+      navPoints = beats.map(function (b) {
+        return {
+          slug: b.getAttribute("data-beat"),
+          // A beat becomes current once its left edge passes the middle of
+          // the viewport, so the label flips when the block actually reads as
+          // the one being looked at.
+          at: b.offsetLeft - window.innerWidth * 0.5,
+        };
+      });
+    }
+
+    var navSlug = null;
     function updateNav(x) {
       // Defaults to the first block rather than to nothing. The lead and
       // intro beats are not one of the three, so strictly nothing is current
       // there — but an empty rail through the opening reads as a control that
       // has stopped working, when what it means is "on the way to Hospedaje".
-      var activeSlug = beats.length ? beats[0].getAttribute("data-beat") : null;
-      beats.forEach(function (b) {
-        // A beat becomes current once its left edge passes the middle of the
-        // viewport, so the label flips when the block actually reads as the
-        // one being looked at.
-        if (b.offsetLeft - window.innerWidth * 0.5 <= x) activeSlug = b.getAttribute("data-beat");
-      });
+      var activeSlug = navPoints.length ? navPoints[0].slug : null;
+      for (var i = 0; i < navPoints.length; i++) {
+        if (navPoints[i].at <= x) activeSlug = navPoints[i].slug;
+      }
+      // The rail only changes three times across the whole run; without this
+      // guard it was rewriting the same attribute on every button on every
+      // frame, and an attribute write invalidates the element's style whether
+      // or not the value differs.
+      if (activeSlug === navSlug) return;
+      navSlug = activeSlug;
       navButtons.forEach(function (btn) {
         if (btn.getAttribute("data-goto") === activeSlug) btn.setAttribute("aria-current", "true");
         else btn.removeAttribute("aria-current");
       });
     }
+
+    // Everything above that was measured off layout is invalidated here, in
+    // one place, on the event that can actually change it. anchors was already
+    // a lazy cache but had no invalidation at all, so a window resize inside
+    // the desktop range left every parallax layer anchored to the old
+    // geometry — latent before this change, load-bearing now that the other
+    // two caches sit beside it.
+    function remeasure() {
+      distanceCache = -1;
+      anchors = new WeakMap();
+      measureNav();
+    }
+    ScrollTrigger.addEventListener("refresh", remeasure);
+    // ScrollTrigger fires a refresh of its own during setup, but the triggers
+    // below are built after this point and drive() can run before that first
+    // refresh lands, so the thresholds are measured once here as well.
+    measureNav();
 
     // Parallax measured from the moment a layer's own beat is centred on
     // screen, not from the start of the track.
@@ -308,7 +401,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // bounded and symmetric: zero when the block is centred, equal and
     // opposite at either edge of its pass, and never accumulating across
     // blocks.
-    var anchors = new WeakMap();
     function localTravel(el, x) {
       var a = anchors.get(el);
       if (!a) {
@@ -343,27 +435,31 @@ document.addEventListener("DOMContentLoaded", function () {
       // visitor has not been shown, because the growth happened before this
       // trigger existed.
       var run = d > 0 ? gsap.utils.clamp(0, 1, x / d) : 0;
-      layers.forEach(function (el) {
-        var speed = parseFloat(el.getAttribute("data-speed")) || 1;
-        gsap.set(el, { x: -localTravel(el, x) * (speed - 1) });
+      layers.forEach(function (l) {
+        l.set(-localTravel(l.el, x) * (l.k - 1));
       });
-      drifters.forEach(function (el) {
-        var drift = parseFloat(el.getAttribute("data-drift")) || 0;
-        gsap.set(el, { x: localTravel(el, x) * drift });
+      drifters.forEach(function (l) {
+        l.set(localTravel(l.el, x) * l.k);
       });
       driveFacade(x);
       // Deepest layer in the stack.
-      if (topo) gsap.set(topo, { x: -x * 0.3 });
-      if (bar) gsap.set(bar, { scaleX: run });
+      if (setTopo) setTopo(-x * 0.3);
+      if (setBar) setBar(run);
       // Faded in against travel rather than by a CSS transition. The rail is
       // driven from scroll position, and a time-based transition on a
       // scroll-driven property does not reliably settle — same trap the
       // background ramp fell into. This way it is deterministic in both
       // directions and reverses cleanly when scrolling back up.
       if (rail) {
-        gsap.set(rail, {
-          autoAlpha: gsap.utils.clamp(0, 1, x / (window.innerWidth * 0.25)),
-        });
+        // Reaches 1 within a quarter of a screen and stays there for the rest
+        // of the run, so the guard skips the overwhelming majority of frames.
+        // autoAlpha writes both opacity and visibility, so an unguarded write
+        // is two style mutations a frame for a value that is not changing.
+        var alpha = gsap.utils.clamp(0, 1, x / (window.innerWidth * 0.25));
+        if (alpha !== railAlpha) {
+          railAlpha = alpha;
+          gsap.set(rail, { autoAlpha: alpha });
+        }
       }
       updateNav(x);
       return run;
@@ -499,6 +595,13 @@ document.addEventListener("DOMContentLoaded", function () {
     setProgress(drive(0));
 
     return function cleanup() {
+      // Removed with the rest of the context. gsap.matchMedia unwinds the
+      // triggers it created here, but a listener added straight to
+      // ScrollTrigger is not its to clean up — left behind, every crossing of
+      // the 1024px breakpoint would stack another remeasure() onto every
+      // future refresh, each one closing over dead elements.
+      ScrollTrigger.removeEventListener("refresh", remeasure);
+      railAlpha = -1;
       growth.kill();
       releaseFlip();
       if (bg) gsap.set(bg, { clearProps: "opacity,visibility" });

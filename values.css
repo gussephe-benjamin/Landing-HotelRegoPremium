@@ -43,7 +43,6 @@
   height: 100%;
   object-fit: cover;
   display: block;
-  will-change: transform;
 }
 
 .values-slide .values-overlay {
@@ -63,8 +62,21 @@
   width: 100vw;
   height: 100%;
   pointer-events: none;
+}
+
+/* Promoted only while the slider is actually running — values.js adds
+   .is-running when the pin engages. These two selectors cover an image and a
+   100vw-wide copy layer per slide, and the section keeps several buffered
+   slides alive at a time, so leaving the hint on permanently had Safari
+   allocating and rasterising every one of them on the frames the section
+   scrolls into view. The slides that cannot be seen are hidden outright in
+   values.js; this keeps the ones that can from being promoted any earlier
+   than they need to be. */
+.values.is-running .values-slide img,
+.values.is-running .values-copy {
   will-change: transform;
 }
+
 .values-left .values-copy { left: 0; }
 .values-right .values-copy { right: 0; }
 
@@ -164,7 +176,7 @@
 .values-progress i {
   display: block;
   height: 100%;
-  width: 25%;
+  width: var(--vl-step, 25%);
   background: var(--vl-ink);
   transform-origin: left;
   transition: transform 0.6s cubic-bezier(0.65, 0, 0.35, 1);
@@ -187,4 +199,57 @@
   .values-corner { display: none; }
   .values-tags { top: 26%; line-height: 1.7; }
   .values-note { top: 68%; white-space: normal; width: 80vw; }
+}
+
+/* ── Arrival, on the compositor ───────────────────────────────────────── */
+/* The two columns part like a curtain as the section scrolls in. That motion
+   used to be a GSAP scrub, and it trembled in Safari no matter what was done
+   to the layers underneath it.
+   
+   The reason is structural, not a bug to be found: a scrubbed tween is
+   computed on the main thread from a scroll position the compositor has
+   already moved past, so the columns are always applying last frame's offset
+   to this frame's scroll. Blink hides it; Safari, which scrolls further ahead
+   of the main thread, does not. Nothing done inside that model removes the
+   gap — it can only be made less visible.
+   
+   A scroll-driven CSS animation is a different model. The timeline is the
+   scroll position itself, evaluated by the compositor alongside the scroll,
+   so the columns and the page move on the same frame by construction. There
+   is no phase error left to see.
+   
+   The GSAP path stays as the fallback in values.js for engines without this;
+   the @supports condition here and the CSS.supports() test there are
+   deliberately the same string so exactly one of the two can ever run. */
+@keyframes vl-arrive-up { from { transform: translateY(100%); } }
+@keyframes vl-arrive-down { from { transform: translateY(-100%); } }
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* Named and declared on the section rather than on each column, because
+       the columns are what move: a view() timeline on a subject that is being
+       translated by its own animation feeds back on itself. The section's own
+       box is untouched by the arrival, so it is the stable reference. */
+    .values {
+      view-timeline: --vl-arrival block;
+    }
+
+    .values-left,
+    .values-right {
+      animation-timeline: --vl-arrival;
+      /* `entry` spans exactly the stretch the old scrub covered: from the
+         section's top edge reaching the bottom of the viewport, to the
+         section sitting fully in view — which for a 100svh section is the
+         moment the pin engages. */
+      animation-range: entry;
+      animation-duration: 1ms;
+      animation-timing-function: linear;
+      /* `backwards` matters: without it the columns sit at their resting
+         position until the timeline is first evaluated, so the curtain is
+         already open on the frame the section appears. */
+      animation-fill-mode: both;
+    }
+    .values-left { animation-name: vl-arrive-up; }
+    .values-right { animation-name: vl-arrive-down; }
+  }
 }

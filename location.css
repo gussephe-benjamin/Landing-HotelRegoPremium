@@ -193,6 +193,21 @@
   z-index: 1;
 }
 
+/* Hand-off scrim. A single empty layer with a flat fill, which is the
+   cheapest thing there is to fade: no children, no filters, nothing to
+   recomposite. It sits above everything in the section, so raising it to 0.75
+   lands on the same reading as the old 0.25-opacity content did — the section
+   sinking back into its own background — without touching that content at
+   all. */
+.location-dim {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  opacity: 0;
+  background: var(--loc-bg);
+}
+
 /* ── Info card ───────────────────────────────────────────────────────── */
 .location-card {
   position: relative;
@@ -421,4 +436,75 @@
 
 @media (prefers-reduced-motion: reduce) {
   .location-cta:hover { transform: none; }
+}
+
+/* ── Hand-off to (06) Reserva, on the compositor ──────────────────────── */
+/* This section is held still while the reservation panel rises over it. The
+   effect is unchanged; what changed is who computes it.
+   
+   It used to be a GSAP scrub in reserve.js, and it shook badly enough on an
+   M2 to be worth rebuilding. Two reasons compounded:
+   
+   1. A scrubbed tween runs on the main thread, one frame behind the scroll
+      the compositor has already applied. A section whose whole job is to look
+      motionless is the worst possible place for that error, because the
+      trailing frame is the only movement on screen.
+   2. This particular section is the most expensive thing on the page to
+      move. It carries a live cross-origin map iframe under a five-function
+      filter chain and a card with a 30px backdrop-filter. Every main-thread
+      frame that touched its transform put both of those back in play.
+   
+   A view() timeline is evaluated by the compositor alongside the scroll, so
+   the translation lands on the same frame as the scroll that caused it and
+   the section can stay a cached layer while it travels.
+   
+   .reserve is exactly 100svh, so its `entry` range — top edge reaching the
+   bottom of the viewport, through to the section fully in view — is the same
+   window the scrub used ("top bottom" to "top top"). The one case where the
+   two diverge is a viewport under 620px tall, where .reserve's min-height
+   takes over and the range runs slightly long; at the 1024px-wide floor this
+   is gated to, that is a sliver of overshoot on an already-covered section.
+   
+   reserve.js keeps the GSAP version for engines without this, gated on the
+   same condition, so only one of the two can ever be driving. */
+@keyframes loc-handoff {
+  /* Both ends written out. An implicit `from` resolves to the element's own
+     value — `none` — and `transform: none` does not establish a stacking
+     context, so the glass card would stop being its own backdrop root on the
+     first frame and its 30px blur would visibly re-target. translateY(0)
+     computes to a matrix and holds the context for the whole range. */
+  from { transform: translateY(0); }
+  to { transform: translateY(100svh); }
+}
+@keyframes loc-handoff-dim {
+  from { opacity: 0; }
+  to { opacity: 0.75; }
+}
+
+@supports (animation-timeline: view()) and (timeline-scope: --a) {
+  @media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+    /* .location and .reserve are siblings, so the name has to be hoisted to
+       their common ancestor before the one can read a timeline defined on
+       the other. */
+    body {
+      timeline-scope: --loc-handoff;
+    }
+    .reserve {
+      view-timeline: --loc-handoff block;
+    }
+
+    .location {
+      animation: loc-handoff 1ms linear both;
+      animation-timeline: --loc-handoff;
+      animation-range: entry;
+    }
+
+    /* Same window the scrub used: "top 85%" and "top 20%" are 15% and 80% of
+       the way through a range that spans exactly one viewport. */
+    .location-dim {
+      animation: loc-handoff-dim 1ms linear both;
+      animation-timeline: --loc-handoff;
+      animation-range: entry 15% entry 80%;
+    }
+  }
 }

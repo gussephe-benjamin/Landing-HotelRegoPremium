@@ -70,12 +70,17 @@
   pointer-events: none;
 }
 
-/* The WebGL canvas is injected here by rooms.js. It is viewport-fixed, so
-   .rooms must never carry a transform (that would re-root fixed children). */
+/* The WebGL canvas, injected into .rooms-media by rooms.js and sized to it.
+
+   It was a viewport-sized fixed canvas that chased the frame's live position
+   every frame. That is only smooth where scrolling and rendering share a
+   thread; Safari and every phone scroll on the compositor, so the photograph
+   trailed the page and shook — and a full-screen layer sitting over the
+   document dragged on the scrolling of neighbouring sections too. As a plain
+   absolutely-positioned child it scrolls with its own parent, for free. */
 .rooms-gl {
-  position: fixed;
-  top: 0;
-  left: 0;
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   z-index: 1;

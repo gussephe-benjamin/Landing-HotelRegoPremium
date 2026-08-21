@@ -10,7 +10,14 @@ document.addEventListener("DOMContentLoaded", function () {
   if (!root || typeof ScrollTrigger === "undefined") return;
 
   var settings = {
-    smoothness: 0.08,
+    // Fraction of the remaining distance covered per 60fps frame. Raised from
+    // 0.08 so this section answers the scroll at something close to the rate
+    // its neighbours do: everything around it — the marquee, the horizontal
+    // run, the hand-off into Reserva — now tracks the scroll directly, and a
+    // third of a second of trail here was enough to read as the page going
+    // slack for one section and tightening again afterwards. It is still a
+    // lerp and still floats; it just does not lag its own neighbours.
+    smoothness: 0.14,
     bufferSlides: 2,
     imageShift: 25,
     copyShift: 15,
@@ -19,26 +26,35 @@ document.addEventListener("DOMContentLoaded", function () {
     revealOverlap: 0.5,
   };
 
+  // Each entry names its own image pair rather than relying on its position
+  // in this array. Position worked only while the two happened to line up;
+  // removing or reordering a value silently handed every value below it the
+  // photographs of its neighbour. The count is read from this array too — the
+  // counter total and the progress rail's step both derive from it.
   var slides = [
     {
+      img: 1,
       title: "Calidez",
       tags: ["Servicio &amp; Cercan&iacute;a", "Atenci&oacute;n &amp; Detalle", "Gente &amp; Oficio"],
       note: "Recibir como se recibe en casa.",
       accent: "#e6c79a",
     },
     {
+      img: 2,
       title: "Dise&ntilde;o",
       tags: ["Espacio &amp; Luz", "Materia &amp; Textura", "Forma &amp; Funci&oacute;n"],
       note: "Cada ambiente pensado dos veces.",
       accent: "#d3dbd6",
     },
     {
+      img: 3,
       title: "Descanso",
       tags: ["Silencio &amp; Pausa", "Cama &amp; Sue&ntilde;o", "Tiempo &amp; Calma"],
       note: "El lujo de no tener apuro.",
       accent: "#c2d6dc",
     },
     {
+      img: 4,
       title: "Ra&iacute;ces",
       tags: ["Amazonas &amp; Origen", "Valle &amp; R&iacute;o", "Local &amp; Aut&eacute;ntico"],
       note: "De Bagua Grande, para el mundo.",
@@ -64,7 +80,7 @@ document.addEventListener("DOMContentLoaded", function () {
     el.className = "values-slide";
     el.style.zIndex = index;
     el.innerHTML =
-      '<img src="./img/value-' + (i + 1) + "-" + side + '.jpg" alt="" />' +
+      '<img decoding="async" src="./img/value-' + data.img + "-" + side + '.jpg" alt="" />' +
       '<div class="values-overlay"></div>' +
       '<div class="values-copy" style="color:' + data.accent + '">' +
       '<div class="values-tags">' + data.tags.join("<br />") + "</div>" +
@@ -73,14 +89,50 @@ document.addEventListener("DOMContentLoaded", function () {
       "</div>";
 
     columns[side].el.appendChild(el);
-    columns[side].visible.set(index, el);
+    // The two elements this slide animates are looked up once, here, and
+    // stored on the record. updateSlider used to call el.querySelector()
+    // twice per slide on every frame of the run — a fresh selector match
+    // against the subtree, sixty times a second, to find two children that
+    // never change.
+    columns[side].visible.set(index, {
+      el: el,
+      img: el.querySelector("img"),
+      copy: el.querySelector(".values-copy"),
+      hidden: false,
+      clip: "",
+      imgT: "",
+      copyT: "",
+    });
+
+    // Decoding is the cost here, not downloading. These photographs are up to
+    // 1400x1812, and a browser left to itself decodes them on the main thread
+    // the first time they are painted — which lands on exactly the frame the
+    // columns slide in, stalling that one transition while every later one
+    // runs clean off the cache. That is the stutter, and it is far worse in
+    // Safari than in Blink, which decodes off-thread more eagerly.
+    //
+    // The slides are built at page load, so asking for the decode here does
+    // the work long before the section is reached. `decoding="async"` keeps
+    // it off the main thread; decode() is what actually starts it rather than
+    // waiting for first paint. A rejection just means the image is not there,
+    // and the browser falls back to decoding on paint as before.
+    var img = columns[side].visible.get(index).img;
+    if (img && img.decode) img.decode().catch(function () {});
   }
 
+  // inset(), not polygon(). Both describe the same straight horizontal edge,
+  // but a four-point polygon is treated as arbitrary geometry and re-tessellated
+  // on every frame it changes, while inset() is a rectangle the compositor has
+  // a direct path for. The shape here is only ever a rectangle, so the polygon
+  // was paying for generality it never used.
   function getRevealShape(side, revealAmount) {
     var d = Math.max(0, Math.min(1, revealAmount)) * (100 + settings.revealOverlap);
-    return side === "left"
-      ? "polygon(0% " + (100 - d) + "%, 100% " + (100 - d) + "%, 100% 100%, 0% 100%)"
-      : "polygon(0% 0%, 100% 0%, 100% " + d + "%, 0% " + d + "%)";
+    // Rounded before it reaches the string. At full precision the value
+    // changes on every frame no matter how slowly the page is moving, so the
+    // guards below could never catch a repeat; two decimals is finer than a
+    // device pixel on this box and lets a slow scroll skip most rewrites.
+    var edge = (100 - d).toFixed(2);
+    return side === "left" ? "inset(" + edge + "% 0 0 0)" : "inset(0 0 " + edge + "% 0)";
   }
 
   function getTitlePosition(slideProgress) {
@@ -92,6 +144,14 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   var progressBar = root.querySelector(".values-progress i");
+  var counterTotal = root.querySelector(".values-counter");
+  // The rail's filled segment is one slide wide and scaled up by the index,
+  // so its base width has to track the count. It was hardcoded at 25% for
+  // four values; with three that left the bar a quarter short of the end.
+  root.style.setProperty("--vl-step", (100 / slides.length).toFixed(4) + "%");
+  if (counterTotal) {
+    counterTotal.lastChild.textContent = " / " + String(slides.length).padStart(2, "0");
+  }
   var counterNow = root.querySelector(".values-counter b");
   var lastIndex = -1;
 
@@ -115,26 +175,74 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!visible.has(i)) createSlide(side, i);
       }
 
-      visible.forEach(function (el, index) {
+      visible.forEach(function (rec, index) {
         if (index < first || index > last) {
-          el.remove();
+          rec.el.remove();
           visible.delete(index);
           return;
         }
 
         var revealAmount = scrollPosition - index;
+
+        // Buffered but not on screen. Below 0 the clip encloses no area at
+        // all; at 2 or above the next slide up is fully revealed and sits on
+        // top of this one with a higher z-index, so it is completely covered.
+        // Either way nothing of it can be seen.
+        //
+        // They still have to be hidden explicitly rather than left to the
+        // clip. A zero-area clip-path stops the pixels reaching the screen,
+        // but it does not stop the layer being built: every slide carries an
+        // image and a 100vw-wide copy layer, and those are promoted while the
+        // section is running. Six slides a column meant twenty-four composited
+        // layers, twenty of which could never be seen, all of them allocated
+        // and rasterised on the frames the section arrives on. That was the
+        // hitch — it happened once, on entry, which is why it survived the
+        // decode fix and the arrival-travel fix. visibility:hidden takes the
+        // subtree out of painting entirely, so at rest this is four layers
+        // instead of twenty-four.
+        //
+        // Returning early also skips three style writes per hidden slide per
+        // frame during the pinned run.
+        if (revealAmount <= 0 || revealAmount >= 2) {
+          if (!rec.hidden) {
+            rec.hidden = true;
+            rec.el.style.visibility = "hidden";
+          }
+          return;
+        }
+        if (rec.hidden) {
+          rec.hidden = false;
+          rec.el.style.visibility = "";
+        }
+
         var slideProgress = Math.max(0, Math.min(2, revealAmount));
 
-        el.style.clipPath = getRevealShape(side, revealAmount);
+        // Every write below is guarded against restating a value the element
+        // already has. Assigning an identical string still invalidates the
+        // element's style and, for clip-path, still costs a re-raster — and
+        // the lerp settles asymptotically, so the tail of every transition
+        // spends many frames producing values that no longer differ.
+        var clip = getRevealShape(side, revealAmount);
+        if (clip !== rec.clip) {
+          rec.clip = clip;
+          rec.el.style.clipPath = clip;
+        }
 
         var imageDrift = (1 - slideProgress) * settings.imageShift * drift;
-        el.querySelector("img").style.transform =
-          "translateY(" + imageDrift + "%) scale(" + settings.imageZoom + ")";
+        var imgT =
+          "translate3d(0," + imageDrift.toFixed(3) + "%,0) scale(" + settings.imageZoom + ")";
+        if (imgT !== rec.imgT) {
+          rec.imgT = imgT;
+          rec.img.style.transform = imgT;
+        }
 
         var titleDrift =
           (1 - getTitlePosition(slideProgress)) * settings.copyShift * drift;
-        el.querySelector(".values-copy").style.transform =
-          "translateY(" + titleDrift + "%)";
+        var copyT = "translate3d(0," + titleDrift.toFixed(3) + "%,0)";
+        if (copyT !== rec.copyT) {
+          rec.copyT = copyT;
+          rec.copy.style.transform = copyT;
+        }
       });
     });
 
@@ -160,27 +268,76 @@ document.addEventListener("DOMContentLoaded", function () {
     refreshPriority: -1,
     onToggle: function (self) {
       active = self.isActive;
+      kick();
+      // Promotion is scoped to the stretch where these elements are actually
+      // being transformed. Left on permanently, `will-change` holds real
+      // texture memory for the whole page and makes Safari build the layers
+      // early, which is the cost this section was paying on arrival.
+      root.classList.toggle("is-running", self.isActive);
     },
     onUpdate: function (self) {
       scrollTarget = 1 + self.progress * span;
+      kick();
     },
   });
 
-  // The lerp is what gives the reveal its floaty lag; it only runs while the
-  // section is on screen so it costs nothing for the rest of the page.
+  // The lerp is what gives the reveal its floaty lag.
+  //
+  // It is stepped against elapsed time, not against frames. Written as a flat
+  // per-frame fraction it converged twice as fast on a 120Hz display as on a
+  // 60Hz one — and Safari on a ProMotion panel does not hold one rate, it
+  // moves between 24 and 120Hz according to what the system is doing, so the
+  // smoothing constant was drifting *during* a scroll. That is felt as the
+  // section tightening and loosening for no reason the visitor can see, which
+  // is the part that reads as unsteadiness rather than as float. Converting
+  // the fraction to a per-millisecond decay makes the response identical at
+  // any refresh rate and stable while it changes.
+  //
+  // The clamp on dt keeps a backgrounded tab — where frames can be seconds
+  // apart — from resuming with one enormous jump.
+  var lastFrame = 0;
+  var rafId = 0;
+
   function loop() {
-    requestAnimationFrame(loop);
-    if (!active && Math.abs(scrollTarget - scrollPosition) < 0.0005) return;
-    scrollPosition += (scrollTarget - scrollPosition) * settings.smoothness;
+    if (!active && Math.abs(scrollTarget - scrollPosition) < 0.0005) {
+      // Settled and off screen: stop scheduling. This used to call
+      // requestAnimationFrame unconditionally, so the callback stayed on the
+      // frame queue for the entire life of the page, waking the main thread
+      // sixty times a second through every other section to decide it had
+      // nothing to do.
+      rafId = 0;
+      lastFrame = 0;
+      return;
+    }
+    var now = performance.now();
+    var dt = lastFrame ? Math.min(64, now - lastFrame) : 16.667;
+    lastFrame = now;
+
+    var k = 1 - Math.pow(1 - settings.smoothness, dt / 16.667);
+    scrollPosition += (scrollTarget - scrollPosition) * k;
     updateSlider();
+    rafId = requestAnimationFrame(loop);
+  }
+
+  function kick() {
+    if (!rafId) rafId = requestAnimationFrame(loop);
   }
 
   updateSlider();
-  loop();
 
 
   // ── Arrival transition: the two columns part like a curtain ──────────
-  if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  // values.css drives this with a scroll-driven CSS animation wherever the
+  // engine has one, because that runs on the compositor and cannot fall out
+  // of phase with the scroll. This is the fallback for engines that do not,
+  // and the two must never both run — the test below is character-for-
+  // character the @supports condition guarding the CSS.
+  var cssArrival =
+    typeof CSS !== "undefined" &&
+    CSS.supports &&
+    CSS.supports("animation-timeline: view()");
+
+  if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches && !cssArrival) {
     gsap.fromTo(
       columns.left.el,
       { yPercent: 100 },
@@ -190,6 +347,13 @@ document.addEventListener("DOMContentLoaded", function () {
         scrollTrigger: { trigger: root, start: "top bottom", end: "top top", scrub: true },
       }
     );
+    // Symmetric with the left column on purpose: this one rises by exactly as
+    // much as the page scrolls, so the two halves part like a curtain. An
+    // earlier attempt overshot this to -140 on the theory that a transform
+    // standing still in the viewport is where a frame of main-thread lag
+    // becomes visible. The theory holds in general, but it was not what was
+    // shaking here — the layer count below was — and the overshoot cost the
+    // symmetry, so it is back to -100.
     gsap.fromTo(
       columns.right.el,
       { yPercent: -100 },
@@ -199,6 +363,11 @@ document.addEventListener("DOMContentLoaded", function () {
         scrollTrigger: { trigger: root, start: "top bottom", end: "top top", scrub: true },
       }
     );
+  }
+
+  // Opacity only, so there is no position to fall out of phase and no reason
+  // to route it through the CSS path. Runs on both.
+  if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     gsap.fromTo(
       [".values-eyebrow", ".values-progress", ".values-counter"],
       { opacity: 0 },

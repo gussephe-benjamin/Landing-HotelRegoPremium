@@ -7,15 +7,15 @@
    <title>Camillemormal.com Rebuild</title>
    <link rel="preconnect" href="https://api.fontshare.com" />
    <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,401,500,700&f[]=zodiak@300,301,400,401,700,701&display=swap" rel="stylesheet" />
-   <link rel="stylesheet" href="style.css" />
+   <link rel="stylesheet" href="style.css?v=2" />
    <link rel="stylesheet" href="overlay.css" />
-   <link rel="stylesheet" href="story.css?v=13" />
+   <link rel="stylesheet" href="story.css?v=14" />
    <link rel="stylesheet" href="masked-heading.css" />
    <link rel="stylesheet" href="offering.css?v=5" />
-   <link rel="stylesheet" href="rooms.css?v=10" />
-   <link rel="stylesheet" href="values.css" />
+   <link rel="stylesheet" href="rooms.css?v=11" />
+   <link rel="stylesheet" href="values.css?v=4" />
    <link rel="stylesheet" href="voices.css?v=6" />
-   <link rel="stylesheet" href="location.css?v=6" />
+   <link rel="stylesheet" href="location.css?v=8" />
    <link rel="stylesheet" href="reserve.css?v=9" />
    <link rel="stylesheet" href="menu.css?v=1" />
    <link rel="stylesheet" href="kinetic.css?v=8" />
@@ -639,6 +639,14 @@
 
       <div class="location-aura" aria-hidden="true"></div>
 
+      <!-- Dimmed by reserve.js while the reservation panel rises over this
+           section. It exists so that fade has something cheap to animate: the
+           dim used to be an opacity tween on .location-grid, which holds the
+           glass card and the filtered map, and fading that subtree forced the
+           blur and the filter chain to be recomposited on every frame of the
+           hand-off. -->
+      <div class="location-dim" aria-hidden="true"></div>
+
       <div class="location-grid">
          <div class="location-map">
             <div class="location-map-frame">
@@ -1099,44 +1107,50 @@
    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/ScrollTrigger.min.js"></script>
    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/Flip.min.js"></script>
    <script>
+      // Every step below animates `y` (a transform), never `top`. Animating
+      // `top` on the five columns and twenty-five tiles reflowed the grid on
+      // every frame for three seconds, and the tail of it does that while the
+      // container is scaling to six times size — cheap enough in Blink,
+      // visibly rough in WebKit. The opening offsets live in style.css as
+      // matching translate3d values, so the motion is identical.
       let tl = gsap.timeline({ delay: 0 });
 
       tl.to(".col", {
-         top: "0",
+         y: 0,
          duration: 3,
          ease: "power4.inOut"
       });
 
       tl.to(".c-1 .item", {
-         top: "0",
+         y: 0,
          stagger: 0.25,
          duration: 3,
          ease: "power4.inOut"
       }, "-=2");
 
       tl.to(".c-2 .item", {
-         top: "0",
+         y: 0,
          stagger: -0.25,
          duration: 3,
          ease: "power4.inOut"
       }, "-=4");
 
       tl.to(".c-3 .item", {
-         top: "0",
+         y: 0,
          stagger: 0.25,
          duration: 3,
          ease: "power4.inOut"
       }, "-=4");
 
       tl.to(".c-4 .item", {
-         top: "0",
+         y: 0,
          stagger: -0.25,
          duration: 3,
          ease: "power4.inOut"
       }, "-=4");
 
       tl.to(".c-5 .item", {
-         top: "0",
+         y: 0,
          stagger: 0.25,
          duration: 3,
          ease: "power4.inOut"
@@ -1149,7 +1163,7 @@
       }, "-=2");
 
       tl.to(".slide-num p, .preview img", {
-         top: 0,
+         y: 0,
          stagger: 0.075,
          duration: 1,
          ease: "power3.out",
@@ -1161,16 +1175,16 @@
       });
    </script>
    <script src="overlay.js"></script>
-   <script src="story.js?v=19"></script>
-   <script src="hscroll.js?v=14"></script>
+   <script src="story.js?v=20"></script>
+   <script src="hscroll.js?v=16"></script>
    <script src="masked-heading.js"></script>
    <script src="offering.js?v=6"></script>
-   <script src="rooms.js?v=15"></script>
-   <script src="values.js"></script>
+   <script src="rooms.js?v=16"></script>
+   <script src="values.js?v=8"></script>
    <script src="band-shader.js"></script>
    <script src="voices.js?v=3"></script>
    <script src="location.js"></script>
-   <script src="reserve.js?v=3"></script>
+   <script src="reserve.js?v=6"></script>
    <script src="reserve-bar.js?v=4"></script>
    <script src="menu.js?v=2"></script>
    <script src="kinetic.js?v=6"></script>

@@ -138,7 +138,7 @@ document.addEventListener("DOMContentLoaded", function () {
   var fragmentShader = document.getElementById("roomsFragmentShader").textContent;
 
   var scene = new THREE.Scene();
-  var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+  var camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
   camera.position.z = 50;
 
   // Null on phones. Everything downstream guards on it, so no context is
@@ -147,10 +147,22 @@ document.addEventListener("DOMContentLoaded", function () {
   if (USE_GL) {
     renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-    renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0x000000, 0);
     renderer.domElement.className = "rooms-gl";
-    root.appendChild(renderer.domElement);
+    // Mounted inside the frame it paints, not over the whole viewport.
+    //
+    // It used to be a viewport-sized, position:fixed canvas that re-read the
+    // element's live rect on every frame to keep the plane glued to it. That
+    // works only while scrolling is synchronous with rendering: Safari (and
+    // every phone) scrolls on the compositor, which runs ahead of that read,
+    // so the photograph lagged the page by a frame and visibly shook — and a
+    // full-screen composited layer taxed the scrolling of the sections around
+    // it as well, which is why the brand-values block stuttered too.
+    //
+    // Sized to the element and living inside it, the canvas simply scrolls
+    // with the document like any other box. There is nothing left to keep in
+    // sync per frame.
+    mediaEl.appendChild(renderer.domElement);
     // The stylesheet hides the flat photograph while the canvas is painting.
     root.classList.add("rooms--gl");
   }
@@ -178,8 +190,15 @@ document.addEventListener("DOMContentLoaded", function () {
   var mouseOver = false;
   var mouseDown = false;
   window.addEventListener("mousemove", function (e) {
-    pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
-    pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    // Normalised against the frame rather than the viewport: the canvas is no
+    // longer full-screen, so window coordinates would put the ripple
+    // somewhere else entirely. Only measured while the pointer is actually
+    // over the frame, so this stays off the path of ordinary mouse movement.
+    if (!mouseOver) return;
+    var r = mediaEl.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    pointer.x = ((e.clientX - r.left) / r.width) * 2 - 1;
+    pointer.y = -((e.clientY - r.top) / r.height) * 2 + 1;
   });
 
   var geometry = new THREE.PlaneBufferGeometry(1, 1, 32, 32);
@@ -213,23 +232,28 @@ document.addEventListener("DOMContentLoaded", function () {
   var textures = [];
   var animating = false;
 
-  // Maps the DOM rect of .rooms-media into camera units. Because the canvas
-  // is viewport-fixed, feeding the element's *viewport* position (rect.top)
-  // is what keeps the plane glued to the element while the page scrolls.
-  function syncMeshToElement() {
-    var rect = mediaEl.getBoundingClientRect();
-    if (!rect.width || !rect.height) return;
+  // Fits the canvas and the plane to the frame. Called on layout changes
+  // only — never per frame, which is the whole point of mounting the canvas
+  // inside the element: its position is now the browser's problem, and the
+  // plane just fills whatever the canvas is.
+  function sizeToMedia() {
+    if (!renderer) return;
+    var w = mediaEl.clientWidth;
+    var h = mediaEl.clientHeight;
+    if (!w || !h) return;
+
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
 
     var vFov = (camera.fov * Math.PI) / 180;
     var unitHeight = 2 * Math.tan(vFov / 2) * (camera.position.z - mesh.position.z);
-    var unitWidth = unitHeight * camera.aspect;
+    mesh.scale.y = unitHeight;
+    mesh.scale.x = unitHeight * camera.aspect;
+    mesh.position.x = 0;
+    mesh.position.y = 0;
 
-    mesh.scale.x = unitWidth * (rect.width / window.innerWidth);
-    mesh.scale.y = unitHeight * (rect.height / window.innerHeight);
-    mesh.position.y = unitHeight / 2 - mesh.scale.y / 2 - (rect.top / window.innerHeight) * unitHeight;
-    mesh.position.x = -(unitWidth / 2) + mesh.scale.x / 2 + (rect.left / window.innerWidth) * unitWidth;
-
-    material.uniforms.uMeshSize.value = [rect.width, rect.height];
+    material.uniforms.uMeshSize.value = [w, h];
   }
 
   // A fixed-position canvas is NOT clipped by the section's overflow, so it
@@ -278,7 +302,6 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!onScreen) return;
 
     material.uniforms.uTime.value = clock.getElapsedTime();
-    syncMeshToElement();
 
     var target = mouseOver ? pointer : new THREE.Vector2(0, 0);
     meshMouse.lerp(target, mouseLerp);
@@ -299,13 +322,11 @@ document.addEventListener("DOMContentLoaded", function () {
     renderer.render(scene, camera);
   }
 
-  window.addEventListener("resize", function () {
-    if (!renderer) return;
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    syncMeshToElement();
-  });
+  window.addEventListener("resize", sizeToMedia);
+  // The frame's width is a clamp() on viewport width, so a ScrollTrigger
+  // refresh (fonts landing, a pin re-measuring) can resize it without a
+  // window resize ever firing.
+  if (typeof ScrollTrigger !== "undefined") ScrollTrigger.addEventListener("refresh", sizeToMedia);
 
   mediaEl.addEventListener("mouseenter", function () { mouseOver = true; });
   mediaEl.addEventListener("mouseleave", function () { mouseOver = false; mouseDown = false; });
@@ -314,8 +335,8 @@ document.addEventListener("DOMContentLoaded", function () {
   mediaEl.addEventListener("click", function () { step(1); });
 
   updateFlatImage(0);
+  sizeToMedia();
   loadTextures();
-  syncMeshToElement();
   render();
 
   // ── Slide content ──────────────────────────────────────────────────
@@ -627,12 +648,11 @@ document.addEventListener("DOMContentLoaded", function () {
       // (with or without spacing) yanks its height out of the flow and makes
       // the whole page jump.
       //
-      // NOTE: `.rooms` itself is never transformed/filtered. Its WebGL canvas
-      // is `position: fixed` and reads real viewport coordinates every frame
-      // (see syncMeshToElement) — a transform on an ancestor would make the
-      // canvas fixed *to that ancestor* instead of the viewport, silently
-      // detaching the photo from the slider. Only `.offering-inner` (an
-      // unrelated subtree) and elements below get transformed/filtered.
+      // The canvas used to be position:fixed, which made transforming any
+      // ancestor of `.rooms` unsafe — it would have re-rooted the canvas to
+      // that ancestor and silently detached the photograph from the slider.
+      // It now lives inside .rooms-media as an ordinary absolutely-positioned
+      // box, so that constraint is gone.
       // Both of these are desktop-only. They are the two heaviest scrubbed
       // effects here and neither survives contact with a mid-range phone:
       // scaling and fading a whole section re-composites it every frame, and

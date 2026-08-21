@@ -58,11 +58,41 @@ document.addEventListener("DOMContentLoaded", function () {
   // ── Page transition ─────────────────────────────────────────────────
   // The panel rises over the previous section, and that section is held
   // still: it gets a scrubbed counter-translation exactly equal to the
-  // distance scrolled, so it reads as frozen underneath while this one
-  // slides up. Transform-only, so nothing in the document flow shifts.
-  if (!reduced) {
-    var previous = document.querySelector(".location");
-    if (previous) {
+  // distance scrolled, so it reads as frozen underneath while this one slides
+  // up. Transform-only, so nothing in the document flow shifts.
+  //
+  // Desktop only, and deliberately so. Any scroll-driven transform is
+  // computed on the main thread and applied a frame after the browser has
+  // already scrolled the rest of the page on the compositor, so the held
+  // section and everything around it are never quite in step. On a desktop
+  // that gap is a frame; on a phone, which scrolls entirely on the
+  // compositor, it is visible shake — and the effect is not worth paying for
+  // there. Below the breakpoint the two sections simply scroll past each
+  // other, which is what the browser is already good at.
+  // location.css drives the hand-off with a scroll-driven CSS animation
+  // wherever the engine has one, and that path is strictly better here: it is
+  // evaluated on the compositor, so it cannot trail the scroll, and it lets
+  // the section stay a cached layer instead of being re-rendered — which for
+  // a live filtered map iframe and a 30px backdrop blur is most of the cost.
+  // What follows is the fallback. The condition is the same one guarding the
+  // @supports block there, so exactly one of the two ever runs.
+  var cssHandoff =
+    typeof CSS !== "undefined" &&
+    CSS.supports &&
+    CSS.supports("animation-timeline: view()") &&
+    CSS.supports("timeline-scope: --a");
+
+  if (!reduced && !cssHandoff) {
+    // Held in a variable rather than created inline. An unreferenced context
+    // is not reliably kept watching the query, and the symptom is quiet:
+    // loading on a phone and then widening past the breakpoint left the
+    // hand-off permanently switched off instead of coming back.
+    var mm = gsap.matchMedia();
+    mm.add("(min-width: 1024px)", function () {
+      var previous = document.querySelector(".location");
+      if (!previous) return;
+      var dim = previous.querySelector(".location-dim");
+
       // The section being slid away carries the two most expensive things on
       // the page to move: the info card's backdrop-filter, which re-samples
       // and re-blurs whatever sits behind it on every frame it travels, and
@@ -80,10 +110,11 @@ document.addEventListener("DOMContentLoaded", function () {
       // instead of being built during it.
       ScrollTrigger.create({
         trigger: root,
-        // Just ahead of the tween's own "top bottom", not far ahead: promoting
-        // swaps text from subpixel to greyscale antialiasing for as long as it
-        // lasts, so the window is kept to the stretch where the section is
-        // already travelling and fading and nobody can read it anyway.
+        // Just ahead of the tween's own "top bottom", not far ahead:
+        // promoting swaps text from subpixel to greyscale antialiasing for as
+        // long as it lasts, so the window is kept to the stretch where the
+        // section is already travelling and fading and nobody can read it
+        // anyway.
         start: "top 110%",
         end: "top top",
         refreshPriority: PRIORITY,
@@ -104,30 +135,47 @@ document.addEventListener("DOMContentLoaded", function () {
             trigger: root,
             start: "top bottom",
             end: "top top",
+            // Direct, not smoothed. A numeric scrub would ease toward the
+            // scroll position, and for a section whose whole job is to look
+            // pinned in place, easing reads as drift.
             scrub: true,
             invalidateOnRefresh: true,
             refreshPriority: PRIORITY,
           },
         }
       );
-    }
 
-    // A soft dim on the section being covered adds depth to the hand-off.
-    gsap.fromTo(
-      ".location-grid, .location-head, .location-near",
-      { opacity: 1 },
-      {
-        opacity: 0.25,
-        ease: "none",
-        scrollTrigger: {
-          trigger: root,
-          start: "top 85%",
-          end: "top 20%",
-          scrub: true,
-          refreshPriority: PRIORITY,
-        },
+      // A soft dim on the section being covered adds depth to the hand-off.
+      // Applied to a bare scrim layer rather than to .location-grid: fading
+      // that subtree meant its opacity dropped below 1 every frame, which
+      // both groups it for compositing and makes it a backdrop root — so the
+      // glass card's blur had to be recomputed against a freshly rendered
+      // group, alongside the filtered map, for the whole hand-off. That was
+      // the bulk of the dropped frames.
+      if (dim) {
+        gsap.fromTo(
+          dim,
+          { opacity: 0 },
+          {
+            opacity: 0.75,
+            ease: "none",
+            scrollTrigger: {
+              trigger: root,
+              start: "top 85%",
+              end: "top 20%",
+              scrub: true,
+              refreshPriority: PRIORITY,
+            },
+          }
+        );
       }
-    );
+
+      return function cleanup() {
+        previous.classList.remove("is-handoff");
+        gsap.set(previous, { clearProps: "transform" });
+        if (dim) gsap.set(dim, { clearProps: "opacity" });
+      };
+    });
   }
 
   // ── Entrance ─────────────────────────────────────────────────────────
