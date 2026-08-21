@@ -489,6 +489,92 @@
   stroke-linejoin: round;
 }
 
+/* ── WhatsApp fallback ───────────────────────────────────────────────── */
+/* The booking bar above hands off to a reservation page that is still being
+   built. This is the channel that actually works today. Liquid glass, built
+   the same way as the location card and the reservation panel elsewhere on
+   the page — translucent gradient fill, backdrop blur with a saturation
+   lift, hairline border, inner top highlight for a lit edge — but kept to
+   pill size and a mono caption so it reads as a quiet secondary option
+   sitting under "Reservar", not a second offer competing with it. */
+.rsv-wa {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1.3rem 0.6rem 0.85rem;
+  border-radius: 999px;
+  text-decoration: none;
+  color: var(--rs-ink-72);
+  background: linear-gradient(
+    168deg,
+    rgba(244, 248, 251, 0.13) 0%,
+    rgba(244, 248, 251, 0.045) 46%,
+    rgba(244, 248, 251, 0.08) 100%
+  );
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  backdrop-filter: blur(22px) saturate(150%);
+  border: 1px solid rgba(244, 248, 251, 0.2);
+  box-shadow:
+    0 14px 34px -16px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+.rsv-wa:hover,
+.rsv-wa:focus-visible {
+  transform: translateY(-2px);
+  color: var(--rs-ink);
+  border-color: rgba(244, 248, 251, 0.4);
+  box-shadow:
+    0 18px 40px -16px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+.rsv-wa:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(244, 248, 251, 0.35),
+    0 18px 40px -16px rgba(0, 0, 0, 0.65);
+}
+
+/* Small live signal rather than a label — "open now", not "click here". */
+.rsv-wa-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #3ddc84;
+  box-shadow: 0 0 0 0 rgba(61, 220, 132, 0.55);
+  animation: rsvWaPulse 2.2s ease-out infinite;
+}
+@keyframes rsvWaPulse {
+  0% { box-shadow: 0 0 0 0 rgba(61, 220, 132, 0.55); }
+  70% { box-shadow: 0 0 0 7px rgba(61, 220, 132, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(61, 220, 132, 0); }
+}
+
+.rsv-wa-icon {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  /* WhatsApp's own green, the one spot of saturated colour on the pill — a
+     deliberate exception to the section's gold/ink palette, kept small
+     enough to read as a brand mark rather than a clash. */
+  fill: #25d366;
+}
+
+.rsv-wa-text {
+  font-family: var(--rs-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rsv-wa-dot { animation: none; }
+}
+
 /* ── Staggered blur-rise entrance ────────────────────────────────────── */
 @keyframes reserveBlurRise {
   from { opacity: 0; filter: blur(16px); transform: translateY(28px); }
@@ -500,6 +586,7 @@
   animation: reserveBlurRise 1.05s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
 }
 .reserve.is-in .rsv-bar { animation-delay: 380ms; }
+.reserve.is-in .rsv-wa { animation-delay: 620ms; }
 
 @media (max-width: 860px) {
   .rsv-bar { gap: 1.5rem 2rem; }
