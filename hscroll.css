@@ -628,3 +628,59 @@
   --hs-bg: #efeae3;
   --hs-fg: #1a1714;
 }
+
+/* ── Título de la sección en móvil ───────────────────────────────────── */
+/* Reemplaza al marquee, que a este ancho se sale de la pantalla. Vive fuera
+   de toda animación: es tipografía quieta, para no volver a cargar el hilo
+   principal en el formato donde menos margen hay. */
+.hs-title-m { display: none; }
+
+@media not all and (min-width: 860px) and (any-pointer: fine) {
+  .hs-marquee { display: none; }
+
+  .hs-title-m {
+    display: grid;
+    justify-items: start;
+    margin: 0 0 clamp(1.75rem, 5vh, 2.5rem);
+    font-family: "Clash Display", var(--hs-sans);
+    font-weight: 600;
+    font-size: clamp(2.5rem, 13.5vw, 4.25rem);
+    line-height: 0.86;
+    letter-spacing: -0.025em;
+    text-transform: uppercase;
+  }
+
+  /* Filete corto sobre la primera línea: da comienzo al bloque y lo separa
+     del borde superior sin gastar altura. */
+  .hs-title-m::before {
+    content: "";
+    width: 2.75rem;
+    height: 2px;
+    margin-bottom: clamp(0.9rem, 2.5vh, 1.4rem);
+    background: var(--hs-accent);
+  }
+
+  .hs-title-m__l1 { opacity: 0.55; }
+
+  /* La palabra que carga el sentido, en el acento de la sección. */
+  .hs-title-m__l2 { color: var(--hs-accent); }
+
+  /* Tercera línea en contraste deliberado: serif itálica, minúscula y
+     desplazada. Es lo que hace que el bloque se lea como un título compuesto
+     y no como tres renglones del mismo tamaño. */
+  .hs-title-m__l3 {
+    margin-top: 0.12em;
+    margin-left: 0.55em;
+    font-family: var(--hs-serif);
+    font-weight: 300;
+    font-size: 0.82em;
+    letter-spacing: -0.01em;
+    text-transform: none;
+  }
+  .hs-title-m__l3 i { font-style: italic; }
+  .hs-title-m__l3 b {
+    color: var(--hs-accent);
+    font-weight: inherit;
+    font-style: normal;
+  }
+}

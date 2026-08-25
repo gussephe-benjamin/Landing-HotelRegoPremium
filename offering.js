@@ -6,7 +6,23 @@ document.addEventListener("DOMContentLoaded", function () {
   var section = document.querySelector(".offering");
   if (!section) return;
 
-  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // Quieta fuera del escritorio.
+  //
+  // Esta sección es una pantalla sostenida con un video de fondo, y en móvil
+  // cobraba dos veces: un parallax con scrub, que escribe un transform en cada
+  // cuadro mientras la sección cruza la pantalla, y una entrada que anima
+  // `filter: blur()` sobre cada letra del titular por separado. Un desenfoque
+  // animado es trabajo por píxel, y multiplicado por once letras es de lo más
+  // caro que hacía la página en un teléfono — justo al llegar a una sección
+  // que además está decodificando video.
+  //
+  // Se reutiliza la rama de movimiento reducido, que ya existía y ya hace lo
+  // correcto: deja el recorte abierto y el texto visible en su estado final,
+  // y no crea ninguna animación. El video queda, que es lo que se venía a ver.
+  var reduced =
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+    (typeof window.REGO_MQ !== "undefined" &&
+      !window.matchMedia(window.REGO_MQ.DESKTOP).matches);
 
   var frame = section.querySelector(".offering-frame");
   var video = section.querySelector(".offering-video");

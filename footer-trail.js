@@ -781,9 +781,54 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
   // Main animation loop
-  (function animate() {
+  // El bucle solo corre con la sección a la vista.
+  //
+  // Antes se auto-reagendaba desde que cargaba la página hasta que se cerraba,
+  // llamando a removeOldImages() en cada cuadro aunque la sección estuviera a
+  // veinte mil píxeles de distancia. En un teléfono eso es despertar el hilo
+  // principal sesenta veces por segundo, durante todo el recorrido, para no
+  // hacer nada — y compite justo con el scroll, que es lo que tiene que ir
+  // suave.
+  //
+  // La interacción no se toca: el rastro sigue respondiendo al dedo igual que
+  // antes cuando la sección está en pantalla, que es el único momento en que
+  // alguien puede verlo.
+  let loopId = 0;
+  let loopOn = false;
+
+  function animate() {
     if (isMoving || isTouching || isScrolling) createTrailImage();
     removeOldImages();
-    requestAnimationFrame(animate);
-  })();
+    loopId = requestAnimationFrame(animate);
+  }
+
+  function startLoop() {
+    if (loopOn) return;
+    loopOn = true;
+    loopId = requestAnimationFrame(animate);
+  }
+
+  function stopLoop() {
+    if (!loopOn) return;
+    loopOn = false;
+    cancelAnimationFrame(loopId);
+    // Barrido final: sin cuadros no hay quien retire las que quedaron.
+    removeOldImages();
+  }
+
+  if (typeof IntersectionObserver !== "undefined" && container) {
+    new IntersectionObserver(
+      function (entries) {
+        if (entries[0].isIntersecting && !document.hidden) startLoop();
+        else stopLoop();
+      },
+      { rootMargin: "200px" }
+    ).observe(container);
+  } else {
+    startLoop();
+  }
+
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) stopLoop();
+  });
 });

@@ -152,7 +152,7 @@
 .cv-link {
   position: relative;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.6rem;
   padding: clamp(1rem, 2.6vh, 2rem) 0;
   border-bottom: 1px solid rgba(20, 16, 12, 0.3);
@@ -181,6 +181,29 @@
 .cv-word span {
   display: inline-block;
   will-change: transform;
+}
+
+/* Línea de apoyo. La palabra grande es nowrap y en teléfono el panel mide
+   100vw, así que "Tipos de habitaciones" no entra como título; el detalle
+   vive acá abajo, en la mono que ya usa el encabezado del panel. Va fuera
+   de .cv-word a propósito: el rizado por letra sólo debe recorrer el
+   título, no la descripción. */
+.cv-text {
+  display: block;
+  min-width: 0;
+}
+
+.cv-sub {
+  display: block;
+  margin-top: 0.45rem;
+  font-family: var(--rs-mono);
+  font-size: 10px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: rgba(20, 16, 12, 0.5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .cv-link:focus-visible {
@@ -229,4 +252,27 @@
 @media (prefers-reduced-motion: reduce) {
   .nav-fab { transition: opacity 0.3s ease; transform: none; }
   .nav-fab.is-shown { transform: none; }
+}
+
+/* ── Móvil: el disco deja de refractar ───────────────────────────────── */
+/* Este botón está fijo durante todo el recorrido, y un backdrop-filter
+   re-muestrea y vuelve a desenfocar lo que tiene detrás cada vez que ese
+   contenido cambia — o sea, en cada cuadro de scroll, de la primera sección a
+   la última. Es el único efecto de la página que se paga entero, siempre.
+
+   En un teléfono se cambia por un relleno oscuro translúcido del mismo valor.
+   Sobre un fondo casi negro la diferencia es de un par de puntos de
+   luminancia; el disco sigue leyéndose como vidrio por su borde y su brillo
+   interior, que es de donde salía la lectura de material. */
+@media not all and (min-width: 860px) and (any-pointer: fine) {
+  .nav-fab {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: rgba(28, 24, 20, 0.72);
+  }
+}
+
+@media (max-height: 730px) {
+  .cv-link { padding: clamp(0.7rem, 1.8vh, 1.2rem) 0; }
+  .cv-sub { margin-top: 0.3rem; }
 }

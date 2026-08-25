@@ -254,7 +254,51 @@ document.addEventListener("DOMContentLoaded", function () {
   // pin engages; each further unit of travel reveals the next one.
   var span = slides.length - 1;
 
-  ScrollTrigger.create({
+  // ── Se toca una sola vez, en móvil ───────────────────────────────────
+  // Bajando se ven las cuatro caras como siempre. Una vez completada, volver
+  // hacia arriba la deja fija en la última —las dos imágenes partidas— sin
+  // recalcular nada: ni el lerp, ni los recortes, ni las escrituras de estilo.
+  //
+  // En escritorio no aplica: ahí el recorrido se rehace en las dos
+  // direcciones, que es como estaba y como se ve bien.
+  var congelaAlVolver =
+    typeof window.REGO_MQ !== "undefined" &&
+    !window.matchMedia(window.REGO_MQ.DESKTOP).matches;
+  var yaVista = false;
+
+  var colapsada = false;
+
+  // ── El colapso ───────────────────────────────────────────────────────
+  // Congelar la última cara no alcanzaba: la sección seguía reteniendo tres
+  // pantallas de scroll, así que al volver había que atravesar tres pantallas
+  // de una imagen quieta para salir de ella.
+  //
+  // Una vez recorrida se le quita el pin y queda como lo que es: un bloque de
+  // una pantalla mostrando el estado final. Eso obliga a recolocar el scroll a
+  // mano — quitar altura por encima del visitante lo desplazaría — y la
+  // cantidad no se supone: se mide la altura del documento antes y después y
+  // se compensa con la diferencia real. El orden importa, porque refresh()
+  // vuelve a medir los otros dos pins de la página, que están por debajo y
+  // dependen de esta altura.
+  function colapsar() {
+    if (colapsada || !congelaAlVolver || !pinST) return;
+    colapsada = true;
+
+    var altoAntes = document.documentElement.scrollHeight;
+    var yAntes = window.scrollY;
+
+    pinST.kill(true);
+    pinST = null;
+    active = false;
+    root.classList.remove("is-running");
+
+    ScrollTrigger.refresh();
+
+    var quitado = altoAntes - document.documentElement.scrollHeight;
+    if (quitado > 0) window.scrollTo(0, Math.max(0, yAntes - quitado));
+  }
+
+  var pinST = ScrollTrigger.create({
     trigger: root,
     start: "top top",
     end: function () {
@@ -276,8 +320,29 @@ document.addEventListener("DOMContentLoaded", function () {
       root.classList.toggle("is-running", self.isActive);
     },
     onUpdate: function (self) {
+      // Ya recorrida: no se vuelve a mover el objetivo, así que subir por
+      // encima de la sección no la hace retroceder por las cuatro caras.
+      if (congelaAlVolver && yaVista) return;
+
+      if (congelaAlVolver && self.progress > 0.999) {
+        yaVista = true;
+        // Se fija de golpe en lugar de dejar que el lerp llegue solo: si el
+        // visitante invierte el scroll a mitad de la convergencia, el estado
+        // final quedaría a medio camino y ahí se congelaría.
+        scrollTarget = 1 + span;
+        scrollPosition = scrollTarget;
+        updateSlider();
+        return;
+      }
+
       scrollTarget = 1 + self.progress * span;
       kick();
+    },
+    // Al salir por abajo, no en cuanto el progreso llega a 1: en ese momento
+    // la sección todavía está en pantalla y quitarle el pin teletransportaría
+    // al visitante en mitad del recorrido.
+    onLeave: function () {
+      if (congelaAlVolver && yaVista) colapsar();
     },
   });
 
@@ -299,7 +364,15 @@ document.addEventListener("DOMContentLoaded", function () {
   var rafId = 0;
 
   function loop() {
-    if (!active && Math.abs(scrollTarget - scrollPosition) < 0.0005) {
+    // La condición incluye el caso congelado, y esa es la mitad que hace que
+    // esto ahorre algo. Mientras la sección está pineada `active` es true, así
+    // que sin este añadido el bucle seguía corriendo a sesenta cuadros por
+    // segundo llamando a updateSlider() todo el camino de vuelta — con el
+    // objetivo quieto, pero pagando igual el frame.
+    if (
+      Math.abs(scrollTarget - scrollPosition) < 0.0005 &&
+      (!active || (congelaAlVolver && yaVista))
+    ) {
       // Settled and off screen: stop scheduling. This used to call
       // requestAnimationFrame unconditionally, so the callback stayed on the
       // frame queue for the entire life of the page, waking the main thread

@@ -122,457 +122,85 @@
   will-change: transform, opacity;
 }
 
-/* ── Summary bar ─────────────────────────────────────────────────────── */
-/* Deliberately weightless: hairline underlines, no boxes and no fill, so the
-   footage stays the subject. The only solid shape is the outlined action. */
-.rsv-bar {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  gap: clamp(1.5rem, 4vw, 3.5rem);
-  width: min(1000px, 100%);
-  flex-wrap: wrap;
-}
-
-.rsv-field {
-  flex: 1 1 clamp(140px, 18vw, 220px);
-  min-width: 0;
-  text-align: left;
-}
-
-.rsv-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-family: var(--rs-mono);
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.24em;
-  color: var(--rs-ink-72);
-}
-
-.rsv-control {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding-bottom: 0.55rem;
-  border-bottom: 1px solid rgba(244, 248, 251, 0.4);
-  transition: border-color 0.3s ease;
-}
-.rsv-control:hover { border-bottom-color: rgba(244, 248, 251, 0.85); }
-.rsv-control:focus-within { border-bottom-color: #fff; }
-
-.rsv-control svg {
-  width: 14px;
-  height: 14px;
-  flex: none;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  opacity: 0.65;
-  pointer-events: none;
-}
-
-/* Native controls kept — they are what give a phone its own date wheel and
-   picker — but stripped back to the bar's own type. */
-.rsv-input,
-.rsv-select {
-  flex: 1;
-  min-width: 0;
-  appearance: none;
-  -webkit-appearance: none;
-  background: none;
-  border: none;
-  padding: 0;
-  color: var(--rs-ink);
-  font-family: inherit;
-  font-size: 0.95rem;
-  cursor: pointer;
-  outline: none;
-}
-.rsv-input::placeholder { color: rgba(244, 248, 251, 0.7); }
-.rsv-input::-webkit-calendar-picker-indicator { opacity: 0; cursor: pointer; }
-.rsv-select option { color: #14100c; }
-
-/* ── Date picker ─────────────────────────────────────────────────────── */
-/* The field itself is a button; the calendar is a small glass panel anchored
-   under it. Kept deliberately compact — this is a summary bar, so the picker
-   should feel like a tooltip rather than a second form. */
-.rsv-field-dates { position: relative; }
-
-.rsv-dates {
-  width: 100%;
-  background: none;
-  border: none;
-  border-bottom: 1px solid rgba(244, 248, 251, 0.4);
-  font-family: inherit;
-  text-align: left;
-  cursor: pointer;
-  outline: none;
-}
-.rsv-dates-text {
-  flex: 1;
-  min-width: 0;
-  font-size: 0.95rem;
-  color: var(--rs-ink);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.rsv-dates-text.is-empty { color: rgba(244, 248, 251, 0.7); }
-.rsv-dates[aria-expanded="true"] { border-bottom-color: #fff; }
-.rsv-dates:focus-visible { border-bottom-color: #fff; }
-
-.rsv-cal {
-  position: absolute;
-  left: 0;
-  bottom: calc(100% + 0.9rem);
-  z-index: 20;
-  width: 268px;
-  padding: 0.85rem;
-  border-radius: 16px;
-  text-align: left;
-  /* Same material as the rest of the page's glass: a thin fill doing almost
-     nothing and a heavy blur doing the work, with a lit top edge. */
-  background: rgba(20, 24, 30, 0.52);
-  -webkit-backdrop-filter: blur(40px) saturate(190%) brightness(0.88);
-  backdrop-filter: blur(40px) saturate(190%) brightness(0.88);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  box-shadow:
-    0 24px 60px -20px rgba(0, 0, 0, 0.6),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4);
-}
-.rsv-cal[hidden] { display: none; }
-
-.rsv-cal-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  margin-bottom: 0.6rem;
-}
-
-.rsv-cal-title {
-  flex: 1;
-  margin: 0;
-  text-align: center;
-  font-size: 0.8rem;
-  font-weight: 500;
-  text-transform: capitalize;
-  color: var(--rs-ink);
-}
-
-.rsv-cal-nav {
-  display: grid;
-  place-items: center;
-  width: 26px;
-  height: 26px;
-  flex: none;
-  padding: 0;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: none;
-  color: rgba(244, 248, 251, 0.85);
-  cursor: pointer;
-  outline: none;
-  transition: background-color 0.25s ease, border-color 0.25s ease;
-}
-.rsv-cal-nav:hover:not(:disabled) { background: rgba(255, 255, 255, 0.14); }
-.rsv-cal-nav:focus-visible { border-color: #fff; }
-.rsv-cal-nav:disabled { opacity: 0.28; cursor: not-allowed; }
-.rsv-cal-nav svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.7; }
-
-.rsv-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
-
-.rsv-cal-dow {
-  padding-bottom: 0.35rem;
-  text-align: center;
-  font-family: var(--rs-mono);
-  font-size: 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: rgba(244, 248, 251, 0.55);
-}
-
-.rsv-day {
-  position: relative;
-  height: 30px;
-  padding: 0;
-  border: none;
-  background: none;
-  font-family: inherit;
-  font-size: 0.72rem;
-  /* Tabular figures so the columns do not shift between 1 and 11. */
-  font-variant-numeric: tabular-nums;
-  color: var(--rs-ink);
-  cursor: pointer;
-  outline: none;
-}
-.rsv-day.is-blank { pointer-events: none; }
-.rsv-day:disabled { color: rgba(244, 248, 251, 0.26); cursor: not-allowed; }
-
-/* The pill sits inside the cell so the range band can run edge to edge
-   underneath it without the pill itself stretching. */
-.rsv-day i {
+/* ── Reservar ─────────────────────────────────────────────────────────
+   El motor de reservas y el formulario que llevaba a reserva.html todavia no
+   estan listos, y el canal que de verdad funciona hoy es WhatsApp. En vez de
+   dos botones (uno que no hace nada util y un fallback etiquetado), un solo
+   boton sobrio: mismo vidrio liquido que el resto de la pagina -- gradiente
+   translucido, blur con boost de saturacion, borde capilar, brillo superior
+   -- sin nombrar el medio. */
+.rsv-go-solo {
   position: relative;
   z-index: 2;
-  display: grid;
-  place-items: center;
-  width: 26px;
-  height: 26px;
-  margin: 0 auto;
-  border-radius: 50%;
-  font-style: normal;
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
-.rsv-day:hover:not(:disabled) i { background: rgba(255, 255, 255, 0.16); }
-.rsv-day:focus-visible i { box-shadow: 0 0 0 2px #fff; }
-
-.rsv-day.in-range::before {
-  content: "";
-  position: absolute;
-  inset: 2px 0;
-  z-index: 1;
-  background: rgba(255, 255, 255, 0.14);
-}
-.rsv-day.is-start::before { left: 50%; }
-.rsv-day.is-end::before { right: 50%; }
-.rsv-day.is-start.is-end::before { display: none; }
-
-.rsv-day.is-start i,
-.rsv-day.is-end i {
-  background: #f4f8fb;
-  color: #14100c;
-  font-weight: 600;
-}
-.rsv-day.is-today i { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35); }
-
-.rsv-cal-hint {
-  margin: 0.6rem 0 0;
-  text-align: center;
-  font-size: 10px;
-  color: rgba(244, 248, 251, 0.7);
-}
-
-/* Compact is right where there is a cursor. On touch the same 30px cells and
-   30px field would be under the 44px minimum, so they grow — the panel stays
-   small, just not unhittable. */
-@media (max-width: 860px) {
-  .rsv-control,
-  .rsv-dates { min-height: 44px; align-items: flex-end; padding-bottom: 0.85rem; }
-  .rsv-cal { width: 300px; padding: 1rem; }
-  .rsv-day { height: 38px; }
-  .rsv-day i { width: 34px; height: 34px; }
-  .rsv-cal-nav { width: 34px; height: 34px; }
-}
-
-@media (max-width: 520px) {
-  /* Anchored to the field's left edge, the panel would run off a narrow
-     screen; centring it keeps it inside the viewport. */
-  .rsv-cal { left: 50%; transform: translateX(-50%); }
-}
-
-/* ── Mobile sheet ────────────────────────────────────────────────────── */
-/* On a phone the bar is a single column, so a panel anchored to the dates
-   field has nowhere to go: opening upward it lands on the title and gets
-   clipped by the section's overflow, opening downward it gets clipped too.
-   Below 720px the script lifts the panel out to <body> and it becomes a
-   floating sheet over the whole bar, dismissed with "Listo" or the scrim. */
-.rsv-cal-scrim {
-  position: fixed;
-  inset: 0;
-  z-index: 900;
-  background: rgba(8, 10, 14, 0.5);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-.rsv-cal-scrim.is-in { opacity: 1; }
-
-.rsv-cal.is-sheet {
-  position: fixed;
-  top: auto;
-  left: 50%;
-  bottom: max(1.1rem, env(safe-area-inset-bottom));
-  z-index: 901;
-  width: min(360px, calc(100vw - 1.75rem));
-  padding: 1.15rem 1.15rem 1rem;
-  border-radius: 24px;
-  transform: translateX(-50%);
-  /* Opaque enough that the fields it covers do not read through it. */
-  background: rgba(16, 20, 26, 0.88);
-  animation: rsvSheetIn 0.34s cubic-bezier(0.2, 0.7, 0.2, 1);
-}
-
-@keyframes rsvSheetIn {
-  from { opacity: 0; transform: translate(-50%, 22px); }
-  to { opacity: 1; transform: translate(-50%, 0); }
-}
-
-/* Desktop closes itself the moment the range is complete, so the actions
-   only exist in the sheet. */
-.rsv-cal-actions { display: none; }
-.rsv-cal.is-sheet .rsv-cal-actions {
-  display: flex;
-  gap: 0.6rem;
-  margin-top: 0.9rem;
-}
-
-.rsv-cal-clear,
-.rsv-cal-done {
-  flex: 1;
-  min-height: 44px;
-  border-radius: 999px;
-  font-family: var(--rs-mono);
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  cursor: pointer;
-  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
-}
-.rsv-cal-clear {
-  border: 1px solid rgba(244, 248, 251, 0.32);
-  background: none;
-  color: var(--rs-ink-72);
-}
-.rsv-cal-clear:active { background: rgba(255, 255, 255, 0.1); }
-.rsv-cal-done {
-  border: 1px solid #f4f8fb;
-  background: #f4f8fb;
-  color: #14100c;
-}
-.rsv-cal-done:active { background: rgba(244, 248, 251, 0.82); }
-
-@media (prefers-reduced-motion: reduce) {
-  .rsv-cal.is-sheet { animation: none; }
-  .rsv-cal-scrim { transition: none; }
-}
-
-.rsv-go {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.7rem;
-  flex: none;
-  min-height: 48px;
-  padding: 0 1.9em;
-  border: 1px solid rgba(244, 248, 251, 0.55);
+  min-height: 52px;
+  padding: 0 2.1em;
   border-radius: 999px;
-  background: none;
+  text-decoration: none;
   color: var(--rs-ink);
+  background: linear-gradient(
+    168deg,
+    rgba(244, 248, 251, 0.16) 0%,
+    rgba(244, 248, 251, 0.05) 46%,
+    rgba(244, 248, 251, 0.09) 100%
+  );
+  -webkit-backdrop-filter: blur(26px) saturate(160%);
+  backdrop-filter: blur(26px) saturate(160%);
+  border: 1px solid rgba(244, 248, 251, 0.28);
+  box-shadow:
+    0 16px 40px -18px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
   font-family: var(--rs-mono);
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.2em;
-  cursor: pointer;
   white-space: nowrap;
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
 }
-.rsv-go:hover {
-  background: var(--rs-ink);
-  border-color: var(--rs-ink);
-  color: #14100c;
+.rsv-go-solo:hover,
+.rsv-go-solo:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(244, 248, 251, 0.45);
+  box-shadow:
+    0 20px 46px -18px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.26);
 }
-.rsv-go:focus-visible {
+.rsv-go-solo:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(244, 248, 251, 0.35);
+  box-shadow:
+    0 0 0 3px rgba(244, 248, 251, 0.35),
+    0 20px 46px -18px rgba(0, 0, 0, 0.65);
 }
-.rsv-go svg {
+.rsv-go-solo svg {
   width: 16px;
   height: 16px;
+  flex: none;
   fill: none;
   stroke: currentColor;
   stroke-width: 1.7;
   stroke-linecap: round;
   stroke-linejoin: round;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
-
-/* ── WhatsApp fallback ───────────────────────────────────────────────── */
-/* The booking bar above hands off to a reservation page that is still being
-   built. This is the channel that actually works today. Liquid glass, built
-   the same way as the location card and the reservation panel elsewhere on
-   the page — translucent gradient fill, backdrop blur with a saturation
-   lift, hairline border, inner top highlight for a lit edge — but kept to
-   pill size and a mono caption so it reads as a quiet secondary option
-   sitting under "Reservar", not a second offer competing with it. */
-.rsv-wa {
-  position: relative;
-  z-index: 2;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.6rem 1.3rem 0.6rem 0.85rem;
-  border-radius: 999px;
-  text-decoration: none;
-  color: var(--rs-ink-72);
-  background: linear-gradient(
-    168deg,
-    rgba(244, 248, 251, 0.13) 0%,
-    rgba(244, 248, 251, 0.045) 46%,
-    rgba(244, 248, 251, 0.08) 100%
-  );
-  -webkit-backdrop-filter: blur(22px) saturate(150%);
-  backdrop-filter: blur(22px) saturate(150%);
-  border: 1px solid rgba(244, 248, 251, 0.2);
-  box-shadow:
-    0 14px 34px -16px rgba(0, 0, 0, 0.6),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
-  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
-}
-.rsv-wa:hover,
-.rsv-wa:focus-visible {
-  transform: translateY(-2px);
-  color: var(--rs-ink);
-  border-color: rgba(244, 248, 251, 0.4);
-  box-shadow:
-    0 18px 40px -16px rgba(0, 0, 0, 0.65),
-    inset 0 1px 0 rgba(255, 255, 255, 0.22);
-}
-.rsv-wa:focus-visible {
-  outline: none;
-  box-shadow:
-    0 0 0 3px rgba(244, 248, 251, 0.35),
-    0 18px 40px -16px rgba(0, 0, 0, 0.65);
-}
-
-/* Small live signal rather than a label — "open now", not "click here". */
-.rsv-wa-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #3ddc84;
-  box-shadow: 0 0 0 0 rgba(61, 220, 132, 0.55);
-  animation: rsvWaPulse 2.2s ease-out infinite;
-}
-@keyframes rsvWaPulse {
-  0% { box-shadow: 0 0 0 0 rgba(61, 220, 132, 0.55); }
-  70% { box-shadow: 0 0 0 7px rgba(61, 220, 132, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(61, 220, 132, 0); }
-}
-
-.rsv-wa-icon {
-  flex: none;
-  width: 15px;
-  height: 15px;
-  /* WhatsApp's own green, the one spot of saturated colour on the pill — a
-     deliberate exception to the section's gold/ink palette, kept small
-     enough to read as a brand mark rather than a clash. */
-  fill: #25d366;
-}
-
-.rsv-wa-text {
-  font-family: var(--rs-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
+.rsv-go-solo:hover svg { transform: translateX(3px); }
 
 @media (prefers-reduced-motion: reduce) {
-  .rsv-wa-dot { animation: none; }
+  .rsv-go-solo:hover svg { transform: none; }
+}
+
+/* Video de fondo detras de vidrio: el backdrop-filter se recalcularia en
+   cada cuadro del video. Se retira el muestreo y se sube la opacidad del
+   relleno para conservar la lectura de vidrio sin el costo. */
+@media not all and (min-width: 860px) and (any-pointer: fine) {
+  .rsv-go-solo {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: rgba(34, 40, 46, 0.82);
+  }
 }
 
 /* ── Staggered blur-rise entrance ────────────────────────────────────── */
@@ -585,18 +213,7 @@
 .reserve.is-in .reserve-anim {
   animation: reserveBlurRise 1.05s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
 }
-.reserve.is-in .rsv-bar { animation-delay: 380ms; }
-.reserve.is-in .rsv-wa { animation-delay: 620ms; }
-
-@media (max-width: 860px) {
-  .rsv-bar { gap: 1.5rem 2rem; }
-  .rsv-field { flex: 1 1 45%; }
-  .rsv-go { flex: 1 1 100%; }
-}
-
-@media (max-width: 520px) {
-  .rsv-field { flex: 1 1 100%; }
-}
+.reserve.is-in .rsv-go-solo { animation-delay: 420ms; }
 
 @media (prefers-reduced-motion: reduce) {
   .reserve-anim { opacity: 1; }

@@ -6,23 +6,23 @@
    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
    <title>Camillemormal.com Rebuild</title>
    <link rel="preconnect" href="https://api.fontshare.com" />
-   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,401,500,700&f[]=zodiak@300,301,400,401,700,701&display=swap" rel="stylesheet" />
+   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,401,500,700&f[]=zodiak@300,301,400,401,700,701&f[]=clash-display@500,600,700&display=swap" rel="stylesheet" />
    <link rel="stylesheet" href="style.css?v=2" />
    <link rel="stylesheet" href="overlay.css" />
    <link rel="stylesheet" href="story.css?v=20" />
    <link rel="stylesheet" href="masked-heading.css" />
    <link rel="stylesheet" href="offering.css?v=5" />
    <link rel="stylesheet" href="rooms.css?v=13" />
-   <link rel="stylesheet" href="rooms-detail.css?v=2" />
+   <link rel="stylesheet" href="rooms-detail.css?v=3" />
    <link rel="stylesheet" href="values.css?v=4" />
    <link rel="stylesheet" href="voices.css?v=6" />
    <link rel="stylesheet" href="location.css?v=10" />
-   <link rel="stylesheet" href="reserve.css?v=10" />
-   <link rel="stylesheet" href="menu.css?v=1" />
+   <link rel="stylesheet" href="reserve.css?v=12" />
+   <link rel="stylesheet" href="menu.css?v=3" />
    <link rel="stylesheet" href="brandmark.css?v=3" />
    <link rel="stylesheet" href="kinetic.css?v=10" />
    <link rel="stylesheet" href="footer-trail.css?v=5" />
-   <link rel="stylesheet" href="hscroll.css?v=16" />
+   <link rel="stylesheet" href="hscroll.css?v=17" />
    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Norican&display=swap" rel="stylesheet" />
 </head>
 
@@ -232,6 +232,18 @@
 
          <!-- ── Beat 00 — intro ──────────────────────────────────────── -->
          <div class="beat beat--intro">
+            <!-- Titulo de seccion solo para movil. En escritorio el marquee de
+                 dos lineas hace de titulo, pero en una pantalla angosta ese
+                 texto se sale del ancho y se lee como un fallo: aca el marquee
+                 se oculta y este encabezado ocupa su lugar. Display:none en
+                 escritorio, asi que no entra al arbol de accesibilidad ahi y no
+                 duplica encabezado. -->
+            <h2 class="hs-title-m">
+               <span class="hs-title-m__l1">&iquest;Qu&eacute;</span>
+               <span class="hs-title-m__l2">ofrecemos</span>
+               <span class="hs-title-m__l3"><i>para ti</i><b>?</b></span>
+            </h2>
+
             <div class="hs-marquee" aria-hidden="true">
                <div class="hs-marquee__line hs-marquee__line--a" data-drift="-0.35">
                   <span>Tu descanso en Bagua Grande &mdash;&nbsp;</span>
@@ -595,7 +607,7 @@
       <p class="values-counter"><b>01</b> / 04</p>
    </section>
 
-   <section class="voices">
+   <section class="voices" id="opiniones">
       <div class="voices-head">
          <p class="voices-eyebrow">(04) &mdash; La voz de los hu&eacute;spedes</p>
          <h2 class="voices-title">Opiniones &amp; <em>Calificaciones</em></h2>
@@ -780,88 +792,14 @@
             <h2 class="reserve-word">Reserva</h2>
          </div>
 
-         <!-- A summary bar, not the booking engine. It collects the basics and
-              carries them to the reservation page as query parameters. -->
-         <form class="rsv-bar reserve-anim" action="./reserva.html" method="get">
-            <div class="rsv-field rsv-field-dates">
-               <span class="rsv-label" id="rsv-dates-label">Fechas</span>
-               <button class="rsv-control rsv-dates" type="button"
-                       aria-labelledby="rsv-dates-label" aria-expanded="false" aria-haspopup="dialog">
-                  <span class="rsv-dates-text is-empty">Llegada &mdash; Salida</span>
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
-               </button>
-               <!-- Carries the picked range into the form submission. -->
-               <input type="hidden" name="llegada" id="rsv-in" />
-               <input type="hidden" name="salida" id="rsv-out" />
-
-               <div class="rsv-cal" role="dialog" aria-label="Elegir fechas" hidden>
-                  <div class="rsv-cal-head">
-                     <button class="rsv-cal-nav" type="button" data-dir="-1" aria-label="Mes anterior">
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
-                     </button>
-                     <p class="rsv-cal-title" aria-live="polite"></p>
-                     <button class="rsv-cal-nav" type="button" data-dir="1" aria-label="Mes siguiente">
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
-                     </button>
-                  </div>
-                  <div class="rsv-cal-grid"></div>
-                  <p class="rsv-cal-hint"></p>
-                  <!-- Only shown in the mobile sheet: on a phone the panel
-                       covers the rest of the bar, so it needs its own way out. -->
-                  <div class="rsv-cal-actions">
-                     <button class="rsv-cal-clear" type="button">Borrar</button>
-                     <button class="rsv-cal-done" type="button">Listo</button>
-                  </div>
-               </div>
-            </div>
-
-            <div class="rsv-field">
-               <label class="rsv-label" for="rsv-rooms">Habitaciones</label>
-               <div class="rsv-control">
-                  <select class="rsv-select" id="rsv-rooms" name="habitaciones">
-                     <option value="1" selected>1 habitaci&oacute;n</option>
-                     <option value="2">2 habitaciones</option>
-                     <option value="3">3 habitaciones</option>
-                     <option value="4">4 habitaciones</option>
-                  </select>
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
-               </div>
-            </div>
-
-            <div class="rsv-field">
-               <label class="rsv-label" for="rsv-guests">Hu&eacute;spedes</label>
-               <div class="rsv-control">
-                  <select class="rsv-select" id="rsv-guests" name="huespedes">
-                     <option value="1">1 hu&eacute;sped</option>
-                     <option value="2" selected>2 hu&eacute;spedes</option>
-                     <option value="3">3 hu&eacute;spedes</option>
-                     <option value="4">4 hu&eacute;spedes</option>
-                     <option value="5">5 hu&eacute;spedes</option>
-                     <option value="6">6 hu&eacute;spedes</option>
-                  </select>
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
-               </div>
-            </div>
-
-            <button class="rsv-go" type="submit">
-               Reservar
-               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
-            </button>
-         </form>
-
-         <!-- The booking engine above is a summary bar that hands off to
-              reserva.html; while that page is still being finished, this is
-              the channel that actually closes a reservation. Kept small and
-              glass rather than a second call to action competing with
-              "Reservar", so it reads as a quiet fallback, not a rival. -->
-         <a class="rsv-wa reserve-anim" href="https://wa.me/51990669259?text=Hola%2C%20quisiera%20reservar%20en%20REGO%20Premium%20Apart%20Hotel"
+         <!-- El motor de reservas todavia esta en construccion; el canal
+              real por ahora es WhatsApp. Un solo boton, sobrio, en vidrio
+              liquido -- sin nombrar el medio, para que lea como la accion
+              principal de la seccion y no como un atajo secundario. -->
+         <a class="rsv-go-solo reserve-anim" href="https://wa.me/51990669259?text=Hola%2C%20quisiera%20reservar%20en%20REGO%20Premium%20Apart%20Hotel"
             target="_blank" rel="noopener noreferrer">
-            <span class="rsv-wa-dot" aria-hidden="true"></span>
-            <svg class="rsv-wa-icon" viewBox="0 0 24 24" aria-hidden="true">
-               <path d="M12 3a9 9 0 0 0-7.7 13.6L3 21l4.5-1.2A9 9 0 1 0 12 3z"/>
-               <path d="M8.6 8.2c.2-.4.4-.4.6-.4h.5l.8 1.9-.6.7c-.1.2 0 .4.1.5a7 7 0 0 0 2.6 2.6c.2.1.4.1.5 0l.6-.7 1.9.8v.5c0 .2 0 .4-.4.6-.4.3-1 .5-1.6.4a9 9 0 0 1-5.4-5.4c-.1-.6.1-1.2.4-1.5z"/>
-            </svg>
-            <span class="rsv-wa-text">Reserva por WhatsApp</span>
+            <span class="rsv-go-solo__label">Reservar</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
          </a>
       </div>
 
@@ -1049,11 +987,41 @@
          <div class="cv-inner">
             <p class="cv-cap">Navegaci&oacute;n</p>
             <nav class="cv-nav">
-            <a class="cv-link" href="#top"><span class="cv-num">01.</span><span class="cv-word">Inicio</span></a>
-            <a class="cv-link" href="#amenities"><span class="cv-num">02.</span><span class="cv-word">Studios</span></a>
-            <a class="cv-link" href="#rooms"><span class="cv-num">03.</span><span class="cv-word">Habitaciones</span></a>
-            <a class="cv-link" href="#location"><span class="cv-num">04.</span><span class="cv-word">Ubicaci&oacute;n</span></a>
-            <a class="cv-link" href="#contact"><span class="cv-num">05.</span><span class="cv-word">Reservar</span></a>
+            <a class="cv-link" href="#experiencia">
+               <span class="cv-num">01.</span>
+               <span class="cv-text">
+                  <span class="cv-word">Servicios</span>
+                  <span class="cv-sub">Hospedaje &middot; Restaurante &middot; Salón</span>
+               </span>
+            </a>
+            <a class="cv-link" href="#rooms">
+               <span class="cv-num">02.</span>
+               <span class="cv-text">
+                  <span class="cv-word">Habitaciones</span>
+                  <span class="cv-sub">Tipos y tarifas</span>
+               </span>
+            </a>
+            <a class="cv-link" href="#opiniones">
+               <span class="cv-num">03.</span>
+               <span class="cv-text">
+                  <span class="cv-word">Opiniones</span>
+                  <span class="cv-sub">Lo que dicen los huéspedes</span>
+               </span>
+            </a>
+            <a class="cv-link" href="#location">
+               <span class="cv-num">04.</span>
+               <span class="cv-text">
+                  <span class="cv-word">Ubicaci&oacute;n</span>
+                  <span class="cv-sub">C&oacute;mo llegar e info</span>
+               </span>
+            </a>
+            <a class="cv-link" href="#contact">
+               <span class="cv-num">05.</span>
+               <span class="cv-text">
+                  <span class="cv-word">Reserva</span>
+                  <span class="cv-sub">Personal y corporativa</span>
+               </span>
+            </a>
             </nav>
          </div>
 
@@ -1285,16 +1253,16 @@
    <script src="contours.js?v=6"></script>
    <script src="kinetic-cards.js?v=4"></script>
    <script src="masked-heading.js"></script>
-   <script src="offering.js?v=6"></script>
+   <script src="offering.js?v=7"></script>
    <script src="rooms.js?v=17"></script>
    <script src="rooms-detail.js?v=5"></script>
-   <script src="values.js?v=8"></script>
+   <script src="values.js?v=10"></script>
    <script src="band-shader.js?v=2"></script>
    <script src="voices.js?v=3"></script>
    <script src="location.js"></script>
    <script src="reserve.js?v=7"></script>
    <script src="reserve-bar.js?v=4"></script>
-   <script src="menu.js?v=2"></script>
+   <script src="menu.js?v=3"></script>
    <script src="kinetic.js?v=6"></script>
    <script src="footer-trail.js?v=3"></script>
 </body>

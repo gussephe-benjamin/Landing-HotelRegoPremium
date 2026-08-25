@@ -636,6 +636,31 @@
   .rd-amenity-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
+/* ── Móvil: el vidrio que tiene contenido moviéndose por detrás ──────── */
+/* Estas dos son las únicas superficies de la vista donde el contenido pasa
+   por detrás mientras se scrollea, así que su desenfoque se recalcula cuadro
+   a cuadro. Las demás cards de vidrio se quedan como están: tienen una foto
+   quieta detrás y su desenfoque se calcula una vez.
+
+   El relleno opaco conserva el borde, el brillo superior y el radio, que es
+   lo que hace que se lean como vidrio. Lo que se va es el muestreo. */
+@media not all and (min-width: 860px) and (any-pointer: fine) {
+  .rd-bar {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: rgba(23, 18, 15, 0.94);
+  }
+  .rd-book {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: rgba(30, 25, 21, 0.96);
+  }
+  /* El grano es una capa a pantalla completa con mix-blend-mode, y una mezcla
+     obliga a un pase de composición extra sobre todo lo que cubre. A este
+     tamaño su textura no se distingue. */
+  .rd-grain { display: none; }
+}
+
 @media (max-width: 640px) {
   /* The bar collapses to what a phone can carry: close, name, price. */
   .rd-stamp, .rd-lang, .rd-weather, .rd-mark, .rd-rule { display: none; }

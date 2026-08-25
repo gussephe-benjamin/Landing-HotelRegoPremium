@@ -145,6 +145,30 @@ document.addEventListener("DOMContentLoaded", function () {
     else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
   });
 
+  // ── Ir a una sección ─────────────────────────────────────────────────
+  // Un salto, no un recorrido. Con behavior:"smooth" el navegador atraviesa
+  // toda la distancia hasta el destino, y como en el medio hay tres secciones
+  // ancladas eso significa reproducir cada efecto del camino a velocidad de
+  // scroll: son varios segundos viendo pasar la landing entera. Desde un menú
+  // de navegación lo que se espera es aparecer ahí.
+  function scrollYFor(href) {
+    if (href === "#top") return 0;
+    var target = document.querySelector(href);
+    if (!target) return null;
+
+    // Una sección anclada está transformada mientras su pin corre, así que su
+    // propio rect no dice dónde empieza — el pin sí, y su start es
+    // exactamente la posición de scroll en la que la sección toma la pantalla.
+    if (typeof ScrollTrigger !== "undefined") {
+      var pinned = ScrollTrigger.getAll().filter(function (st) {
+        return st.pin && st.trigger === target;
+      })[0];
+      if (pinned) return pinned.start;
+    }
+
+    return target.getBoundingClientRect().top + window.scrollY;
+  }
+
   links.forEach(function (link) {
     link.addEventListener("click", function (e) {
       var href = link.getAttribute("href");
@@ -152,14 +176,27 @@ document.addEventListener("DOMContentLoaded", function () {
       e.preventDefault();
       closeMenu();
 
-      var target = href === "#top" ? null : document.querySelector(href);
-      // The scroll has to wait for the body's overflow lock to lift, or the
-      // position it computes is the locked one.
+      // El scroll tiene que esperar a que se suelte el bloqueo de overflow del
+      // body, o la posición que calcula es la del documento bloqueado.
       setTimeout(function () {
-        window.scrollTo({
-          top: target ? target.getBoundingClientRect().top + window.scrollY : 0,
-          behavior: reduced ? "auto" : "smooth",
-        });
+        // El intro bloquea el documento (body.is-intro pone overflow:hidden),
+        // así que un clic durante él saltaría a ningún lado.
+        if (window.unlockScroll) window.unlockScroll();
+
+        // Medir después de refrescar: los pins de arriba se quedan con mucha
+        // distancia de scroll, y un pin-spacer con altura vieja deja el
+        // destino cientos de píxeles corrido.
+        if (typeof ScrollTrigger !== "undefined") ScrollTrigger.refresh();
+
+        var y = scrollYFor(href);
+        if (y === null) return;
+
+        window.scrollTo({ top: y, behavior: "auto" });
+
+        // Sin esto los triggers quedan evaluados contra la posición anterior
+        // y la sección de destino aparece con su estado de entrada a medias.
+        if (typeof ScrollTrigger !== "undefined") ScrollTrigger.update();
+        if (window.history && history.replaceState) history.replaceState(null, "", href);
       }, 60);
     });
   });
