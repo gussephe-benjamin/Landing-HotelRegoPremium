@@ -291,6 +291,20 @@
       }
     }
 
+    // Un solo fotograma fuera del escritorio.
+    //
+    // Este era el segundo contexto WebGL corriendo en un teléfono —el campo de
+    // curvas del intro es el otro— y ninguno tenía límite de ancho. Dos bucles
+    // de shader compitiendo con el scroll en una GPU móvil es de lo más caro
+    // que había en la página.
+    //
+    // No se apaga: se dibuja una vez y se queda quieto. La banda conserva su
+    // textura y su color, que es lo que aporta al diseño; lo que se va es el
+    // costo por frame, que es lo que aportaba a los tirones.
+    var animar =
+      typeof window.REGO_MQ === "undefined" ||
+      window.matchMedia(window.REGO_MQ.DESKTOP).matches;
+
     function request() {
       if (raf === 0 && visible && inView) raf = requestAnimationFrame(render);
     }
@@ -307,7 +321,13 @@
         U.colorCount
       );
       gl.drawArrays(gl.TRIANGLES, 0, 3);
-      request();
+      // El reenganche es lo que convierte esto en un bucle. Fuera del
+      // escritorio se dibuja el fotograma pedido y ahí queda: la banda
+      // conserva su textura y su color, y sigue redibujándose cuando hace
+      // falta —un resize, volver a entrar en pantalla— pero no cuadro a
+      // cuadro. Bloquear request() en su lugar habría impedido también el
+      // primer dibujo y la banda habría salido vacía.
+      if (animar) request();
     }
 
     if (typeof ResizeObserver !== "undefined") {

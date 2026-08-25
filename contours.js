@@ -346,7 +346,17 @@
   });
 
   // ── Loop ─────────────────────────────────────────────────────────────
-  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // Quieto fuera del escritorio, por la misma razón que la banda de la sección
+  // de voces: eran los dos únicos contextos WebGL sin límite de ancho, y en un
+  // teléfono corrían a la vez compitiendo con el scroll.
+  //
+  // Se trata igual que el movimiento reducido, que ya existía: se dibuja un
+  // fotograma y se congela. El campo es parte del diseño; su deriva de 46
+  // segundos no lo es tanto como para pagarla en una GPU móvil.
+  var reduced =
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+    (typeof window.REGO_MQ !== "undefined" &&
+      !window.matchMedia(window.REGO_MQ.DESKTOP).matches);
   var running = false;
   var held = false;
   var raf = 0;

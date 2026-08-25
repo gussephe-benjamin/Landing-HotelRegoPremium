@@ -31,7 +31,16 @@
 (function () {
   "use strict";
 
-  var DESKTOP = "(min-width: 860px) and (hover: hover) and (pointer: fine)";
+  // `any-pointer`, no `pointer`. Esa es la corrección que faltaba y explica el
+  // caso reportado: `pointer: fine` describe el dispositivo señalador
+  // PRIMARIO, y una laptop con pantalla táctil puede reportar el táctil como
+  // primario aunque tenga trackpad — con lo que una PC entera recibía el
+  // layout de teléfono. `any-pointer: fine` pregunta si existe ALGÚN señalador
+  // preciso, que es la pregunta que de verdad importa.
+  //
+  // El piso de ancho sigue atajando el otro lado: un teléfono con un ratón
+  // Bluetooth cumple `any-pointer: fine` pero no llega a 860px.
+  var DESKTOP = "(min-width: 860px) and (any-pointer: fine)";
 
   window.REGO_MQ = {
     DESKTOP: DESKTOP,
@@ -49,6 +58,19 @@
 
     // Heavy GPU work. Same pointer test — a phone never qualifies — with a
     // width floor high enough to stand in for "this machine has a real GPU".
-    GPU: "(min-width: 1101px) and (hover: hover) and (pointer: fine)",
+    GPU: "(min-width: 1101px) and (any-pointer: fine)",
   };
+
+  // ── El salto de scroll en móvil ──────────────────────────────────────
+  // En un teléfono, scrollear colapsa y despliega la barra de direcciones, y
+  // el navegador emite un `resize` por cada cambio. ScrollTrigger se
+  // re-mide ante un resize, así que cada colapso recalculaba los tres pins de
+  // la página y reubicaba el scroll: eso es el "scrolleas y te manda para
+  // atrás o adelante".
+  //
+  // `ignoreMobileResize` descarta exactamente ese caso — un resize móvil donde
+  // solo cambió el alto — y conserva los que sí importan, como una rotación.
+  if (typeof ScrollTrigger !== "undefined") {
+    ScrollTrigger.config({ ignoreMobileResize: true });
+  }
 })();

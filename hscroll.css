@@ -401,14 +401,14 @@
 /* No flight below the horizontal breakpoint or under reduced motion, so the
    strip that made room for it would just be dead space. */
 .beat--lead { display: none; }
-@media (min-width: 860px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+@media (min-width: 860px) and (any-pointer: fine) and (prefers-reduced-motion: no-preference) {
   .beat--lead { display: block; }
 }
 
 /* ── Small-screen rhythm ─────────────────────────────────────────────── */
 /* The asymmetry of the desktop mosaic is kept by alternating widths and
    indents rather than by absolute positions. */
-@media not all and (min-width: 860px) and (hover: hover) and (pointer: fine) {
+@media not all and (min-width: 860px) and (any-pointer: fine) {
   .hs-photo--h2,
   .hs-photo--r2,
   .hs-photo--s2 { width: 78%; margin-left: 22%; }
@@ -421,7 +421,7 @@
 /* Gated on reduced-motion as well as width, so the query matches the
    matchMedia condition in hscroll.js exactly — one source of truth for
    "is this section horizontal right now". */
-@media (min-width: 860px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+@media (min-width: 860px) and (any-pointer: fine) and (prefers-reduced-motion: no-preference) {
   .hscroll { height: 100vh; }
 
   .hscroll__track {

@@ -437,7 +437,7 @@
 
 /* Belt and braces: JS is what actually keeps the rail out of the DOM below
    this width, but if it ever runs before a resize settles, nothing shows. */
-@media not all and (min-width: 860px) and (hover: hover) and (pointer: fine) {
+@media not all and (min-width: 860px) and (any-pointer: fine) {
   .rooms-aside { display: none; }
 }
 
@@ -535,7 +535,7 @@
    before the description — the gap was the reserved padding, not spacing.
    Here everything is in normal flow and the column is only as tall as what
    is in it. */
-@media not all and (min-width: 860px) and (hover: hover) and (pointer: fine) {
+@media not all and (min-width: 860px) and (any-pointer: fine) {
   .rooms {
     /* Shared by the photograph and by the arrows, which centre on it. */
     --rm-m-w: min(320px, 74vw);
