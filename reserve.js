@@ -88,7 +88,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // loading on a phone and then widening past the breakpoint left the
     // hand-off permanently switched off instead of coming back.
     var mm = gsap.matchMedia();
-    mm.add("(min-width: 1024px)", function () {
+    mm.add(window.REGO_MQ.DESKTOP, function () {
       var previous = document.querySelector(".location");
       if (!previous) return;
       var dim = previous.querySelector(".location-dim");

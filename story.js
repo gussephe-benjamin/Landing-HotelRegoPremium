@@ -57,19 +57,56 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // ── Word-by-word blur-in ───────────────────────────────────────────
-    var words = heading.textContent.trim().split(/\s+/);
-    heading.innerHTML = words
-      .map(function (w) {
-        return '<span class="reveal-word">' + w + "</span>";
-      })
-      .join(" ");
+    // Walks the node tree instead of rebuilding innerHTML from textContent.
+    // The old version read the heading as flat text, which was fine while it
+    // was flat — the statement now marks its accented phrases with <em>, and
+    // flattening would have thrown that markup away and taken the colour and
+    // the drawn underline with it. Recursing wraps each word in place and
+    // leaves whatever it is nested inside untouched.
+    function wrapWords(node) {
+      [].slice.call(node.childNodes).forEach(function (child) {
+        if (child.nodeType === 3) {
+          var frag = document.createDocumentFragment();
+          // Captured, not stripped: splitting on the separator keeps the
+          // original spacing, so words that sit either side of an <em>
+          // boundary do not run together.
+          child.nodeValue.split(/(\s+)/).forEach(function (part) {
+            if (!part) return;
+            if (/^\s+$/.test(part)) {
+              frag.appendChild(document.createTextNode(" "));
+              return;
+            }
+            var span = document.createElement("span");
+            span.className = "reveal-word";
+            span.textContent = part;
+            frag.appendChild(span);
+          });
+          node.replaceChild(frag, child);
+        } else if (child.nodeType === 1) {
+          wrapWords(child);
+        }
+      });
+    }
+    wrapWords(heading);
 
     var wordEls = heading.querySelectorAll(".reveal-word");
+    var marks = heading.querySelectorAll("em");
+    var cue = document.querySelector(".story-cue");
 
     if (reduced) {
       gsap.set(wordEls, { opacity: 1, filter: "none" });
+      if (cue) gsap.set(cue, { opacity: 1 });
       return;
     }
+
+    // Closed here rather than in the stylesheet, so the painted state stays
+    // the default and the copy survives the script failing to run at all.
+    // Set before the section is anywhere near the viewport, which is why it
+    // does not need the transition suppressed — nothing is on screen to see
+    // it snap shut.
+    [].forEach.call(marks, function (m) {
+      m.style.backgroundSize = "0% 0.86em";
+    });
 
     // The TextBlurIn component's own values: 0.8s per word, 0.04s stagger,
     // opacity and blur only — no vertical travel, which is what makes it read
@@ -88,6 +125,28 @@ document.addEventListener("DOMContentLoaded", function () {
           stagger: 0.04,
           ease: "power2.out",
         });
+
+        // Each plate is timed off the first word it covers, so the marker
+        // sweeps across a phrase that has just finished resolving rather than
+        // several arriving together once the whole line has settled. Clearing
+        // the inline value hands the element back to the stylesheet's painted
+        // state, and the transition there does the sweep.
+        [].forEach.call(marks, function (m) {
+          var first = m.querySelector(".reveal-word");
+          var i = first ? [].indexOf.call(wordEls, first) : 0;
+          gsap.delayedCall(0.04 * i + 0.4, function () {
+            m.style.backgroundSize = "";
+          });
+        });
+
+        if (cue) {
+          gsap.to(cue, {
+            opacity: 1,
+            duration: 0.9,
+            delay: 0.04 * wordEls.length + 0.5,
+            ease: "power2.out",
+          });
+        }
       },
     });
   })();
@@ -174,7 +233,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // a clone created there would be a fixed-position photograph pinned over
   // the page with nothing left to move it.
   gsap.matchMedia().add(
-    "(min-width: 1024px) and (prefers-reduced-motion: no-preference)",
+    window.REGO_MQ.DESKTOP_MOTION,
     function () {
       var st = ScrollTrigger.create({
         trigger: ".story-marquee",
@@ -196,18 +255,64 @@ document.addEventListener("DOMContentLoaded", function () {
   // by that section's approach instead.
   var horizontal = document.querySelector(".hscroll");
   if (horizontal) {
-    gsap.fromTo(
-      ".story",
-      { backgroundColor: lightColor },
-      {
-        backgroundColor: darkColor,
-        ease: "none",
-        scrollTrigger: {
-          trigger: horizontal,
-          start: "top bottom",
-          end: "top 40%",
-          scrub: true,
-        },
+    // Who darkens this panel, and when — and on desktop the answer is nobody.
+    //
+    // The horizontal section's first stop is near-black, so this panel used to
+    // fade to meet it and avoid a hard edge at the seam. Measured, that fade
+    // finished 360px before the facade photograph fills the screen: the page
+    // went dark while the picture meant to introduce the section was still
+    // 333px wide. The order read backwards.
+    //
+    // On desktop there is nothing left to fade. The facade is full-bleed on
+    // the very frame the pin opens — measured at exactly 1440x900 at 0,0 —
+    // and this panel has scrolled entirely out of view by then, so the switch
+    // from cream to the section's own night stop happens behind a photograph
+    // covering every pixel. The panel simply stays light until it is gone, and
+    // hscroll.css supplies the matching cream for the approach.
+    //
+    // Below the breakpoint, and under reduced motion, hscroll.js runs its
+    // unpinned branch and builds no facade at all. Nothing covers that switch
+    // there, so the panel does still have to walk to meet it — but the window
+    // now ends where the section takes the screen instead of well before.
+    var storyEl = document.querySelector(".story");
+    var contours = document.querySelector(".story-contours");
+
+    gsap.matchMedia().add(
+      window.REGO_MQ.NOT_DESKTOP_MOTION,
+      function () {
+        var fade = { t: 0 };
+        var tween = gsap.to(fade, {
+          t: 1,
+          ease: "none",
+          scrollTrigger: {
+            trigger: horizontal,
+            start: "top 60%",
+            end: "top top",
+            scrub: true,
+          },
+          onUpdate: function () {
+            // One proxy value written to each target in its own idiom. A plain
+            // two-target backgroundColor tween was tried and killed the
+            // section's colour ramp: it writes an inline background-color,
+            // which outranks the var(--hs-bg) rule the ramp works through, and
+            // the tween owns the property so clearing it does not hold.
+            var c = gsap.utils.interpolate(lightColor, darkColor, fade.t);
+            if (storyEl) storyEl.style.backgroundColor = c;
+            horizontal.style.setProperty("--hs-bg", c);
+            // The contour canvas paints its own opaque cream, so left alone it
+            // would sit over the panel it is supposed to belong to and hold a
+            // bright rectangle across the fade. Taken out on the same value,
+            // it dissolves with the panel rather than in spite of it.
+            if (contours) contours.style.opacity = String(1 - fade.t);
+          },
+        });
+
+        return function cleanup() {
+          tween.kill();
+          if (storyEl) storyEl.style.backgroundColor = "";
+          if (contours) contours.style.opacity = "";
+          horizontal.style.removeProperty("--hs-bg");
+        };
       }
     );
   }

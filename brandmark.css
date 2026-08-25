@@ -1,0 +1,78 @@
+/* Persistent corner wordmark.
+
+   One fixed mark rather than a copy inside every section. The brief asked for
+   the logo in the top-left of each section *and* for it to invert against the
+   background — and the second half is what settles the first: a per-section
+   copy only ever sits on its own background, so its colour could just be
+   hard-coded and there would be nothing to invert. The inversion only means
+   something for a mark that stays put while different backgrounds travel
+   underneath it. It also pairs with .nav-fab, which is already fixed in the
+   opposite corner, so the two read as one frame around the page.
+
+   The hero is the exception: it carries its own logo in .topbar at the same
+   corner, so this one stays hidden until the hero has scrolled past and then
+   fades in as its continuation — deliberately a little smaller, because
+   persistent chrome should sit quieter than a hero lockup. */
+.brandmark {
+  position: fixed;
+  top: clamp(1.1rem, 3.4vw, 3rem);
+  left: clamp(1.1rem, 3.4vw, 3rem);
+  /* Under the menu panel (.cv, 80) so opening the menu covers it, but above
+     ordinary section content. .nav-fab sits at 90 and stays on top of both. */
+  z-index: 70;
+  /* Sized against the hero's own lockup, which is 87.5px wide. This now sits
+     just above it: the mark reads at a glance in every section rather than
+     receding into the corner, and since the hero's own logo is never on
+     screen at the same time there is nothing for it to compete with. */
+  width: clamp(68px, 6.2vw, 92px);
+  aspect-ratio: 525 / 288;
+  pointer-events: none;
+
+  /* The artwork is white on transparency — measured: 88.7% of the file is
+     fully transparent and every opaque pixel sits between luminance 244 and
+     255. So it is used as an alpha mask and the ink is painted underneath,
+     which makes the colour a free variable.
+
+     filter: invert() was the obvious alternative and it cannot do this. It
+     only ever yields the exact inverse, so the mark could be pure white or
+     pure black and nothing in between — no warm off-white, no near-black that
+     matches the page's own ink — and it inverts the anti-aliased edge along
+     with the artwork, which fringes the letterforms against mid-tones. */
+  background-color: currentColor;
+  -webkit-mask-image: url("./img/brand/rego-logo.png");
+  mask-image: url("./img/brand/rego-logo.png");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: left center;
+  mask-position: left center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+
+  /* Light ink is the default because all but one of the page's sections are
+     near-black. Both values are the page's existing ink colours rather than
+     pure #fff / #000, so the mark belongs to the same palette as the type
+     around it. */
+  color: #f4f2ee;
+
+  opacity: 0;
+  /* Colour and opacity only — no transform, nothing that would put this on
+     the compositor's critical path during a scroll. The switch happens a
+     handful of times across the whole page, not per frame. */
+  transition: color 0.45s ease, opacity 0.55s ease;
+}
+
+.brandmark.is-visible {
+  opacity: 1;
+}
+
+/* Against the one light section, and against the back half of the horizontal
+   run once its ramp has committed to daylight. */
+.brandmark.is-dark {
+  color: #14100c;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brandmark {
+    transition: none;
+  }
+}

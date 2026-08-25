@@ -40,18 +40,153 @@
 
 /* ── Opening statement ───────────────────────────────────────────────── */
 .story-intro {
+  /* The highlighter plate and the ink that sits on it. Same pairing the
+     horizontal section uses for its own marker, so the two read as one
+     device: the gold is a fill here, never text, and the near-black on top of
+     it measures 8.6:1. */
+  --si-accent: #d4a857;
+  --si-on-accent: #14100c;
   position: relative;
   width: 100%;
   height: 100svh;
-  padding: 2rem;
-  align-content: center;
+  padding: clamp(1.5rem, 4vw, 3rem);
+  /* Explicit column. The old rule set align-content on a block element, where
+     it does nothing — the centring was coming from elsewhere and there was no
+     way to anchor anything to the foot of the section. */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
+  overflow: hidden;
 }
 
-.story-intro h2 {
-  width: 75%;
-  margin: 0 auto;
+/* ── Contour field ───────────────────────────────────────────────────── */
+/* A <canvas> is a replaced element: with inset:0 and no width/height it does
+   not stretch, it sits at its default 300x150 in the corner. The explicit
+   sizing is what makes this fill its parent — which is now the whole light
+   panel, so the field carries on behind the marquee instead of ending at the
+   fold. */
+.story-contours {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 0;
+  pointer-events: none;
 }
+
+/* ── Statement ───────────────────────────────────────────────────────── */
+/* Selector weighted past `.story h2`, which sets a size, a leading and a
+   tracking of its own for the section's other headings. Matching its
+   specificity and relying on source order would work today and break the
+   first time these rules are reordered. */
+/* Selector weighted past `.story h2`, which sets a size, a leading and a
+   tracking of its own for the section's other headings. Matching its
+   specificity and relying on source order would work today and break the
+   first time these rules are reordered. */
+.story .story-statement {
+  position: relative;
+  z-index: 1;
+  width: min(92%, 1100px);
+  margin: 0 auto;
+  /* Zodiak, the project's own serif, rather than the condensed display face
+     tried first. That one was heavy enough to shout over a section whose job
+     is to set a tone, and at 6.4vw it filled the screen. This is lighter in
+     colour, smaller, and it is the face the highlighter reference is set in.
+     Already loaded for the rest of the page, so it costs nothing. */
+  font-family: var(--vc-serif, "Zodiak", Georgia, serif);
+  font-weight: 700;
+  font-size: clamp(1.75rem, 4.4vw, 4rem);
+  line-height: 1.14;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+/* The highlighter.
+   
+   Built as a background gradient on the span itself, with
+   box-decoration-break, and not as an absolutely positioned pseudo-element.
+   That distinction is load-bearing wherever this pattern appears in this
+   project: an absolute ::before resolves against a single inline fragment, so
+   the moment a highlighted phrase wraps, every line but one is left with no
+   plate behind it — and since the ink is near-black to sit on the gold, those
+   lines would vanish into the page. This way each line fragment carries its
+   own plate.
+   
+   The plate sits on the baseline like a real marker — under the ascenders,
+   not over them.
+   
+   It is background-size that is animated, not a custom property. A transition
+   on a custom property does nothing unless the property has been registered
+   through @property, which is a newer feature than everything else this file
+   relies on; background-size has been transitionable forever and needs no
+   registration.
+   
+   Painted is the default state on purpose. If the script never runs the copy
+   still reads as intended rather than as bare ink; story.js closes the plate
+   during setup and reopens it as the words resolve. */
+.story .story-statement em {
+  font-style: normal;
+  color: var(--si-on-accent);
+  padding: 0 0.14em;
+  background-image: linear-gradient(var(--si-accent), var(--si-accent));
+  background-repeat: no-repeat;
+  background-position: left bottom 0.04em;
+  background-size: 100% 0.86em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  transition: background-size 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Scroll cue ──────────────────────────────────────────────────────── */
+.story-cue {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(1.5rem, 4vh, 3rem);
+  transform: translateX(-50%);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  text-decoration: none;
+  color: rgba(13, 13, 15, 0.55);
+  font-family: var(--rs-mono, "JetBrains Mono", monospace);
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  opacity: 0;
+  transition: color 0.3s ease;
+}
+.story-cue:hover { color: rgba(13, 13, 15, 0.9); }
+
+.story-cue__arrow svg {
+  display: block;
+  width: 12px;
+  height: 34px;
+  stroke: currentColor;
+  stroke-width: 1.3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Travels the length of its own stroke and restarts — the pause at the top of
+   each cycle is what keeps it from reading as a jitter. */
+@keyframes storyCueNudge {
+  0%, 62% { transform: translateY(0); opacity: 1; }
+  82% { transform: translateY(7px); opacity: 0.25; }
+  83% { transform: translateY(-7px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+.story-cue__arrow { animation: storyCueNudge 2.8s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .story-flow__layer--a,
+  .story-flow__layer--b,
+  .story-cue__arrow { animation: none; }
+  }
 
 /* Draws in as the page is scrolled, completing just before the words begin
    to reveal — a lead-in the eye follows down into the phrase, rather than a

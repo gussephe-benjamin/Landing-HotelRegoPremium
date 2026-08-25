@@ -67,83 +67,159 @@
 }
 
 /* ── Editorial close ─────────────────────────────────────────────────── */
-/* The positioning block below is untouched from when this held a single
-   centred figure: kinetic.js tweens this element's opacity and scale, and
-   GSAP parses the existing translate, so top/left/transform/z-index stay
-   exactly as they were. Only the box it lays out changed. */
+/* The positioning block is untouched from when this held a single centred
+   figure: kinetic.js tweens this element's opacity and scale, and GSAP parses
+   the existing translate, so top/left/transform/z-index stay exactly as they
+   were. Only the box it lays out changed. */
 .kinetic-item {
+  --kc-gold: #d9b787;
+  --kc-rule: rgba(217, 183, 135, 0.28);
+
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 2;
   margin: 0;
-  width: min(92vw, 1180px);
+  width: min(92vw, 1240px);
   will-change: transform, opacity;
-  /* Reversed, so the closing line reads on the left while the cards keep the
-     right half — the images stay first in the DOM for the mobile stack. */
   display: flex;
-  flex-direction: row-reverse;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: clamp(1.75rem, 4vw, 3.75rem);
+  gap: clamp(1.75rem, 4vw, 4rem);
   text-align: left;
 }
 
-/* ── The two cards ───────────────────────────────────────────────────── */
-/* Staggered rather than gridded: the small portrait sits low, the wide one
-   rides up and forward over it, and they overlap enough to read as one
-   piece. */
-.kc-gallery {
-  position: relative;
+/* ── Copy column ─────────────────────────────────────────────────────── */
+.kc-say {
+  flex: 1 1 42%;
+  min-width: 0;
+  max-width: 34rem;
+}
+
+.kc-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0 0 clamp(1rem, 2.4vh, 1.6rem);
+  padding: 0.5rem 1.05rem;
+  border: 1px solid var(--kc-rule);
+  border-radius: 999px;
+  font-family: var(--rs-mono);
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(244, 248, 251, 0.78);
+}
+.kc-eyebrow__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--kc-gold);
   flex: none;
+}
+
+.kc-ask {
+  margin: 0 0 clamp(0.9rem, 2vh, 1.4rem);
+  /* The project's serif in italic, replacing the Norican script this carried
+     before. Norican was asked for and then superseded by the reference for
+     this section — worth saying plainly rather than leaving as a silent
+     substitution. Zodiak ships a real italic, so nothing here is a synthesised
+     oblique. */
+  font-family: var(--vc-serif, "Zodiak", Georgia, serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(2.4rem, 5vw, 4.4rem);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  color: var(--kn-type);
+}
+
+.kc-lead {
+  margin: 0 0 clamp(1.4rem, 3vh, 2.2rem);
+  max-width: 34ch;
+  font-family: var(--ov-font-display);
+  font-size: clamp(0.9rem, 1.05vw, 1rem);
+  line-height: 1.65;
+  color: rgba(244, 248, 251, 0.62);
+}
+
+.kc-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.7rem 0.7rem 0.7rem 1.6rem;
+  border-radius: 999px;
+  background: #f2ede4;
+  color: #14100c;
+  text-decoration: none;
+  font-family: var(--rs-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.3s ease;
+}
+.kc-cta:hover,
+.kc-cta:focus-visible { transform: translateY(-2px); background: #fff; }
+.kc-cta:focus-visible { outline: 2px solid var(--kc-gold); outline-offset: 3px; }
+
+.kc-cta__ico {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #14100c;
+  flex: none;
+}
+.kc-cta__ico svg {
+  width: 14px;
+  height: 14px;
+  stroke: #f2ede4;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ── Gallery ─────────────────────────────────────────────────────────── */
+/* Staggered rather than gridded: the smaller card sits low and the taller one
+   rides up and forward over it. */
+.kc-gallery {
+  flex: 1 1 58%;
+  min-width: 0;
+  position: relative;
   display: flex;
   align-items: flex-start;
+  justify-content: flex-end;
 }
 
 .kc-card {
   position: relative;
   margin: 0;
+  min-width: 0;
 }
 
 .kc-card-a {
   z-index: 1;
-  width: clamp(168px, 18vw, 250px);
-  /* The vertical offset. */
-  margin-top: clamp(80px, 10vh, 120px);
+  flex: 0 1 44%;
+  margin-top: clamp(48px, 7vh, 92px);
 }
 
 .kc-card-b {
   z-index: 2;
-  width: clamp(288px, 32vw, 440px);
-  /* The horizontal overlap — negative, so it bites back over card A. */
-  margin-left: clamp(-58px, -4vw, -42px);
+  flex: 0 1 52%;
+  /* Negative, so it bites back over card A. */
+  margin-left: clamp(-46px, -3vw, -28px);
 }
 
 .kc-frame {
   position: relative;
   overflow: hidden;
-  /* Same 30px corner the location card uses, so this reads as the same
-     hardware rather than a second radius language. */
-  border-radius: 30px;
-}
-
-/* The inverted notch. Same quarter-disc-punched-out geometry as
-   .location-fillet, but driven through a mask instead of a painted radial
-   gradient: the cut has to stay genuinely transparent so the section's giant
-   background type keeps showing through it. */
-.kc-card-b .kc-frame {
-  --kc-notch: 54px;
-  -webkit-mask-image: radial-gradient(circle var(--kc-notch) at 0 100%, transparent 0 var(--kc-notch), #000 calc(var(--kc-notch) + 0.5px));
-  mask-image: radial-gradient(circle var(--kc-notch) at 0 100%, transparent 0 var(--kc-notch), #000 calc(var(--kc-notch) + 0.5px));
-}
-/* Card A's own notch sits on the bottom-right — the same seam the two cards
-   share. Its top-right corner is the one that slots into B's notch, and that
-   corner is behind B, so a cut there would never be seen. */
-.kc-card-a .kc-frame {
-  --kc-notch: 34px;
-  -webkit-mask-image: radial-gradient(circle var(--kc-notch) at 100% 100%, transparent 0 var(--kc-notch), #000 calc(var(--kc-notch) + 0.5px));
-  mask-image: radial-gradient(circle var(--kc-notch) at 100% 100%, transparent 0 var(--kc-notch), #000 calc(var(--kc-notch) + 0.5px));
+  border-radius: clamp(18px, 1.6vw, 26px);
+  border: 1px solid var(--kc-rule);
+  box-shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.8);
 }
 
 .kc-card img {
@@ -151,125 +227,198 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /* Pulled back so the photographs sit behind the type instead of competing
-     with it. */
-  filter: saturate(0.7) brightness(0.82);
+  /* Lifted from the previous saturate(0.7) brightness(0.82). That grading sank
+     both photographs into the background; the reference keeps them warm and
+     lit, which is the whole point of showing a building at dusk. */
+  filter: saturate(0.94) brightness(0.97);
 }
 
-/* Different ratios on purpose — the symmetry is what would make this read as
-   a grid. */
 .kc-card-a img { aspect-ratio: 4 / 5; }
 .kc-card-b img {
-  aspect-ratio: 16 / 10;
-  /* The source has a REGO wordmark set across its sky. A cover crop cannot
-     reach past it — the file is 1.42:1 against a 1.6:1 box, so barely a tenth
-     of the height is croppable — so the frame pushes in instead, anchored low
-     enough that only the lit building and street are left. At 2984px wide
-     into a 440px box there is resolution to spare for it. */
-  transform: scale(1.85);
-  transform-origin: 50% 88%;
+  aspect-ratio: 3 / 4;
+  /* The source carries a REGO wordmark across its sky and a cover crop cannot
+     reach past it, so the frame pushes in and anchors low. Eased from 1.85 now
+     that the frame itself is portrait and does more of that work; at 2984px
+     wide there is still resolution to spare. */
+  transform: scale(1.32);
+  transform-origin: 50% 84%;
 }
 
-/* Sub-overlay, kept very light — the filter above does most of the work. */
+/* Kept very light — the grading above does the rest. */
 .kc-frame::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background: linear-gradient(to top, rgba(18, 22, 26, 0.45), rgba(18, 22, 26, 0.08));
+  background: linear-gradient(to top, rgba(18, 22, 26, 0.34), rgba(18, 22, 26, 0.02));
 }
 
-/* Hairline, so each card separates from the near-black field behind it. */
-.kc-frame::after {
-  content: "";
+.kc-zoom {
   position: absolute;
-  inset: 0;
+  top: clamp(0.6rem, 1vw, 0.9rem);
+  left: clamp(0.6rem, 1vw, 0.9rem);
   z-index: 2;
-  pointer-events: none;
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: inherit;
+  display: grid;
+  place-items: center;
+  width: clamp(34px, 2.6vw, 44px);
+  height: clamp(34px, 2.6vw, 44px);
+  padding: 0;
+  border: 1px solid rgba(244, 248, 251, 0.28);
+  border-radius: 50%;
+  background: rgba(244, 248, 251, 0.14);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  backdrop-filter: blur(14px) saturate(150%);
+  color: #f4f8fb;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.kc-zoom:hover { background: rgba(244, 248, 251, 0.26); transform: scale(1.06); }
+.kc-zoom:focus-visible { outline: 2px solid var(--kc-gold); outline-offset: 3px; }
+.kc-zoom svg {
+  width: 42%;
+  height: 42%;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .kc-label {
+  display: inline-block;
   margin-top: 0.85rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--kc-rule);
+  border-radius: 6px;
   font-family: var(--rs-mono);
-  font-size: 11px;
+  font-size: 10px;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  letter-spacing: 0.2em;
-  color: rgba(244, 248, 251, 0.6);
+  color: rgba(244, 248, 251, 0.62);
+  white-space: nowrap;
 }
-/* Card B rides up and its caption lands back over card A's photograph, which
-   reads as a collision. Pushed to B's outer edge it clears A entirely. */
-.kc-card-b .kc-label { text-align: right; }
+/* Card B rides up and its caption would otherwise land back over card A's
+   photograph; pushed to B's outer edge it clears it. */
+.kc-card-b .kc-label { float: right; }
 
-/* ── Closing line ────────────────────────────────────────────────────── */
-.kc-say {
-  flex: 0 1 auto;
-  max-width: 36ch;
+/* ── Lightbox ────────────────────────────────────────────────────────── */
+/* A native <dialog>, so the focus trap, the Escape key and inertness of the
+   page behind all come from the platform rather than from script. */
+.kc-lightbox {
+  width: min(92vw, 1100px);
+  max-height: 90svh;
+  padding: 0;
+  border: 0;
+  border-radius: clamp(14px, 1.4vw, 22px);
+  background: transparent;
+  overflow: visible;
+}
+.kc-lightbox::backdrop {
+  background: rgba(8, 10, 12, 0.82);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.kc-lightbox img {
+  display: block;
+  width: 100%;
+  max-height: 90svh;
+  object-fit: contain;
+  border-radius: inherit;
+}
+.kc-lightbox__close {
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid rgba(244, 248, 251, 0.3);
+  border-radius: 50%;
+  background: #14100c;
+  color: #f4f8fb;
+  cursor: pointer;
+}
+.kc-lightbox__close svg {
+  width: 16px; height: 16px;
+  stroke: currentColor; stroke-width: 1.8; stroke-linecap: round;
+}
+.kc-lightbox__close:focus-visible { outline: 2px solid var(--kc-gold); outline-offset: 3px; }
+
+/* ── Responsive ──────────────────────────────────────────────────────── */
+/* Tablet: same composition with the slack taken out. */
+@media (max-width: 1100px) {
+  .kinetic-item { width: min(94vw, 900px); gap: clamp(1.25rem, 3vw, 2rem); }
+  .kc-say { flex: 1 1 46%; }
+  .kc-gallery { flex: 1 1 54%; }
+  .kc-card-a { margin-top: clamp(32px, 5vh, 60px); }
+  .kc-lead { max-width: none; }
 }
 
-.kc-ask {
-  margin: 0 0 1.1rem;
-  font-family: "Norican", var(--ov-font-display), cursive;
-  /* Norican ships a single 400 weight — asking for 700 would synthesise the
-     bold and thicken a script face unevenly. */
-  font-weight: 400;
-  font-size: clamp(2.5rem, 5.2vw, 4.5rem);
-  /* A connected script needs its own metrics: the tight tracking the sans
-     wanted collides the joins, and 1.02 clipped the descenders on ¿ and q. */
-  line-height: 1.15;
-  letter-spacing: 0;
-  color: var(--kn-type);
-}
-
-.kc-line {
-  margin: 0;
-  font-family: var(--rs-mono);
-  font-size: 11px;
-  line-height: 1.8;
-  text-transform: uppercase;
-  /* Tracked tighter than the labels so the sentence still lands on one line
-     in the space the cards leave. */
-  letter-spacing: 0.15em;
-  color: rgba(244, 248, 251, 0.55);
-}
-
-/* Tablet: same composition, less of it — a full-size stagger plus overlap
-   starts to crowd once the row loses its slack. */
-@media (max-width: 1024px) {
-  .kinetic-item { width: min(92vw, 760px); gap: clamp(1.25rem, 3vw, 2rem); }
-  .kc-card-a { margin-top: clamp(48px, 7vh, 72px); }
-  .kc-card-b { margin-left: clamp(-34px, -2.6vw, -24px); }
-  .kc-card-b .kc-frame { --kc-notch: 40px; }
-  .kc-frame { border-radius: 24px; }
-}
-
-@media (max-width: 720px) {
+/* Phone: one column, copy first.
+   
+   The section is a fixed 100svh with overflow:hidden and this block is
+   absolutely centred inside it, so anything taller than the screen is clipped
+   rather than scrolled — there is no room to simply let it stack at full size.
+   The cards drop to a side-by-side pair at a fraction of their desktop height,
+   which keeps both visible while leaving the copy the space it needs. */
+@media (max-width: 760px) {
   .kinetic-line { font-size: clamp(2.5rem, 10vh, 6rem); }
 
-  /* Stacked, overlap dropped: side by side at this width neither card would
-     be large enough to read. The notch stays — it is the section's corner
-     language, not a side effect of the overlap. */
   .kinetic-item {
-    width: min(86vw, 420px);
+    width: min(90vw, 460px);
     flex-direction: column;
     align-items: stretch;
-    gap: 1.75rem;
+    gap: clamp(1.25rem, 3vh, 2rem);
   }
-  .kc-gallery {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 1.25rem;
+
+  .kc-say { flex: none; max-width: none; }
+  .kc-ask { font-size: clamp(2rem, 9vw, 2.75rem); }
+  .kc-lead {
+    font-size: 0.85rem;
+    line-height: 1.55;
+    /* Two lines at most on a phone: the cards below need the height more than
+       the paragraph needs the third line. */
+    margin-bottom: 1.1rem;
   }
-  .kc-card-a,
-  .kc-card-b {
-    width: 100%;
-    margin-top: 0;
-    margin-left: 0;
+  .kc-cta { padding: 0.6rem 0.6rem 0.6rem 1.3rem; font-size: 10px; }
+
+  /* The line is 39 characters of tracked mono. At the desktop size it wraps on
+     a phone, and a wrapped pill leaves the dot floating beside the first line
+     with the second line hanging under it. Tightened until it holds one line
+     at 360px, which is the narrowest width worth designing for here. */
+  .kc-eyebrow {
+    padding: 0.45rem 0.8rem;
+    font-size: 8.5px;
+    letter-spacing: 0.09em;
+    gap: 0.45rem;
   }
-  .kc-card-a { width: 62%; }
-  .kc-card-b { width: 82%; align-self: flex-end; }
-  .kc-card-b .kc-frame { --kc-notch: 34px; }
-  .kc-say { max-width: none; }
+  .kc-cta__ico { width: 26px; height: 26px; }
+
+  .kc-gallery { flex: none; justify-content: flex-start; }
+  .kc-card-a { flex: 0 1 46%; margin-top: clamp(22px, 4vh, 40px); }
+  .kc-card-b { flex: 0 1 54%; margin-left: -18px; }
+  .kc-frame { border-radius: 14px; }
+  .kc-label {
+    margin-top: 0.5rem;
+    padding: 0.3rem 0.5rem;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+  }
+  .kc-card-b .kc-label { float: none; }
+  .kc-zoom { width: 30px; height: 30px; }
+
+  .kc-lightbox__close { top: -10px; right: -10px; width: 34px; height: 34px; }
 }
+
+/* Short screens, at any width: a landscape phone or a small laptop gives this
+   block less height than a portrait phone does, and the paragraph is the part
+   that can go without losing the point. */
+@media (max-height: 620px) {
+  .kc-lead { display: none; }
+  .kc-eyebrow { margin-bottom: 0.7rem; }
+  .kc-card-a { margin-top: 24px; }
+}
+
+

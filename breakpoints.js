@@ -1,0 +1,54 @@
+/* One definition of "this is a desktop", shared by every section.
+
+   It used to be width alone, and the thresholds had drifted apart as sections
+   were written: the horizontal run switched at 1024px, the rooms slider at
+   1101px, the location hand-off at 1024px. Two problems came out of that.
+
+   The first is that width is the wrong question. A Windows laptop at 1366x768
+   with the display scaled to 150% — an ordinary, common setup — reports 911
+   CSS pixels, so the page decided it was a phone and served the phone layout
+   on a machine with a keyboard and a mouse. At 125% the same laptop reports
+   1093, which cleared the horizontal run's breakpoint but not the rooms
+   slider's, so one section rendered as desktop and the next as mobile on the
+   same screen.
+
+   What actually separates the two cases is the input device, and CSS can be
+   asked directly: `hover: hover` and `pointer: fine` together mean a pointer
+   that can rest over a target without committing to it, which is a mouse or a
+   trackpad and is not a finger. A tablet in landscape at 1024px answers no,
+   which is the right answer twice over — its layout should be the touch one,
+   and the pinned horizontal run with its WebGL neighbours is more than a
+   tablet should be asked to carry.
+
+   The width floor stays, at 860px, but its job is now only to catch a desktop
+   window that has been dragged too narrow for a two-column editorial layout.
+
+   GPU is a separate question from layout and keeps a separate answer. The
+   rooms slider is a Three.js shader, and wanting the desktop *layout* on a
+   modest laptop is not the same as wanting that shader on it — so the layout
+   comes down to 860 while the shader stays where it was. Below it the section
+   falls back to a plain <img>, which fills the same frame either way. */
+(function () {
+  "use strict";
+
+  var DESKTOP = "(min-width: 860px) and (hover: hover) and (pointer: fine)";
+
+  window.REGO_MQ = {
+    DESKTOP: DESKTOP,
+
+    // With motion allowed — the form the pinned and scrubbed sections want.
+    DESKTOP_MOTION: DESKTOP + " and (prefers-reduced-motion: no-preference)",
+
+    // The exact complement, written with `not all and` rather than as a list
+    // of negated features. De Morgan by hand would have left a gap: a device
+    // reporting `pointer: none` fails `pointer: fine` and so is not desktop,
+    // but it is not `pointer: coarse` either and would have matched neither
+    // branch. Negating the whole condition cannot leave a hole.
+    NOT_DESKTOP: "not all and " + DESKTOP,
+    NOT_DESKTOP_MOTION: "not all and " + DESKTOP + ", (prefers-reduced-motion: reduce)",
+
+    // Heavy GPU work. Same pointer test — a phone never qualifies — with a
+    // width floor high enough to stand in for "this machine has a real GPU".
+    GPU: "(min-width: 1101px) and (hover: hover) and (pointer: fine)",
+  };
+})();

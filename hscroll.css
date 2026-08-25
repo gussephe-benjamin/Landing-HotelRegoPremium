@@ -401,14 +401,14 @@
 /* No flight below the horizontal breakpoint or under reduced motion, so the
    strip that made room for it would just be dead space. */
 .beat--lead { display: none; }
-@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+@media (min-width: 860px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
   .beat--lead { display: block; }
 }
 
 /* ── Small-screen rhythm ─────────────────────────────────────────────── */
 /* The asymmetry of the desktop mosaic is kept by alternating widths and
    indents rather than by absolute positions. */
-@media (max-width: 1023px) {
+@media not all and (min-width: 860px) and (hover: hover) and (pointer: fine) {
   .hs-photo--h2,
   .hs-photo--r2,
   .hs-photo--s2 { width: 78%; margin-left: 22%; }
@@ -421,7 +421,7 @@
 /* Gated on reduced-motion as well as width, so the query matches the
    matchMedia condition in hscroll.js exactly — one source of truth for
    "is this section horizontal right now". */
-@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+@media (min-width: 860px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
   .hscroll { height: 100vh; }
 
   .hscroll__track {
@@ -598,4 +598,33 @@
   .beat__subtitle .mark { --hs-mark: 0% !important; }
   .hscroll__topo { display: none; }
   .hs-card__cta { transition: none; }
+}
+
+/* ── Approach, before the pin opens ──────────────────────────────────── */
+/* This section's own first stop is near-black, and it enters the viewport a
+   full screen before its pin engages. That left a hard black band creeping up
+   from the bottom edge for 450px of scrolling — visible underneath the marquee
+   strip, and starting well before the facade photograph even begins to grow.
+   The order read backwards: the horizontal section announced itself in the
+   darkest possible way, and only afterwards did the picture that is supposed
+   to introduce it start to assemble.
+
+   Holding the approach at the story's own background removes the seam
+   entirely: the section arrives invisibly, the facade grows over it, and the
+   switch to the real stop 0 happens at the moment the pin opens — by which
+   point the facade is full-screen and covers it. The visitor never sees the
+   change, only its result.
+
+   hscroll.js clears the inline --hs-bg it would otherwise be holding, so this
+   rule is what applies while the class is on, and it stops writing the ramp
+   for the duration. */
+.hscroll.is-approach {
+  /* --st-light, the story panel's own starting colour. Only the first frame
+     uses it: hscroll.js then syncs this variable to whatever .story actually
+     computes to, every frame of the approach, because that panel is itself
+     fading to near-black across the same stretch. A fixed value here was the
+     first attempt and it reproduced the original bug with the colours
+     swapped — a hard edge between a cream band and a darkening one. */
+  --hs-bg: #efeae3;
+  --hs-fg: #1a1714;
 }

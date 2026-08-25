@@ -9,22 +9,30 @@
    <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,401,500,700&f[]=zodiak@300,301,400,401,700,701&display=swap" rel="stylesheet" />
    <link rel="stylesheet" href="style.css?v=2" />
    <link rel="stylesheet" href="overlay.css" />
-   <link rel="stylesheet" href="story.css?v=14" />
+   <link rel="stylesheet" href="story.css?v=20" />
    <link rel="stylesheet" href="masked-heading.css" />
    <link rel="stylesheet" href="offering.css?v=5" />
-   <link rel="stylesheet" href="rooms.css?v=11" />
+   <link rel="stylesheet" href="rooms.css?v=12" />
+   <link rel="stylesheet" href="rooms-detail.css?v=2" />
    <link rel="stylesheet" href="values.css?v=4" />
    <link rel="stylesheet" href="voices.css?v=6" />
-   <link rel="stylesheet" href="location.css?v=8" />
+   <link rel="stylesheet" href="location.css?v=9" />
    <link rel="stylesheet" href="reserve.css?v=10" />
    <link rel="stylesheet" href="menu.css?v=1" />
-   <link rel="stylesheet" href="kinetic.css?v=8" />
-   <link rel="stylesheet" href="footer-trail.css?v=4" />
-   <link rel="stylesheet" href="hscroll.css?v=12" />
-   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Anton&family=Lobster+Two:wght@400;700&family=Inter:wght@400;500;700&family=Norican&display=swap" rel="stylesheet" />
+   <link rel="stylesheet" href="brandmark.css?v=3" />
+   <link rel="stylesheet" href="kinetic.css?v=10" />
+   <link rel="stylesheet" href="footer-trail.css?v=5" />
+   <link rel="stylesheet" href="hscroll.css?v=15" />
+   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Norican&display=swap" rel="stylesheet" />
 </head>
 
 <body class="is-intro">
+   <!-- Persistent corner wordmark. Fixed, so it stays in the top-left while
+        sections travel underneath and its ink can invert against them; the
+        hero keeps its own logo in .topbar and this fades in once that has
+        scrolled away. Decorative: the hero logo already carries the brand
+        name as alt text, so repeating it here would only add noise. -->
+   <span class="brandmark" aria-hidden="true"></span>
    <section class="hero-intro">
    <div class="container">
       <div class="col c-1">
@@ -130,6 +138,11 @@
    </section>
 
    <div class="story">
+      <!-- Contour field, drawn in a fragment shader. Sits on .story rather
+           than on .story-intro so it runs the whole length of the light panel
+           — the marquee strip included — instead of stopping at the first
+           screen. Decorative and inert. -->
+      <canvas class="story-contours" aria-hidden="true"></canvas>
       <section class="story-intro">
          <span class="story-intro-line" aria-hidden="true">
             <i class="story-line-track"></i>
@@ -137,10 +150,21 @@
             <i class="story-line-node"></i>
             <i class="story-line-tip"></i>
          </span>
-         <h2>
-            Un apart hotel donde cada detalle est&aacute; pensado para que te
-            quedes m&aacute;s tiempo del que ten&iacute;as planeado.
+
+         <!-- <em> marks the accented words. story.js splits this into
+              per-word spans for the reveal and carries that marking across,
+              so the emphasis survives the split. -->
+         <h2 class="story-statement">
+            Un <em>apart hotel</em> donde cada detalle est&aacute; pensado para
+            que te quedes <em>m&aacute;s tiempo</em> del que ten&iacute;as planeado.
          </h2>
+
+         <a class="story-cue" href="#experiencia">
+            <span class="story-cue__text">Scroll para descubrir</span>
+            <span class="story-cue__arrow" aria-hidden="true">
+               <svg viewBox="0 0 12 34" fill="none"><path d="M6 0v30M1 25l5 6 5-6"/></svg>
+            </span>
+         </a>
       </section>
 
       <section class="story-marquee">
@@ -443,6 +467,12 @@
                      <p class="rooms-price"><small>Desde</small><strong>S/ 210</strong> <i>/ noche</i></p>
                      <button class="rooms-cta" type="button">Reservar</button>
                   </div>
+                  <!-- Punto 6: acceso al detalle. Deliberadamente por debajo de
+                       "Reservar" en peso — es una puerta, no una segunda oferta. -->
+                  <button class="rooms-more" type="button" aria-label="Ver detalle de ESTUDIOS">
+                     <span>Ver detalle</span>
+                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+                  </button>
                </div>
             </article>
 
@@ -476,6 +506,12 @@
                      <p class="rooms-price"><small>Desde</small><strong>S/ 320</strong> <i>/ noche</i></p>
                      <button class="rooms-cta" type="button">Reservar</button>
                   </div>
+                  <!-- Punto 6: acceso al detalle. Deliberadamente por debajo de
+                       "Reservar" en peso — es una puerta, no una segunda oferta. -->
+                  <button class="rooms-more" type="button" aria-label="Ver detalle de MINIDEPARTAMENTOS">
+                     <span>Ver detalle</span>
+                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+                  </button>
                </div>
             </article>
 
@@ -509,6 +545,12 @@
                      <p class="rooms-price"><small>Desde</small><strong>S/ 450</strong> <i>/ noche</i></p>
                      <button class="rooms-cta" type="button">Reservar</button>
                   </div>
+                  <!-- Punto 6: acceso al detalle. Deliberadamente por debajo de
+                       "Reservar" en peso — es una puerta, no una segunda oferta. -->
+                  <button class="rooms-more" type="button" aria-label="Ver detalle de DEPARTAMENTOS">
+                     <span>Ver detalle</span>
+                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+                  </button>
                </div>
             </article>
          </div>
@@ -845,11 +887,38 @@
            two staggered cards that interlock at the corner, and the closing
            line in the negative space beside them. -->
       <div class="kinetic-item">
+         <!-- Copy before gallery in the DOM. The desktop row reads left to
+              right and the mobile stack reads top to bottom, so this order is
+              the reading order in both — the previous markup put the images
+              first and relied on row-reverse to undo it, which meant the
+              phone stack opened on two photographs before saying anything. -->
+         <div class="kc-say">
+            <p class="kc-eyebrow"><span class="kc-eyebrow__dot" aria-hidden="true"></span>Tu descanso en Bagua Grande empieza ac&aacute;</p>
+            <h2 class="kc-ask">&iquest;Y qu&eacute; esperas?</h2>
+            <p class="kc-lead">En REGO Premium Apart Hotel, cada detalle est&aacute; pensado para brindarte comodidad, calidez y una experiencia inolvidable.</p>
+            <a class="kc-cta" href="#rooms">
+               Conoce m&aacute;s
+               <span class="kc-cta__ico" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M4 12h14M12 5l7 7-7 7"/></svg>
+               </span>
+            </a>
+         </div>
+
          <div class="kc-gallery">
             <figure class="kc-card kc-card-a">
                <div class="kc-frame">
                   <img src="./img/lobby-rego.jpg" loading="lazy"
                        alt="Recepci&oacute;n de REGO Premium Apart Hotel iluminada con luz c&aacute;lida por la noche" />
+                  <!-- A real control, not an ornament. The reference shows this
+                       affordance on both cards; wiring it to the lightbox is
+                       what keeps it from being a button that does nothing. -->
+                  <button class="kc-zoom" type="button"
+                          data-full="./img/lobby-rego.jpg"
+                          aria-label="Ampliar la foto de la recepci&oacute;n">
+                     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M14 4h6v6M20 4l-7 7M10 20H4v-6M4 20l7-7"/>
+                     </svg>
+                  </button>
                </div>
                <figcaption class="kc-label">01 &mdash; Hospitalidad</figcaption>
             </figure>
@@ -858,14 +927,16 @@
                <div class="kc-frame">
                   <img src="./img/hotel-rego-sunset.jpg" loading="lazy"
                        alt="Fachada del edificio de REGO Premium Apart Hotel encendida al anochecer" />
+                  <button class="kc-zoom" type="button"
+                          data-full="./img/hotel-rego-sunset.jpg"
+                          aria-label="Ampliar la foto del edificio">
+                     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M14 4h6v6M20 4l-7 7M10 20H4v-6M4 20l7-7"/>
+                     </svg>
+                  </button>
                </div>
                <figcaption class="kc-label">02 &mdash; El edificio</figcaption>
             </figure>
-         </div>
-
-         <div class="kc-say">
-            <h2 class="kc-ask">&iquest;Y qu&eacute; esperas?</h2>
-            <p class="kc-line">Tu descanso en Bagua Grande empieza ac&aacute;</p>
          </div>
       </div>
 
@@ -1190,16 +1261,38 @@
       });
    </script>
    <script src="overlay.js"></script>
-   <script src="story.js?v=20"></script>
-   <script src="hscroll.js?v=16"></script>
+   <!-- Before every section script: they all read window.REGO_MQ for the one
+        shared definition of "desktop". -->
+   <script src="breakpoints.js?v=1"></script>
+   <script src="story.js?v=27"></script>
+   <script src="hscroll.js?v=26"></script>
+   <!-- After hscroll.js on purpose: brandmark measures that section's
+        pin-spacer, which only exists once its pin has been created. -->
+   <dialog class="kc-lightbox" aria-label="Imagen ampliada">
+      <button class="kc-lightbox__close" type="button" aria-label="Cerrar">
+         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <!-- The picture element is created by kinetic-cards.js on first open
+           rather than shipped here. An empty src is a broken image in the
+           markup even inside a dialog that never renders it, and there is
+           nothing to show until a photograph has been chosen.
+           (Written without the literal tag name: a bare mention of it inside
+           this comment reads to the design linter as the very element it is
+           explaining the absence of.) -->
+   </dialog>
+
+   <script src="brandmark.js?v=5"></script>
+   <script src="contours.js?v=5"></script>
+   <script src="kinetic-cards.js?v=4"></script>
    <script src="masked-heading.js"></script>
    <script src="offering.js?v=6"></script>
-   <script src="rooms.js?v=16"></script>
+   <script src="rooms.js?v=17"></script>
+   <script src="rooms-detail.js?v=5"></script>
    <script src="values.js?v=8"></script>
    <script src="band-shader.js"></script>
    <script src="voices.js?v=3"></script>
    <script src="location.js"></script>
-   <script src="reserve.js?v=6"></script>
+   <script src="reserve.js?v=7"></script>
    <script src="reserve-bar.js?v=4"></script>
    <script src="menu.js?v=2"></script>
    <script src="kinetic.js?v=6"></script>

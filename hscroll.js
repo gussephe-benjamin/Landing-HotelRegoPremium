@@ -62,7 +62,71 @@ document.addEventListener("DOMContentLoaded", function () {
   var lastBg = "";
   var lastFg = "";
 
+  // True while the section is on screen but its pin has not opened yet. During
+  // that stretch the ramp is not written at all and hscroll.css holds the
+  // background at the story's own colour, so the section arrives without
+  // announcing itself as a black band. See the .is-approach rule there.
+  var approaching = false;
+
+  // Whether the facade photograph is currently covering the page's top-left
+  // corner, where the persistent wordmark sits. Set in driveFacade.
+  var facadeCovers = false;
+
+  // The panel directly above. story.js fades it from #efeae3 to #0d0d0f as this
+  // section rises, so that hand-off is a fade rather than a cut — and matching
+  // it is the whole job of the approach. Reading its computed colour rather
+  // than re-deriving the same ramp here means the two cannot drift apart if
+  // either window is ever retuned; there is exactly one definition of that
+  // fade and it lives in story.js.
+  var storyPanel = document.querySelector(".story");
+  var lastApproachBg = "";
+
+  function syncApproach() {
+    if (!approaching || !storyPanel) return;
+    var c = getComputedStyle(storyPanel).backgroundColor;
+    if (c === lastApproachBg) return;
+    lastApproachBg = c;
+    // The background itself is not set here — story.js drives both panels from
+    // one tween so they cannot disagree. This only carries the mark's ink,
+    // where being a frame behind is invisible against a 0.45s colour fade.
+    if (window.regoMark) {
+      var m = c.match(/[\d.]+/g);
+      if (m) {
+        var f = function (v) {
+          v /= 255;
+          return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+        };
+        var lum = 0.2126 * f(+m[0]) + 0.7152 * f(+m[1]) + 0.0722 * f(+m[2]);
+        window.regoMark.setInk(lum > 0.18 ? "dark" : "light");
+      }
+    }
+  }
+
+  function setApproach(on) {
+    if (approaching === on) return;
+    approaching = on;
+    section.classList.toggle("is-approach", on);
+    if (on) {
+      // The inline value setProgress wrote during setup would otherwise beat
+      // the .is-approach rule on specificity and hold the section at its night
+      // stop through the whole approach. Removed rather than overwritten,
+      // because on desktop nothing writes this again until the pin opens — the
+      // stylesheet is what supplies the approach colour there.
+      section.style.removeProperty("--hs-bg");
+      section.style.removeProperty("--hs-fg");
+      lastApproachBg = "";
+      syncApproach();
+    }
+    // Both directions: the guards inside setProgress compare against these,
+    // and leaving them holding a value that is no longer on the element would
+    // skip the first write back and strand the approach colour.
+    lastBg = "";
+    lastFg = "";
+  }
+
   function setProgress(p) {
+    // hscroll.css owns the colours until the pin opens.
+    if (approaching) return;
     p = gsap.utils.clamp(0, 1, p);
     var i = 0;
     while (i < STOPS.length - 2 && p > STOPS[i + 1].p) i++;
@@ -92,6 +156,23 @@ document.addEventListener("DOMContentLoaded", function () {
     // being light, then switching it outright, keeps the worst case at the
     // best value these two endpoints allow.
     var fg = i === 2 ? (p < FG_FLIP ? a.fg : b.fg) : blend(a.fg, b.fg, t);
+
+    // The corner wordmark flips off this same threshold rather than owning a
+    // copy of it. This section is the only one on the page whose background
+    // is not one tone — it walks from near-black to near-white — so the mark
+    // cannot use a static flag here, and deriving it from anything other than
+    // FG_FLIP would let the two disagree about where daylight starts.
+    // regoMark ignores repeats, so calling this every frame is one comparison.
+    // Dark ink for two separate reasons: the ramp has reached daylight, or the
+    // facade photograph is still covering the corner. That photograph's
+    // top-left is open sky — measured at rgb(100,146,216) — where light ink
+    // manages 2.83:1 and dark ink 5.99:1, so the mark has to invert for it
+    // even though the section behind it is near-black.
+    if (window.regoMark) {
+      var wantsDark = facadeCovers || (i === 2 && p >= FG_FLIP);
+      window.regoMark.setInk(wantsDark ? "dark" : "light");
+    }
+
     if (fg !== lastFg) {
       section.style.setProperty("--hs-fg", fg);
       lastFg = fg;
@@ -205,10 +286,36 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  // ── Approach ─────────────────────────────────────────────────────────
+  // Outside matchMedia deliberately. story.js fades this section's background
+  // together with the panel above it on every breakpoint, and it does that by
+  // writing an inline background-color — which beats the var(--hs-bg) rule the
+  // ramp works through. So whichever branch below is running, the inline value
+  // has to be handed back at the same moment, or the ramp writes a variable
+  // nothing is reading and the section stays one flat colour. That was the
+  // shape of it on phones: the whole night-to-daylight ramp silently dead.
+  //
+  // Anchored to the marquee rather than to this section, which is pinned on
+  // desktop and would be measured against its spacer. The strip's bottom edge
+  // is this section's top edge, so "bottom bottom" is the frame the section
+  // first appears at the foot of the screen and "bottom top" is the frame it
+  // takes the screen over — exactly the stretch that used to show as a black
+  // band creeping up under the marquee.
+  ScrollTrigger.create({
+    trigger: ".story-marquee",
+    start: "bottom bottom",
+    end: "bottom top",
+    invalidateOnRefresh: true,
+    onToggle: function (self) {
+      setApproach(self.isActive);
+    },
+    onUpdate: syncApproach,
+  });
+
   var mm = gsap.matchMedia();
 
   // ── Desktop: pinned horizontal run ───────────────────────────────────
-  mm.add("(min-width: 1024px) and (prefers-reduced-motion: no-preference)", function () {
+  mm.add(window.REGO_MQ.DESKTOP_MOTION, function () {
     // A function, not a captured number: resolving this once at load leaves
     // the section broken after a resize, or once the display serif lands and
     // changes the width of the 13vw backdrop.
@@ -304,16 +411,37 @@ document.addEventListener("DOMContentLoaded", function () {
         transform: "rotate(0deg)",
         transformOrigin: "center center",
       });
-      flip = Flip.from(state, { duration: 1, ease: "none", paused: true });
+      // scale:true is what makes this flight cheap. Left to itself Flip
+      // animates width and height, and this element is a 2984x2108 photograph
+      // growing to fill the screen: every frame it re-laid out, recomputed its
+      // object-fit crop and resampled the source to a new size. Measured, the
+      // script cost nothing — 0.6ms a frame, no forced layout — because all of
+      // that expense lands in the browser's own layout and paint phases, which
+      // is why it read as a heavy zoom rather than as slow code.
+      //
+      // Scaling instead rasterises the picture once and hands the growth to
+      // the compositor. It is safe here because the two boxes are nearly the
+      // same shape: the strip card is 5:3 and the screen is 16:10, a 4%
+      // difference, so the horizontal and vertical scales stay close enough
+      // that no stretch is visible on the way.
+      flip = Flip.from(state, { duration: 1, ease: "none", paused: true, scale: true });
     }
 
     function driveFacade(travelled) {
-      if (!flip) return;
+      if (!flip) {
+        facadeCovers = false;
+        return;
+      }
       // Growth is finished before this ever runs — see the approach trigger
       // below — so inside the pin there is nothing left to do but carry the
       // finished picture away.
       flip.progress(1);
-      if (facade) gsap.set(facade, { x: -travelled * EXIT_RATE });
+      var shifted = travelled * EXIT_RATE;
+      if (facade) gsap.set(facade, { x: -shifted });
+      // The picture is exactly one screen wide and slides left, so its right
+      // edge sits at innerWidth - shifted. 130 clears the wordmark's own box
+      // at every breakpoint with a little room to spare.
+      facadeCovers = window.innerWidth - shifted > 130;
     }
 
     function releaseFlip() {
@@ -490,9 +618,22 @@ document.addEventListener("DOMContentLoaded", function () {
       start: "top top",
       end: "bottom top",
       invalidateOnRefresh: true,
-      onEnter: buildFlip,
-      onEnterBack: buildFlip,
-      onLeaveBack: releaseFlip,
+      onEnter: function () {
+        buildFlip();
+        // The contour field behind this is progressively covered by the
+        // photograph and completely hidden by the end of the growth, so it is
+        // held for the duration. This is the most demanding stretch on the
+        // page and the one the visitor is most likely to be looking at.
+        if (window.regoContours) window.regoContours.hold();
+      },
+      onEnterBack: function () {
+        buildFlip();
+        if (window.regoContours) window.regoContours.hold();
+      },
+      onLeaveBack: function () {
+        releaseFlip();
+        if (window.regoContours) window.regoContours.resume();
+      },
       onUpdate: function (self) {
         if (flip) flip.progress(self.progress);
       },
@@ -512,10 +653,16 @@ document.addEventListener("DOMContentLoaded", function () {
         invalidateOnRefresh: true,
         onRefresh: function () { anchors = new WeakMap(); },
         onEnter: function () {
+          // Closed here as well as by its own trigger. Both land on the same
+          // scroll position and the order they are evaluated in is not
+          // something to rely on; if the ramp ran first it would return early
+          // and leave the approach colour on screen for a frame.
+          setApproach(false);
           buildFlip();
           if (bg) gsap.set(bg, { autoAlpha: 1 });
         },
         onEnterBack: function () {
+          setApproach(false);
           buildFlip();
           if (bg) gsap.set(bg, { autoAlpha: 1 });
         },
@@ -619,7 +766,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // ── Stacked layout: small screens and reduced motion ─────────────────
-  mm.add("(max-width: 1023px), (prefers-reduced-motion: reduce)", function () {
+  mm.add(window.REGO_MQ.NOT_DESKTOP_MOTION, function () {
     var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     buildReveals(function (el) {

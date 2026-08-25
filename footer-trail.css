@@ -73,7 +73,12 @@
 }
 
 .ft-word {
-  font-family: "Inter", system-ui, sans-serif;
+  /* The page's own display face rather than Inter. These two labels were the
+     only thing on the site asking for it, so a whole family was being
+     downloaded for a pair of 18px captions — and Inter is generic enough that
+     it read as a default rather than a choice. Satoshi is already loaded and
+     carries the same weight. */
+  font-family: var(--ov-font-display);
   font-size: 18px;
   font-weight: 700;
   letter-spacing: -0.5px;
@@ -134,7 +139,7 @@
 }
 
 .ft-rot {
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: var(--ov-font-display);
   color: #888888;
   font-size: 20px;
   font-weight: 700;

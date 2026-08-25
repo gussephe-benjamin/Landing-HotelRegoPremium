@@ -47,7 +47,7 @@ var ROOMS = [
 /* Secondary frames only exist at and above this width. Matches the section's
    own layout breakpoint — below it the copy panel drops under the photo and
    there is no left column to put them in. */
-var ROOMS_DESKTOP = "(min-width: 1101px)";
+var ROOMS_DESKTOP = window.REGO_MQ.DESKTOP;
 
 document.addEventListener("DOMContentLoaded", function () {
   var root = document.querySelector(".rooms");
@@ -130,7 +130,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // One test for everything in this section that is expensive enough to cost
   // frames on a phone: the shader, the scrubbed cover effect on the section
   // above, and the scrubbed box-shadow.
-  var RICH = window.matchMedia("(min-width: 1101px)").matches && !reduced;
+  var RICH = window.matchMedia(window.REGO_MQ.GPU).matches && !reduced;
   var USE_GL = RICH;
 
   // ── WebGL stage ────────────────────────────────────────────────────

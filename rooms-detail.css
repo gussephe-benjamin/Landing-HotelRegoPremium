@@ -1,0 +1,692 @@
+/* (02) Habitaciones — vista de detalle.
+
+   Every token here is scoped to .rd. The section's own variables live on
+   .rooms and repeating their names at :root would repaint the whole page, so
+   these carry an --rd- prefix and take their values from the same palette the
+   rooms section already uses: warm near-black, warm ink, the project's gold. */
+.rd {
+  --rd-bg: #17120f;
+  --rd-ink: #f4efe8;
+  --rd-accent: #c79a5b;
+
+  /* Liquid glass, the same recipe as the location card and the reservation
+     panel so the three read as one material: a translucent graded fill, a
+     heavy blur with a saturation lift, a hairline border, and an inner top
+     highlight standing in for the lit edge of a thick sheet. */
+  --rd-glass: linear-gradient(
+    168deg,
+    rgba(244, 239, 232, 0.11) 0%,
+    rgba(244, 239, 232, 0.045) 46%,
+    rgba(244, 239, 232, 0.075) 100%
+  );
+  --rd-line: rgba(244, 239, 232, 0.09);
+  --rd-line-strong: rgba(244, 239, 232, 0.16);
+  --rd-lift: inset 0 1px 0 rgba(255, 255, 255, 0.09);
+
+  --rd-sans: var(--ov-font-display, "Satoshi", system-ui, sans-serif);
+  --rd-serif: var(--vc-serif, "Zodiak", Georgia, serif);
+  --rd-mono: var(--rs-mono, "JetBrains Mono", ui-monospace, monospace);
+
+  position: fixed;
+  inset: 0;
+  /* Above the fixed wordmark (70) and the menu panel (80), below nothing —
+     this is a modal and owns the screen while it is open. */
+  z-index: 200;
+  background: var(--rd-bg);
+  color: var(--rd-ink);
+  font-family: var(--rd-sans);
+  opacity: 0;
+  overflow: hidden;
+  transition: opacity 0.32s ease;
+}
+.rd.is-open { opacity: 1; }
+
+/* ── Atmosphere ──────────────────────────────────────────────────────── */
+/* The hero photograph lives behind everything, blurred and darkened, so the
+   whole view carries the colour of the room it is describing rather than a
+   flat panel. Fixed and scaled past the edges: a blur samples beyond its own
+   box, and without the overscale the corners wash out. */
+.rd-atmos {
+  position: fixed;
+  inset: -8%;
+  background-size: cover;
+  background-position: center;
+  filter: blur(60px) brightness(0.35) saturate(1.15);
+  transform: scale(1.08);
+  pointer-events: none;
+}
+.rd-atmos-tint {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(23, 18, 15, 0.6) 0%,
+    rgba(23, 18, 15, 0.86) 34%,
+    rgba(23, 18, 15, 0.96) 62%,
+    var(--rd-bg) 100%
+  );
+}
+.rd-grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+}
+
+/* ── Scroll body ─────────────────────────────────────────────────────── */
+.rd-scroll {
+  position: relative;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: clamp(7rem, 12vh, 9rem);
+}
+
+.rd-anim { opacity: 0; }
+.rd.is-settled .rd-anim { opacity: 1; }
+
+/* ── 5.1 · Utility bar ───────────────────────────────────────────────── */
+.rd-bar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: clamp(0.75rem, 1.6vw, 1.4rem);
+  padding: clamp(0.85rem, 1.4vw, 1.15rem) clamp(1.1rem, 3vw, 2.5rem);
+  border-bottom: 1px solid var(--rd-line);
+  background: rgba(23, 18, 15, 0.55);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  backdrop-filter: blur(24px) saturate(150%);
+}
+
+.rd-mark {
+  font-family: var(--rd-mono);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+}
+
+/* The hairline dividers between groups. */
+.rd-rule {
+  width: 1px;
+  height: 16px;
+  flex: none;
+  background: rgba(244, 239, 232, 0.12);
+}
+
+.rd-stamp,
+.rd-weather {
+  font-family: var(--rd-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(244, 239, 232, 0.5);
+  white-space: nowrap;
+}
+.rd-weather { display: inline-flex; align-items: center; gap: 0.5rem; }
+.rd-weather svg {
+  width: 15px; height: 15px; fill: none;
+  stroke: currentColor; stroke-width: 1.4; stroke-linecap: round;
+}
+
+.rd-lang {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--rd-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+}
+.rd-lang b { font-weight: 500; color: var(--rd-ink); }
+.rd-lang s { text-decoration: none; color: rgba(244, 239, 232, 0.28); }
+.rd-lang em { font-style: normal; color: rgba(244, 239, 232, 0.4); }
+
+.rd-bar-title {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+}
+.rd-bar-title b {
+  font-size: clamp(0.95rem, 1.4vw, 1.2rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+/* The accent underline, the one place it appears in the bar. */
+.rd-bar-title i {
+  width: 44px;
+  height: 2px;
+  background: var(--rd-accent);
+}
+
+.rd-close {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(244, 239, 232, 0.22);
+  border-radius: 999px;
+  background: rgba(244, 239, 232, 0.05);
+  color: var(--rd-ink);
+  cursor: pointer;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.3s ease;
+}
+.rd-close:hover { transform: rotate(90deg); background: rgba(244, 239, 232, 0.12); }
+.rd-close svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
+
+/* ── 5.2 · Dismissible banner ────────────────────────────────────────── */
+.rd-note {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.9rem, 1.6vw, 1.2rem);
+  margin: clamp(1rem, 2.4vh, 1.6rem) clamp(1.1rem, 3vw, 2.5rem) 0;
+  padding: 1.1rem 1.3rem;
+  border: 1px solid var(--rd-line);
+  border-radius: 24px;
+  background: var(--rd-glass);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  backdrop-filter: blur(24px) saturate(150%);
+  box-shadow: var(--rd-lift);
+  overflow: hidden;
+}
+.rd-note-ico {
+  flex: none;
+  width: 44px; height: 44px;
+  display: grid; place-items: center;
+  border: 1px solid rgba(199, 154, 91, 0.35);
+  border-radius: 999px;
+  background: rgba(199, 154, 91, 0.12);
+}
+.rd-note-ico svg {
+  width: 19px; height: 19px; fill: none;
+  stroke: var(--rd-accent); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+}
+.rd-note-say { flex-grow: 1; display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
+.rd-note-say b { font-size: 0.95rem; font-weight: 700; letter-spacing: -0.01em; }
+.rd-note-say i { font-style: normal; font-size: 0.82rem; color: rgba(244, 239, 232, 0.62); }
+.rd-note-x {
+  flex: none; width: 34px; height: 34px; padding: 0;
+  display: grid; place-items: center;
+  border: 0; border-radius: 999px; background: none;
+  color: rgba(244, 239, 232, 0.45); cursor: pointer;
+  transition: color 0.3s ease;
+}
+.rd-note-x:hover { color: var(--rd-ink); }
+.rd-note-x svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
+
+/* ── 5.3 · Hero ──────────────────────────────────────────────────────── */
+.rd-hero {
+  position: relative;
+  margin: clamp(1rem, 2.4vh, 1.6rem) clamp(1.1rem, 3vw, 2.5rem) 0;
+  height: clamp(420px, 74vh, 680px);
+  border: 1px solid var(--rd-line);
+  border-radius: clamp(20px, 2vw, 28px);
+  overflow: hidden;
+}
+.rd-hero-frame { position: absolute; inset: 0; }
+.rd-hero-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.rd-hero-scrim {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(23, 18, 15, 0.06) 0%,
+    rgba(23, 18, 15, 0.02) 30%,
+    rgba(23, 18, 15, 0.74) 72%,
+    rgba(23, 18, 15, 0.96) 100%
+  );
+}
+.rd-hero-say {
+  position: absolute;
+  left: clamp(1.2rem, 3vw, 2.75rem);
+  right: clamp(1.2rem, 3vw, 2.75rem);
+  bottom: clamp(1.4rem, 3.4vh, 2.6rem);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.6rem, 1.4vh, 1rem);
+}
+.rd-eyebrow {
+  margin: 0;
+  font-family: var(--rd-mono);
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(244, 239, 232, 0.68);
+}
+.rd-title {
+  margin: 0;
+  font-size: clamp(2.4rem, 6vw, 5.5rem);
+  font-weight: 800;
+  line-height: 0.94;
+  letter-spacing: -0.03em;
+  display: flex;
+  flex-direction: column;
+}
+/* The accented word in the project's serif italic — the same device the
+   closing section uses, so the two read as one voice. */
+.rd-title em {
+  font-family: var(--rd-serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+.rd-tagline {
+  margin: 0;
+  max-width: 34ch;
+  font-size: clamp(0.9rem, 1.2vw, 1.05rem);
+  color: rgba(244, 239, 232, 0.72);
+}
+.rd-hero-price {
+  position: absolute;
+  right: clamp(1.2rem, 3vw, 2.75rem);
+  bottom: clamp(1.4rem, 3.4vh, 2.6rem);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.1rem;
+}
+.rd-hero-price small {
+  font-family: var(--rd-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(244, 239, 232, 0.5);
+}
+.rd-hero-price b { font-size: clamp(1.7rem, 3.4vw, 3.1rem); font-weight: 800; letter-spacing: -0.03em; }
+.rd-hero-price i { font-style: normal; font-size: 0.8rem; color: rgba(244, 239, 232, 0.55); }
+
+/* ── 5.4 · Spec chips ────────────────────────────────────────────────── */
+.rd-chips {
+  display: flex;
+  gap: 0.6rem;
+  padding: clamp(1.1rem, 2.6vh, 1.7rem) clamp(1.1rem, 3vw, 2.5rem) 0;
+  flex-wrap: wrap;
+}
+.rd-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--rd-line-strong);
+  border-radius: 999px;
+  background: rgba(244, 239, 232, 0.03);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  font-family: var(--rd-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(244, 239, 232, 0.82);
+  white-space: nowrap;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.3s ease;
+}
+.rd-chip:hover { transform: translateY(-2px); border-color: rgba(244, 239, 232, 0.3); }
+.rd-chip b { color: var(--rd-accent); font-weight: 500; }
+
+/* ── Description ─────────────────────────────────────────────────────── */
+.rd-lede {
+  margin: clamp(1.4rem, 3vh, 2.2rem) clamp(1.1rem, 3vw, 2.5rem) 0;
+  max-width: 62ch;
+  font-size: clamp(0.95rem, 1.15vw, 1.1rem);
+  line-height: 1.65;
+  color: rgba(244, 239, 232, 0.7);
+  text-wrap: pretty;
+}
+
+/* ── Section labels ──────────────────────────────────────────────────── */
+.rd-label {
+  margin: 0 0 clamp(0.9rem, 2vh, 1.2rem);
+  font-family: var(--rd-mono);
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(244, 239, 232, 0.5);
+}
+
+/* ── 5.5 · Gallery ───────────────────────────────────────────────────── */
+/* Runs off the right edge on purpose: the cut card is what says there is more
+   without spending a control on saying it. */
+.rd-gallery { padding: clamp(2rem, 4.5vh, 3.2rem) 0 0 clamp(1.1rem, 3vw, 2.5rem); }
+.rd-strip {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  padding-bottom: 0.5rem;
+}
+.rd-strip::-webkit-scrollbar { display: none; }
+.rd-shot {
+  position: relative;
+  flex: none;
+  width: clamp(240px, 85vw, 400px);
+  margin: 0;
+  border: 1px solid var(--rd-line);
+  border-radius: 20px;
+  overflow: hidden;
+  scroll-snap-align: start;
+}
+.rd-shot img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; display: block; }
+.rd-shot-more {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  background: rgba(23, 18, 15, 0.62);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+.rd-shot-more b { font-size: clamp(1.6rem, 3vw, 2rem); font-weight: 800; letter-spacing: -0.02em; }
+.rd-shot-more span {
+  font-family: var(--rd-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(244, 239, 232, 0.7);
+}
+
+/* ── 5.6 · The two glass cards ───────────────────────────────────────── */
+.rd-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  padding: clamp(2.4rem, 5vh, 3.6rem) clamp(1.1rem, 3vw, 2.5rem) 0;
+}
+.rd-card {
+  position: relative;
+  height: clamp(320px, 44vh, 420px);
+  margin: 0;
+  border: 1px solid var(--rd-line);
+  border-radius: clamp(20px, 2vw, 28px);
+  overflow: hidden;
+  box-shadow: var(--rd-lift);
+}
+.rd-card img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.rd-card:hover img { transform: scale(1.04); }
+/* Pesado abajo, casi transparente arriba. La primera versión arrancaba en
+   0.34 y llegaba a 0.9, lo que sobre una foto ya oscura dejaba la card
+   prácticamente negra — se comprobó que las imágenes cargaban bien y que el
+   velo era el culpable. El texto vive en el tercio inferior, así que ahí es
+   donde el scrim tiene que trabajar; arriba solo estorbaba. */
+.rd-card-scrim {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(23,18,15,0.1) 0%, rgba(23,18,15,0.08) 42%, rgba(23,18,15,0.62) 72%, rgba(23,18,15,0.92) 100%);
+  transition: opacity 0.5s ease;
+}
+.rd-card:hover .rd-card-scrim { opacity: 0.86; }
+.rd-card-top {
+  position: absolute;
+  top: 1.15rem; left: 1.15rem; right: 1.15rem;
+  display: flex; align-items: center; justify-content: space-between; gap: 0.8rem;
+}
+.rd-pill {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  padding: 0.42rem 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  background: rgba(23, 18, 15, 0.4);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  font-family: var(--rd-mono);
+  font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+  white-space: nowrap;
+}
+.rd-pill i { width: 5px; height: 5px; border-radius: 999px; background: var(--rd-accent); }
+.rd-meta {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  font-family: var(--rd-mono);
+  font-size: 11px; letter-spacing: 0.08em;
+  color: rgba(244, 239, 232, 0.7);
+  text-align: right;
+}
+.rd-meta svg { width: 13px; height: 13px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
+.rd-card-foot {
+  position: absolute;
+  left: 1.4rem; right: 1.4rem; bottom: 1.4rem;
+  display: flex; align-items: flex-end; gap: 1rem;
+}
+.rd-card-say { flex-grow: 1; display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; }
+.rd-card-say h4 {
+  margin: 0;
+  font-size: clamp(1.3rem, 2.1vw, 1.75rem);
+  font-weight: 700; letter-spacing: -0.02em;
+}
+.rd-card-say p { margin: 0; font-size: 0.87rem; color: rgba(244, 239, 232, 0.66); }
+.rd-card-go {
+  flex: none;
+  width: 56px; height: 56px;
+  display: grid; place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.rd-card:hover .rd-card-go { transform: rotate(45deg); }
+.rd-card-go svg { width: 18px; height: 18px; fill: none; stroke: var(--rd-ink); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── 5.7 · Amenities — the quiet one ─────────────────────────────────── */
+.rd-amenities { padding: clamp(2.6rem, 5.5vh, 4rem) clamp(1.1rem, 3vw, 2.5rem) 0; }
+.rd-amenity-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  border-top: 1px solid var(--rd-line);
+}
+.rd-amenity {
+  display: flex; align-items: center; gap: 0.65rem;
+  padding: 1.15rem 0.9rem 1.15rem 0;
+  border-bottom: 1px solid var(--rd-line);
+  font-size: 0.85rem;
+  color: rgba(244, 239, 232, 0.78);
+}
+.rd-amenity svg {
+  width: 15px; height: 15px; flex: none; fill: none;
+  stroke: rgba(199, 154, 91, 0.85); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* ── 5.9 · The other rooms ───────────────────────────────────────────── */
+.rd-switch {
+  display: flex; flex-direction: column; gap: 0.75rem;
+  padding: clamp(2.6rem, 5.5vh, 4rem) clamp(1.1rem, 3vw, 2.5rem) 0;
+}
+.rd-next {
+  display: flex; align-items: center; gap: clamp(0.9rem, 2vw, 1.4rem);
+  padding: 1rem;
+  border: 1px solid var(--rd-line);
+  border-radius: 24px;
+  background: rgba(244, 239, 232, 0.03);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  color: var(--rd-ink);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.3s ease, background-color 0.3s ease;
+}
+.rd-next:hover {
+  transform: translateY(-2px);
+  border-color: rgba(244, 239, 232, 0.22);
+  background: rgba(244, 239, 232, 0.06);
+}
+.rd-next img {
+  flex: none; width: clamp(78px, 10vw, 132px); height: clamp(62px, 7vw, 92px);
+  object-fit: cover; border-radius: 16px; display: block;
+}
+.rd-next-say { flex-grow: 1; display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
+.rd-next-say b { font-size: clamp(0.9rem, 1.5vw, 1.3rem); font-weight: 700; letter-spacing: -0.01em; }
+.rd-next-say i { font-style: normal; font-size: 0.78rem; color: rgba(244, 239, 232, 0.58); }
+.rd-next-price { flex: none; font-size: clamp(0.9rem, 1.3vw, 1.05rem); font-weight: 700; }
+.rd-next-go { flex: none; width: 18px; height: 18px; fill: none; stroke: var(--rd-accent); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── 5.8 · Sticky action bar ─────────────────────────────────────────── */
+.rd-book {
+  position: absolute;
+  left: clamp(1.1rem, 3vw, 2.5rem);
+  right: clamp(1.1rem, 3vw, 2.5rem);
+  bottom: clamp(1.1rem, 2.6vh, 1.8rem);
+  z-index: 6;
+  display: flex; align-items: center; gap: 1.4rem;
+  padding: 0.9rem 0.9rem 0.9rem 1.6rem;
+  border: 1px solid rgba(244, 239, 232, 0.12);
+  border-radius: 999px;
+  background: var(--rd-glass);
+  -webkit-backdrop-filter: blur(26px) saturate(150%);
+  backdrop-filter: blur(26px) saturate(150%);
+  box-shadow: var(--rd-lift), 0 24px 60px -26px rgba(0, 0, 0, 0.8);
+}
+.rd-book-price { flex-grow: 1; display: flex; align-items: baseline; gap: 0.5rem; }
+.rd-book-price b { font-size: clamp(1.1rem, 1.9vw, 1.5rem); font-weight: 800; letter-spacing: -0.02em; }
+.rd-book-price i { font-style: normal; font-size: 0.78rem; color: rgba(244, 239, 232, 0.55); }
+.rd-book-cta {
+  flex: none;
+  display: inline-flex; align-items: center; gap: 0.7rem;
+  padding: 0.85rem 1.6rem;
+  border-radius: 999px;
+  background: var(--rd-ink);
+  color: var(--rd-bg);
+  text-decoration: none;
+  font-family: var(--rd-mono);
+  font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.rd-book-cta:hover { transform: translateY(-2px); }
+.rd-book-cta svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── The photograph in flight ────────────────────────────────────────── */
+.rd-flyer {
+  z-index: 300;
+  object-fit: cover;
+  border-radius: clamp(20px, 2vw, 28px);
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* ── Keyboard focus ──────────────────────────────────────────────────── */
+.rd a:focus-visible,
+.rd button:focus-visible {
+  outline: 1px solid rgba(244, 239, 232, 0.6);
+  outline-offset: 3px;
+}
+
+/* ── The new button on the existing card ─────────────────────────────── */
+/* Deliberately below "Reservar" in weight: no fill, no border, small type at
+   60% opacity. It is a way in, not a second offer. */
+.rooms-more {
+  position: relative;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+  padding: 0.2rem 0;
+  border: 0;
+  background: none;
+  color: rgba(244, 239, 232, 0.6);
+  font-family: inherit;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+.rooms-more svg {
+  width: 14px; height: 14px; fill: none;
+  stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* Drawn from the left rather than faded in — a rule that grows reads as a
+   gesture, one that appears reads as a state change. */
+.rooms-more::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 22px;
+  bottom: 0;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.rooms-more:hover,
+.rooms-more:focus-visible { color: rgba(244, 239, 232, 1); }
+.rooms-more:hover::after,
+.rooms-more:focus-visible::after { transform: scaleX(1); }
+.rooms-more:hover svg,
+.rooms-more:focus-visible svg { transform: translateX(4px); }
+.rooms-more:focus-visible { outline: 1px solid rgba(244, 239, 232, 0.6); outline-offset: 4px; }
+
+/* ── Responsive ──────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .rd-cards { grid-template-columns: minmax(0, 1fr); }
+  .rd-amenity-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 640px) {
+  /* The bar collapses to what a phone can carry: close, name, price. */
+  .rd-stamp, .rd-lang, .rd-weather, .rd-mark, .rd-rule { display: none; }
+  .rd-bar { gap: 0.85rem; flex-direction: row-reverse; }
+  .rd-bar-title { align-items: flex-start; }
+  .rd-bar-title i { width: 34px; }
+
+  .rd-hero { height: 85vh; }
+  .rd-title { font-size: 40px; }
+  .rd-hero-price { position: static; align-items: flex-start; margin-top: 0.4rem; }
+  .rd-hero-say { bottom: 1.2rem; }
+
+  /* Chips run off the edge instead of wrapping — the only other thing on the
+     page allowed to, besides the gallery. */
+  .rd-chips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-right: 1.1rem; }
+  .rd-chips::-webkit-scrollbar { display: none; }
+
+  .rd-amenity-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .rd-card { height: 340px; }
+  .rd-card-go { width: 48px; height: 48px; }
+  /* A este ancho la píldora y el meta no caben en la misma línea sin partirse.
+     La píldora manda —dice si está incluido— y el meta es el detalle: se
+     retira antes que romper la fila. */
+  .rd-meta { display: none; }
+  .rd-pill { font-size: 10px; letter-spacing: 0.08em; padding: 0.38rem 0.7rem; }
+  /* El aviso es descartable: en un teléfono no puede comerse media pantalla. */
+  .rd-note { padding: 0.85rem 0.95rem; gap: 0.7rem; align-items: flex-start; }
+  .rd-note-ico { width: 34px; height: 34px; }
+  .rd-note-ico svg { width: 15px; height: 15px; }
+  .rd-note-say b { font-size: 0.82rem; }
+  .rd-note-say i { font-size: 0.75rem; }
+
+  /* Full width with the home indicator accounted for. */
+  .rd-book {
+    left: 0; right: 0; bottom: 0;
+    border-radius: 0;
+    border-left: 0; border-right: 0; border-bottom: 0;
+    padding: 0.9rem clamp(1.1rem, 4vw, 1.4rem);
+    padding-bottom: calc(0.9rem + env(safe-area-inset-bottom, 0px));
+    gap: 0.9rem;
+  }
+  .rd-scroll { padding-bottom: calc(6.5rem + env(safe-area-inset-bottom, 0px)); }
+  .rd-next img { width: 78px; height: 62px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rd { transition: opacity 0.15s linear; }
+  .rd-anim { opacity: 1 !important; transform: none !important; }
+  .rd-close, .rd-chip, .rd-card img, .rd-card-scrim, .rd-card-go,
+  .rd-next, .rd-book-cta, .rooms-more, .rooms-more svg, .rooms-more::after {
+    transition: none;
+  }
+  .rd-atmos { filter: blur(60px) brightness(0.35); transform: none; }
+}
