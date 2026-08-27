@@ -246,7 +246,15 @@
   margin: 0;
   pointer-events: none;
 }
-.rooms-title .char {
+.rooms-title .char,
+.rooms-index .char {
+  /* La transición de "01"/"02"/"03" mueve cada carácter con yPercent, y una
+     traslación en porcentaje se resuelve contra la caja del propio elemento —
+     algo que una caja inline no tiene definido de forma fiable, así que el
+     desplazamiento se resolvía en 0px pase lo que pase. El número no se
+     deslizaba: aparecía de golpe en el instante en que su slide se marca
+     is-current, que es justo el salto que se ve mal al cambiar de
+     habitación. inline-block le da a cada carácter una caja real. */
   display: inline-block;
 }
 

@@ -39,31 +39,31 @@
       titleTail: "para quedarse",
       tagline: "Cocina propia y vista abierta al valle del Utcubamba.",
       description:
-        "Treinta y cuatro metros que funcionan solos: cama king, un baño completo y una cocina real, no una repisa con hervidor. Pensado para quien llega por trabajo y se queda más noches de las que reservó.",
-      price: 210,
+        "Dieciocho metros que funcionan solos: cama king, un baño completo y una cocina real, no una repisa con hervidor. Pensado para quien llega por trabajo y se queda más noches de las que reservó.",
+      price: 110,
       currency: "S/",
       specs: [
-        { n: "34", label: "m²" },
+        { n: "18", label: "m²" },
         { n: "2", label: "huéspedes" },
         { n: "1", label: "cama king" },
         { n: "1", label: "baño" },
         { n: "—", label: "vista al valle" },
       ],
-      hero: img("photo-1560448204-e02f11c3d0e2"),
+      hero: "./img/estudio-hero.jpg",
       highlights: [
         {
           title: "Cocina equipada",
           subtitle: "Estadías largas sin depender de la calle.",
           badge: "Incluido",
           meta: "Refrigeradora y microondas",
-          image: img("photo-1556228453-efd6c1ff04f6", 1200),
+          image: "./img/estudio-cocina-equipada.jpg",
         },
         {
           title: "Recepción 24 horas",
           subtitle: "Alguien despierto, a cualquier hora que llegues.",
           badge: "Todos los días",
           meta: "Jr. Miguel Grau 672",
-          image: img("photo-1566073771259-6a8506099945", 1200),
+          image: "./img/estudio-recepcion.jpg",
         },
       ],
       amenities: [
@@ -71,13 +71,14 @@
         "Smart TV", "Refrigeradora", "Microondas", "Ducha de vidrio templado",
         "Clóset empotrado", "Ropa de cama y toallas", "Recepción 24 horas",
       ],
+      // Fotografía real del estudio, ya no stock.
       gallery: [
-        { src: img("photo-1560448204-e02f11c3d0e2", 1200), alt: "Dormitorio del estudio con cama king y luz natural" },
-        { src: img("photo-1584622650111-993a426fbf0a", 1200), alt: "Baño privado con ducha de vidrio templado" },
-        { src: img("photo-1556228453-efd6c1ff04f6", 1200), alt: "Cocina equipada con refrigeradora y microondas" },
-        { src: img("photo-1522708323590-d24dbb6b0267", 1200), alt: "Zona de estar del estudio" },
-        { src: img("photo-1616486338812-3dadae4b4ace", 1200), alt: "Escritorio junto a la ventana" },
-        { src: img("photo-1595526114035-0d45ed16cfbf", 1200), alt: "Detalle de la ropa de cama" },
+        { src: "./img/estudio-dormitorio.jpg", alt: "Dormitorio del estudio con cama, aire acondicionado y apliques de pared" },
+        { src: "./img/estudio-cocina.jpg", alt: "Cocina equipada con microondas, refrigeradora y lavadero" },
+        { src: "./img/estudio-estar.jpg", alt: "Zona de estar con Smart TV, barra y clóset empotrado" },
+        { src: "./img/estudio-bano-lavabo.jpg", alt: "Lavabo del baño privado con espejo redondo" },
+        { src: "./img/estudio-bano.jpg", alt: "Baño privado del estudio" },
+        { src: "./img/estudio-ducha.jpg", alt: "Ducha de vidrio templado del baño privado" },
       ],
     },
     {
@@ -86,48 +87,55 @@
       index: "02",
       titleLead: "Un",
       titleAccent: "minidepartamento",
-      titleTail: "con balcón",
-      tagline: "Dos ambientes, balcón propio y vista a la ciudad.",
+      titleTail: "de dos ambientes",
+      tagline: "Dos ambientes, más espacio y comodidad que el estudio.",
       description:
-        "Cincuenta y dos metros repartidos en dormitorio y sala separada, con dos baños completos. El balcón da a la ciudad y es el sitio donde termina el día.",
-      price: 320,
+        "Treinta metros aproximados, más amplio y cómodo que el estudio: dormitorio y sala separados, con baño completo.",
+      price: 140,
       currency: "S/",
       specs: [
-        { n: "52", label: "m²" },
-        { n: "4", label: "huéspedes" },
+        { n: "30", label: "m²" },
+        { n: "2", label: "huéspedes" },
         { n: "2", label: "ambientes" },
-        { n: "2", label: "baños" },
-        { n: "—", label: "balcón propio" },
+        { n: "1", label: "baño" },
       ],
-      hero: img("photo-1502672260266-1c1ef2d93688"),
+      hero: "./img/minidepartamento-hero.jpg",
       highlights: [
         {
-          title: "Balcón privado",
-          subtitle: "La ciudad de fondo, sin salir del departamento.",
-          badge: "En cada unidad",
-          meta: "Orientación al este",
-          image: img("photo-1600607687939-ce8a6c25118c", 1200),
+          // Lo que de verdad distingue a esta habitación del estudio no es
+          // "ser más cómoda" en abstracto -- es que el comedor vive separado
+          // del dormitorio. En el estudio todo pasa en un mismo cuarto.
+          title: "Una sala para vivir",
+          subtitle: "Comedor y estar aparte del dormitorio, no todo en un cuarto.",
+          badge: "2 ambientes",
+          meta: "Sala independiente",
+          image: "./img/mini-sala-comedor.jpg",
         },
         {
-          title: "Dos ambientes",
-          subtitle: "Trabajar y descansar sin compartir la misma pared.",
-          badge: "52 m²",
-          meta: "Sala independiente",
-          image: img("photo-1522708323590-d24dbb6b0267", 1200),
+          // Un baño privado lo tienen las tres habitaciones -- no es un
+          // diferenciador. Lo que sí distingue a esta frente a las otras dos
+          // es la capacidad: ni la estrechez del estudio (1) ni pagar de más
+          // por el departamento familiar (5).
+          title: "El tamaño justo para dos",
+          subtitle: "Ni la estrechez del estudio, ni pagar espacio que no vas a usar.",
+          badge: "2 huéspedes",
+          meta: "30 m²",
+          image: "./img/mini-tamano-para-dos.jpg",
         },
       ],
       amenities: [
         "Cocina equipada", "Aire acondicionado", "Wi-Fi en toda la propiedad",
-        "Smart TV", "Balcón privado", "Sala independiente", "Dos baños completos",
+        "Smart TV", "Sala independiente", "Baño completo",
         "Clóset empotrado", "Ropa de cama y toallas", "Recepción 24 horas",
       ],
+      // Fotografía real del minidepartamento, ya no stock.
       gallery: [
-        { src: img("photo-1502672260266-1c1ef2d93688", 1200), alt: "Dormitorio del minidepartamento con acceso al balcón" },
-        { src: img("photo-1522708323590-d24dbb6b0267", 1200), alt: "Sala independiente del minidepartamento" },
-        { src: img("photo-1600607687939-ce8a6c25118c", 1200), alt: "Balcón privado con vista a la ciudad" },
-        { src: img("photo-1631049307264-da0ec9d70304", 1200), alt: "Baño con ducha de vidrio" },
-        { src: img("photo-1600566753086-00f18fb6b3ea", 1200), alt: "Comedor junto a la cocina" },
-        { src: img("photo-1567767292278-a4f21aa2d36e", 1200), alt: "Detalle del dormitorio" },
+        { src: "./img/mini-dormitorio.jpg", alt: "Dormitorio con cortinas y toallas dobladas sobre la cama" },
+        { src: "./img/mini-dormitorio-tv.jpg", alt: "Dormitorio con Smart TV y cortinas blackout" },
+        { src: "./img/mini-sala-comedor.jpg", alt: "Sala independiente con mesa comedor" },
+        { src: "./img/mini-cocina.jpg", alt: "Cocina equipada con microondas y utensilios" },
+        { src: "./img/mini-bano-lavabo.jpg", alt: "Baño con lavabo e inodoro" },
+        { src: "./img/mini-ducha.jpg", alt: "Ducha de vidrio templado con espejo redondo" },
       ],
     },
     {
@@ -136,34 +144,39 @@
       index: "03",
       titleLead: "Un",
       titleAccent: "departamento",
-      titleTail: "en el último piso",
-      tagline: "Sesenta y ocho metros en el piso más alto.",
+      titleTail: "con vista doble",
+      tagline: "El departamento más grande, con vista al valle y a la ciudad.",
       description:
-        "El más amplio de los tres y el único en el último piso. Dos baños, sala grande y las mejores vistas del edificio, hacia el valle y hacia la ciudad.",
-      price: 450,
+        "El más amplio de los tres. Dos camas y un sofá cama para hasta cinco personas, dos baños completos y las mejores vistas del edificio, hacia el valle y hacia la ciudad.",
+      price: 220,
       currency: "S/",
       specs: [
-        { n: "68", label: "m²" },
-        { n: "4", label: "huéspedes" },
+        { n: "62.77", label: "m²" },
+        { n: "5", label: "huéspedes" },
+        { n: "2", label: "camas" },
+        { n: "1", label: "sofá cama" },
         { n: "2", label: "baños" },
-        { n: "—", label: "último piso" },
         { n: "—", label: "vista doble" },
       ],
-      hero: img("photo-1618221195710-dd6b41faaea6"),
+      hero: "./img/departamento-hero.jpg",
       highlights: [
         {
-          title: "Último piso",
-          subtitle: "Sin nadie arriba y con las dos vistas del edificio.",
-          badge: "Único",
-          meta: "Valle y ciudad",
-          image: img("photo-1586023492125-27b2c045efd7", 1200),
+          title: "Dos habitaciones",
+          subtitle: "Separadas de la sala, más el sofá cama para el quinto.",
+          badge: "5 huéspedes",
+          meta: "Dos baños completos",
+          image: "./img/departamento-dormitorio-2.jpg",
         },
         {
-          title: "Sesenta y ocho metros",
-          subtitle: "Espacio real para cuatro, no cuatro apretados.",
+          // El primer highlight ya cubre huéspedes y habitaciones; este cubre
+          // el otro diferenciador real del departamento -- el balcón propio,
+          // que es lo que muestran las dos últimas fotos de la galería -- en
+          // vez de repetir el mismo dato de tamaño que ya está en el chip.
+          title: "Balcón con vista al valle",
+          subtitle: "Café de la mañana con la cordillera de fondo.",
           badge: "El más amplio",
-          meta: "Dos baños completos",
-          image: img("photo-1618221195710-dd6b41faaea6", 1200),
+          meta: "62.77 m²",
+          image: "./img/departamento-vista-nocturna.jpg",
         },
       ],
       amenities: [
@@ -171,13 +184,14 @@
         "Smart TV", "Sala amplia", "Dos baños completos", "Vista al valle",
         "Clóset empotrado", "Ropa de cama y toallas", "Recepción 24 horas",
       ],
+      // Fotografía real del departamento, ya no stock.
       gallery: [
-        { src: img("photo-1618221195710-dd6b41faaea6", 1200), alt: "Sala del departamento en el último piso" },
-        { src: img("photo-1586023492125-27b2c045efd7", 1200), alt: "Dormitorio principal con vista al valle" },
-        { src: img("photo-1560185007-cde436f6a4d0", 1200), alt: "Segundo baño del departamento" },
-        { src: img("photo-1571003123894-1f0594d2b5d9", 1200), alt: "Comedor del departamento" },
-        { src: img("photo-1552321554-5fefe8c9ef14", 1200), alt: "Cocina del departamento" },
-        { src: img("photo-1540518614846-7eded433c457", 1200), alt: "Detalle del estar" },
+        { src: "./img/departamento-dormitorio.jpg", alt: "Dormitorio principal con clóset y aire acondicionado" },
+        { src: "./img/departamento-sala.jpg", alt: "Sala con sofá cama, comedor y balcón al fondo" },
+        { src: "./img/departamento-cocina.jpg", alt: "Cocina con refrigeradora y mesa de comedor" },
+        { src: "./img/departamento-segundo-dormitorio.jpg", alt: "Segundo dormitorio con ventana alta" },
+        { src: "./img/departamento-balcon-acceso.jpg", alt: "Acceso al balcón con vista al valle" },
+        { src: "./img/departamento-vista-valle.jpg", alt: "Vista panorámica del valle desde el balcón" },
       ],
     },
   ];
@@ -266,12 +280,14 @@
     );
   }
 
-  function galleryCard(g, i, total) {
-    var last = i === total - 1;
+  // Todas las fotos se muestran como foto. La última llevaba encima una placa
+  // "+6 Fotos" que no abría nada — y el número era el total de la tira, no un
+  // resto, así que tapaba una imagen para prometer seis que ya estaban a la
+  // vista. Sin ella la tira termina en una foto más.
+  function galleryCard(g) {
     return (
-      '<figure class="rd-shot' + (last ? " is-last" : "") + '">' +
+      '<figure class="rd-shot">' +
       '<img src="' + esc(g.src) + '" alt="' + esc(g.alt) + '" loading="lazy" decoding="async" />' +
-      (last ? '<figcaption class="rd-shot-more"><b>+' + total + "</b><span>Fotos</span></figcaption>" : "") +
       "</figure>"
     );
   }
@@ -374,7 +390,7 @@
       // 5.5 — gallery
       '<section class="rd-gallery rd-anim">' +
       '<p class="rd-label">La habitación</p>' +
-      '<div class="rd-strip">' + room.gallery.map(function (g, i) { return galleryCard(g, i, room.gallery.length); }).join("") + "</div>" +
+      '<div class="rd-strip">' + room.gallery.map(galleryCard).join("") + "</div>" +
       "</section>" +
 
       // 5.6 — the two glass cards

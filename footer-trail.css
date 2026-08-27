@@ -222,37 +222,60 @@
   bottom: clamp(4.75rem, 11vh, 6.5rem);
   z-index: 20;
   display: flex;
-  gap: 0.6rem;
+  gap: 0.75rem;
 }
 
+/* Discos deliberadamente mas presentes que el resto del cromo de esta
+   seccion. Antes eran del mismo peso que la pista del cursor -- 38px, borde
+   al 16% y tinta al 75% -- y sobre el fondo casi negro de esta pantalla
+   desaparecian. Son el unico enlace saliente del cierre, asi que se ganan
+   contraste propio: mas cuerpo, borde y tinta plenos, y el glifo mas grueso
+   para que se lea la marca de un vistazo. */
 .ft-social a {
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  color: rgba(244, 248, 251, 0.75);
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #f4f8fb;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.38);
   -webkit-backdrop-filter: blur(14px) saturate(150%);
   backdrop-filter: blur(14px) saturate(150%);
+  box-shadow: 0 6px 20px -8px rgba(0, 0, 0, 0.6);
   text-decoration: none;
-  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+  transition: background-color 0.25s ease, border-color 0.25s ease,
+    color 0.25s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
+
+/* Al acercarse, cada disco toma el color de su propia marca: es el momento
+   en que deja de ser cromo y se declara como el enlace que es. */
 .ft-social a:hover,
 .ft-social a:focus-visible {
-  color: #f4f8fb;
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.32);
+  transform: translateY(-3px);
+  color: #fff;
+  border-color: transparent;
 }
-.ft-social a:focus-visible { outline: none; }
+.ft-social a[aria-label="Instagram"]:hover,
+.ft-social a[aria-label="Instagram"]:focus-visible {
+  background: linear-gradient(45deg, #f09433, #dc2743 45%, #bc1888);
+}
+.ft-social a[aria-label="Facebook"]:hover,
+.ft-social a[aria-label="Facebook"]:focus-visible { background: #1877f2; }
+.ft-social a[aria-label="TikTok"]:hover,
+.ft-social a[aria-label="TikTok"]:focus-visible { background: #010101; border-color: #25f4ee; }
+
+.ft-social a:focus-visible {
+  outline: 2px solid rgba(244, 248, 251, 0.9);
+  outline-offset: 3px;
+}
 
 .ft-social svg {
-  width: 17px;
-  height: 17px;
+  width: 22px;
+  height: 22px;
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.6;
+  stroke-width: 1.9;
   stroke-linecap: round;
   stroke-linejoin: round;
 }

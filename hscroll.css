@@ -684,3 +684,74 @@
     font-style: normal;
   }
 }
+
+/* ── Subtítulo bajo la foto (escritorio) ─────────────────────────────── */
+/* Espejo del título móvil de arriba. En una pantalla angosta el marquee no
+   entra y .hs-title-m hace de título; acá el marquee sí entra y hace de
+   título, así que el mismo texto baja a subtítulo bajo la foto.
+
+   Mismo lenguaje visual — Clash Display en versal, la palabra que carga el
+   sentido en el acento, la cola en serif itálica minúscula, filete de acento
+   — pero en una línea y a escala de apoyo, no de titular. Se repiten tres
+   declaraciones en vez de compartir el bloque con .hs-title-m a propósito:
+   ese vive dentro de la media query de móvil y sacarlo de ahí para
+   compartirlo tocaría un componente que ya está verificado. */
+.hs-subtitle-d { display: none; }
+
+@media (min-width: 860px) and (any-pointer: fine) {
+  /* La foto era el unico hijo en flujo del beat, asi que como se repartian
+     las filas implicitas daba igual. Con el subtitulo son dos, y por defecto
+     las filas se estiran hasta llenar la pantalla: la foto queda centrada en
+     la mitad de arriba y el subtitulo 250px mas abajo, suelto en medio de la
+     nada. Empaquetarlas al centro deja que mande el margen del subtitulo.
+     Con un solo hijo el resultado es identico al anterior, asi que esto no
+     cambia nada donde el beat no lleva subtitulo. */
+  .beat--intro { align-content: center; }
+
+  .hs-subtitle-d {
+    position: relative;
+    /* Sobre el marquee, igual que la foto: si no, las dos líneas gigantes de
+       atrás le pasan por encima. */
+    z-index: 1;
+    display: inline-flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.3em;
+    margin: clamp(1.5rem, 3.4vh, 2.75rem) 0 0;
+    font-family: "Clash Display", var(--hs-sans);
+    font-weight: 600;
+    font-size: clamp(1.35rem, 2.3vw, 2.35rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  /* Acá el filete va al costado, no encima: el bloque es una línea, y arriba
+     ya está el borde inferior de la foto ocupando ese papel. */
+  .hs-subtitle-d::before {
+    content: "";
+    align-self: center;
+    width: clamp(1.75rem, 3vw, 3rem);
+    height: 2px;
+    margin-right: 0.45em;
+    background: var(--hs-accent);
+  }
+
+  .hs-subtitle-d__q { opacity: 0.55; }
+  .hs-subtitle-d__a { color: var(--hs-accent); }
+
+  .hs-subtitle-d__t {
+    font-family: var(--hs-serif);
+    font-weight: 300;
+    font-size: 0.92em;
+    letter-spacing: -0.01em;
+    text-transform: none;
+  }
+  .hs-subtitle-d__t i { font-style: italic; }
+  .hs-subtitle-d__t b {
+    color: var(--hs-accent);
+    font-weight: inherit;
+    font-style: normal;
+  }
+}

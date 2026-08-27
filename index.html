@@ -12,8 +12,8 @@
    <link rel="stylesheet" href="story.css?v=20" />
    <link rel="stylesheet" href="masked-heading.css" />
    <link rel="stylesheet" href="offering.css?v=5" />
-   <link rel="stylesheet" href="rooms.css?v=13" />
-   <link rel="stylesheet" href="rooms-detail.css?v=3" />
+   <link rel="stylesheet" href="rooms.css?v=14" />
+   <link rel="stylesheet" href="rooms-detail.css?v=4" />
    <link rel="stylesheet" href="values.css?v=4" />
    <link rel="stylesheet" href="voices.css?v=6" />
    <link rel="stylesheet" href="location.css?v=10" />
@@ -21,8 +21,8 @@
    <link rel="stylesheet" href="menu.css?v=3" />
    <link rel="stylesheet" href="brandmark.css?v=3" />
    <link rel="stylesheet" href="kinetic.css?v=10" />
-   <link rel="stylesheet" href="footer-trail.css?v=5" />
-   <link rel="stylesheet" href="hscroll.css?v=17" />
+   <link rel="stylesheet" href="footer-trail.css?v=6" />
+   <link rel="stylesheet" href="hscroll.css?v=19" />
    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Norican&display=swap" rel="stylesheet" />
 </head>
 
@@ -259,9 +259,9 @@
 
             <figure class="hs-photo hs-photo--duo beat__hero" data-speed="1.00">
                <picture>
-                  <img src="./img/espacios-fachada.jpg" width="1800" height="864"
+                  <img src="./img/espacios-fachada-atardecer.jpg" width="1536" height="1024"
                        fetchpriority="high"
-                       alt="Fachada de REGO Premium Apart Hotel iluminada al anochecer" />
+                       alt="Fachada de REGO Premium Apart Hotel iluminada al atardecer" />
                </picture>
                <svg class="hs-stroke" viewBox="0 0 400 160" aria-hidden="true">
                   <path d="M18 128 C 96 44, 172 150, 250 78 S 356 30, 384 62"
@@ -269,6 +269,20 @@
                         stroke-linecap="round" />
                </svg>
             </figure>
+
+            <!-- Contraparte de escritorio del titulo movil de arriba. Ahi el
+                 marquee no cabe y este texto hace de titulo; aca el marquee si
+                 cabe y hace de titulo, asi que lo mismo baja a subtitulo bajo
+                 la foto. Mismo lenguaje visual -- Clash Display en versal, la
+                 palabra que carga el sentido en el acento, la cola en serif
+                 italica -- pero en una linea y a escala de apoyo. Los dos son
+                 excluyentes por media query, asi que nunca hay dos encabezados
+                 a la vez. -->
+            <h2 class="hs-subtitle-d">
+               <span class="hs-subtitle-d__q">&iquest;Qu&eacute;</span>
+               <span class="hs-subtitle-d__a">ofrecemos</span>
+               <span class="hs-subtitle-d__t"><i>para ti</i><b>?</b></span>
+            </h2>
          </div>
 
          <!-- ── Beat 01 — hospedaje ──────────────────────────────────── -->
@@ -285,16 +299,16 @@
             </figure>
 
             <figure class="hs-photo hs-photo--duo hs-photo--h2" data-speed="1.12">
-               <figcaption class="hs-label">Detalle &mdash; Ba&ntilde;o privado</figcaption>
+               <figcaption class="hs-label">Detalle &mdash; Cocina equipada</figcaption>
                <picture>
-                  <img src="./img/room-2-b.jpg?v=2" width="640" height="960" loading="lazy"
-                       alt="Ba&ntilde;o privado con ducha de vidrio templado" />
+                  <img src="./img/hospedaje-cocina-equipada.jpg" width="1400" height="938" loading="lazy"
+                       alt="Cocina equipada con mesa comedor para cuatro" />
                </picture>
             </figure>
 
             <p class="beat__subtitle">
-               Dormir bien no deber&iacute;a ser un lujo.
-               <span class="mark">Ac&aacute; es el punto de partida.</span>
+               Comodidad, vista y ubicaci&oacute;n.
+               <span class="mark">Todo en un mismo lugar.</span>
                <i class="beat__rule" aria-hidden="true"></i>
             </p>
 
@@ -315,10 +329,10 @@
             <h2 class="beat__backdrop" data-speed="0.88">Restaurante</h2>
 
             <figure class="hs-photo hs-photo--r1" data-speed="1.10">
-               <figcaption class="hs-label">Comedor &mdash; Planta baja</figcaption>
+               <figcaption class="hs-label">Comedor &mdash; Planta alta</figcaption>
                <picture>
-                  <img src="./img/hotel-comedor.jpg" width="880" height="660" loading="lazy"
-                       alt="Comedor con mesa para cuatro y ventanal al exterior" />
+                  <img src="./img/comedor-planta-alta.jpg" width="900" height="600" loading="lazy"
+                       alt="Sal&oacute;n comedor de doble altura con mesas y entrepiso" />
                </picture>
             </figure>
 
@@ -332,16 +346,16 @@
             </figure>
 
             <p class="beat__subtitle">
-               El d&iacute;a empieza abajo,
-               <span class="mark">con el valle en la ventana.</span>
+               Buena comida, sin moverte del hotel.
+               <span class="mark">Ese es el plan.</span>
                <i class="beat__rule" aria-hidden="true"></i>
             </p>
 
             <figure class="hs-photo hs-photo--r3" data-speed="1.00">
                <figcaption class="hs-label">Sal&oacute;n &mdash; Espacio com&uacute;n</figcaption>
                <picture>
-                  <img src="./img/hotel-sala.jpg" width="880" height="660" loading="lazy"
-                       alt="Sala con sof&aacute;, televisor y balc&oacute;n abierto a la ciudad" />
+                  <img src="./img/salon-espacio-comun-vista.jpg" width="900" height="600" loading="lazy"
+                       alt="Vista de Bagua Grande y el valle desde el sal&oacute;n" />
                </picture>
             </figure>
          </div>
@@ -353,16 +367,16 @@
             <figure class="hs-photo hs-photo--s1" data-speed="1.00">
                <figcaption class="hs-label">Sal&oacute;n principal</figcaption>
                <picture>
-                  <img src="./img/lobby-rego.jpg" width="1800" height="1013" loading="lazy"
-                       alt="Recepci&oacute;n de REGO iluminada con luz c&aacute;lida" />
+                  <img src="./img/salon-principal.jpg" width="900" height="600" loading="lazy"
+                       alt="Sal&oacute;n de doble altura con entrepiso, de noche" />
                </picture>
             </figure>
 
             <figure class="hs-photo hs-photo--duo hs-photo--s2" data-speed="1.12">
                <figcaption class="hs-label">Montaje</figcaption>
                <picture>
-                  <img src="./img/room-4-b.jpg?v=2" width="720" height="960" loading="lazy"
-                       alt="Sala y comedor con sof&aacute;, mesa redonda y balc&oacute;n" />
+                  <img src="./img/salon-montaje-vista.jpg" width="1400" height="933" loading="lazy"
+                       alt="Vista de Bagua Grande y el valle desde el balc&oacute;n" />
                </picture>
             </figure>
 
@@ -460,7 +474,7 @@
                   <div class="rooms-specs">
                      <div class="rooms-spec">
                         <svg viewBox="0 0 24 24"><path d="M3 9V3h6M21 9V3h-6M3 15v6h6M21 15v6h-6"/></svg>
-                        <span><b>34</b> m&sup2;</span>
+                        <span><b>18</b> m&sup2;</span>
                      </div>
                      <div class="rooms-spec">
                         <svg viewBox="0 0 24 24"><path d="M4 12h16v3a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4v-3z"/><path d="M7 12V6a2 2 0 0 1 4 0"/><path d="M7 19l-1 2M18 19l1 2"/></svg>
@@ -476,7 +490,7 @@
                      </div>
                   </div>
                   <div class="rooms-foot">
-                     <p class="rooms-price"><small>Desde</small><strong>S/ 210</strong> <i>/ noche</i></p>
+                     <p class="rooms-price"><small>Desde</small><strong>S/ 110</strong> <i>/ noche</i></p>
                      <button class="rooms-cta" type="button">Reservar</button>
                   </div>
                   <!-- Punto 6: acceso al detalle. Deliberadamente por debajo de
@@ -493,29 +507,29 @@
                <h3 class="rooms-title">MINIDEPARTAMENTOS</h3>
                <div class="rooms-panel">
                   <p class="rooms-desc">
-                     Dos dormitorios, comedor y cocina completa. Pensado para
-                     familias o estad&iacute;as largas con todo resuelto.
+                     Dormitorio y sala separados, con cocina completa. Un paso
+                     m&aacute;s de espacio y comodidad que el estudio.
                   </p>
                   <div class="rooms-specs">
                      <div class="rooms-spec">
                         <svg viewBox="0 0 24 24"><path d="M3 9V3h6M21 9V3h-6M3 15v6h6M21 15v6h-6"/></svg>
-                        <span><b>52</b> m&sup2;</span>
+                        <span><b>30</b> m&sup2;</span>
                      </div>
                      <div class="rooms-spec">
                         <svg viewBox="0 0 24 24"><path d="M4 12h16v3a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4v-3z"/><path d="M7 12V6a2 2 0 0 1 4 0"/><path d="M7 19l-1 2M18 19l1 2"/></svg>
-                        <span><b>2</b> ba&ntilde;os</span>
+                        <span><b>1</b> ba&ntilde;o</span>
                      </div>
                      <div class="rooms-spec">
                         <svg viewBox="0 0 24 24"><path d="M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="9.5" cy="7" r="3.5"/><path d="M21 20v-2a4 4 0 0 0-3-3.87"/></svg>
-                        <span><b>4</b> hu&eacute;spedes</span>
+                        <span><b>2</b> hu&eacute;spedes</span>
                      </div>
                      <div class="rooms-spec">
                         <svg viewBox="0 0 24 24"><path d="M2 18v-6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v6"/><path d="M2 15h20"/><path d="M6 10V7h6v3"/></svg>
-                        <span><b>2</b> dormitorios</span>
+                        <span><b>2</b> ambientes</span>
                      </div>
                   </div>
                   <div class="rooms-foot">
-                     <p class="rooms-price"><small>Desde</small><strong>S/ 320</strong> <i>/ noche</i></p>
+                     <p class="rooms-price"><small>Desde</small><strong>S/ 140</strong> <i>/ noche</i></p>
                      <button class="rooms-cta" type="button">Reservar</button>
                   </div>
                   <!-- Punto 6: acceso al detalle. Deliberadamente por debajo de
@@ -532,13 +546,13 @@
                <h3 class="rooms-title">DEPARTAMENTOS</h3>
                <div class="rooms-panel">
                   <p class="rooms-desc">
-                     El &uacute;ltimo piso, entero. Terraza privada con vista abierta
-                     a Bagua Grande y a los cerros que la rodean.
+                     Terraza privada con vista abierta a Bagua Grande y a los
+                     cerros que la rodean.
                   </p>
                   <div class="rooms-specs">
                      <div class="rooms-spec">
                         <svg viewBox="0 0 24 24"><path d="M3 9V3h6M21 9V3h-6M3 15v6h6M21 15v6h-6"/></svg>
-                        <span><b>68</b> m&sup2;</span>
+                        <span><b>62.77</b> m&sup2;</span>
                      </div>
                      <div class="rooms-spec">
                         <svg viewBox="0 0 24 24"><path d="M4 12h16v3a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4v-3z"/><path d="M7 12V6a2 2 0 0 1 4 0"/><path d="M7 19l-1 2M18 19l1 2"/></svg>
@@ -546,7 +560,7 @@
                      </div>
                      <div class="rooms-spec">
                         <svg viewBox="0 0 24 24"><path d="M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="9.5" cy="7" r="3.5"/><path d="M21 20v-2a4 4 0 0 0-3-3.87"/></svg>
-                        <span><b>4</b> hu&eacute;spedes</span>
+                        <span><b>5</b> hu&eacute;spedes</span>
                      </div>
                      <div class="rooms-spec">
                         <svg viewBox="0 0 24 24"><path d="M3 9V3h6M21 9V3h-6M3 15v6h6M21 15v6h-6"/></svg>
@@ -554,7 +568,7 @@
                      </div>
                   </div>
                   <div class="rooms-foot">
-                     <p class="rooms-price"><small>Desde</small><strong>S/ 450</strong> <i>/ noche</i></p>
+                     <p class="rooms-price"><small>Desde</small><strong>S/ 220</strong> <i>/ noche</i></p>
                      <button class="rooms-cta" type="button">Reservar</button>
                   </div>
                   <!-- Punto 6: acceso al detalle. Deliberadamente por debajo de
@@ -878,18 +892,12 @@
          </div>
       </div>
 
+      <!-- El efecto del rastro se fija acá, en data-effect. El selector que
+           traía la demo original (Flame / Venetian / Curtain / …) era una
+           herramienta para probar variantes, no algo que el visitante deba
+           ver: footer-trail.js lee este atributo al iniciar y sigue
+           funcionando sin esos enlaces. -->
       <div class="trail-stage" data-effect="flame">
-         <nav class="ft-effects">
-            <ul>
-               <li><a href="#" class="ft-effect active" data-effect="flame">Flame</a></li>
-               <li><a href="#" class="ft-effect" data-effect="venetian">Venetian</a></li>
-               <li><a href="#" class="ft-effect" data-effect="curtain">Curtain</a></li>
-               <li><a href="#" class="ft-effect" data-effect="hexagon">Hexagon</a></li>
-               <li><a href="#" class="ft-effect" data-effect="liquid">Liquid</a></li>
-               <li><a href="#" class="ft-effect" data-effect="zoomsplit">Zoom Split</a></li>
-            </ul>
-         </nav>
-
          <div class="ft-columns" aria-hidden="true">
             <div class="ft-column">
                <span class="ft-word">Descanso</span>
@@ -1255,7 +1263,7 @@
    <script src="masked-heading.js"></script>
    <script src="offering.js?v=7"></script>
    <script src="rooms.js?v=17"></script>
-   <script src="rooms-detail.js?v=5"></script>
+   <script src="rooms-detail.js?v=22"></script>
    <script src="values.js?v=10"></script>
    <script src="band-shader.js?v=2"></script>
    <script src="voices.js?v=3"></script>

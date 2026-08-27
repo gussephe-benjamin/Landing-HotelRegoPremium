@@ -375,26 +375,6 @@
   scroll-snap-align: start;
 }
 .rd-shot img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; display: block; }
-.rd-shot-more {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  background: rgba(23, 18, 15, 0.62);
-  -webkit-backdrop-filter: blur(3px);
-  backdrop-filter: blur(3px);
-}
-.rd-shot-more b { font-size: clamp(1.6rem, 3vw, 2rem); font-weight: 800; letter-spacing: -0.02em; }
-.rd-shot-more span {
-  font-family: var(--rd-mono);
-  font-size: 10px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: rgba(244, 239, 232, 0.7);
-}
 
 /* ── 5.6 · The two glass cards ───────────────────────────────────────── */
 .rd-cards {
