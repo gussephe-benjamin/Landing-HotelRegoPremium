@@ -85,6 +85,18 @@
   transform: translate(-50%, -50%);
   display: flex;
   gap: 2.5em;
+  /* max-content, o la caja se estira hasta el ancho de la topbar entera.
+
+     Medido a 1400px: el nav ocupaba de 0 a 1400 mientras su último enlace
+     ("Contacto") terminaba en 899. Esos 501px de nav vacío quedaban ENCIMA
+     del botón "Reservar" (1256-1352) y se comían el clic: elementFromPoint
+     sobre el botón devolvía el <nav>, no el botón. Por eso fallaba sólo en
+     escritorio — en móvil este nav es display:none y el botón responde.
+
+     Al ser position:absolute con sólo `left`, el ancho de ajuste se resuelve
+     contra el espacio disponible en lugar de contra el contenido; max-content
+     lo ata a lo que realmente mide la fila de enlaces. */
+  width: max-content;
 }
 .nav-center a {
   font-size: 13px;
