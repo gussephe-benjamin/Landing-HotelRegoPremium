@@ -1,0 +1,14 @@
+# Infraestructura de Docker: el contenedor es para correr el sitio en local
+# y en un servidor propio. Vercel sirve los estáticos directamente, así que
+# nada de esto le sirve — y publicarlo sólo expone cómo está montado.
+Dockerfile
+docker-compose.yml
+.dockerignore
+nginx.conf
+README.docker.md
+
+# Servidor de desarrollo local (ver su docstring).
+devserver.py
+
+# Herramienta local, ya ignorada por git.
+.impeccable
