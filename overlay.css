@@ -261,7 +261,21 @@ footer { z-index: 5; }
   .nav-center { display: none; }
   .btn-burger { display: flex; }
 
-  .topbar { padding: 0 24px; }
+  /* El gap separa el botón del burger, que con el margen automático de
+     abajo quedan pegados el uno al otro. */
+  .topbar { padding: 0 24px; gap: 14px; }
+
+  /* Aquí la topbar pasa de dos hijos en flujo a tres: .nav-center está
+     fuera de flujo (position:absolute), así que en escritorio sólo cuentan
+     el logo y el botón, y space-between los manda a cada extremo. Al
+     aparecer el burger, ese mismo space-between reparte TRES elementos y
+     deja "Reservar" flotando en mitad de la barra — medido a 691px: el
+     botón caía en 327-424 con el burger ya en 639.
+
+     El margen automático se come el espacio libre anterior, de modo que el
+     botón y el burger quedan juntos a la derecha y el logo solo a la
+     izquierda. */
+  .btn-book { margin-left: auto; }
   .headline { font-size: clamp(2rem, 9vw, 3rem); }
 
   .bottom-left {
