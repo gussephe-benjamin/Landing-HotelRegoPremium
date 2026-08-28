@@ -16,6 +16,27 @@
      pixel-identical or the secondaries drift off the photo. */
   --rm-main-w: clamp(240px, 30vw, 420px);
 
+  /* ── Composición horizontal: foto + panel ──────────────────────────
+     El panel colgaba de la foto con `left: 105%` mientras la foto se
+     centraba en el viewport, así que el conjunto quedaba descentrado hacia
+     la derecha y el panel se salía: medido a 1023px de ancho, su borde
+     derecho caía en 1040px — fuera de pantalla — y encima chocaba con la
+     flecha de siguiente.
+
+     Ahora lo que se centra es la COMPOSICIÓN. --rm-shift desplaza foto,
+     marcos secundarios y panel media anchura de panel hacia la izquierda,
+     de modo que el bloque entero queda centrado y el panel siempre cabe. */
+  --rm-panel-w: clamp(240px, 26vw, 360px);
+  --rm-panel-gap: clamp(20px, 3vw, 48px);
+  --rm-comp-w: calc(var(--rm-main-w) + var(--rm-panel-gap) + var(--rm-panel-w));
+  --rm-shift: calc((var(--rm-panel-w) + var(--rm-panel-gap)) / 2);
+
+  /* Hueco de las flechas, derivado del espacio que la composición deja
+     libre en vez de un 8vw fijo. Con el valor fijo, a 700px el hueco (56px)
+     más la flecha (52px) invadían la foto. El término del medio se queda con
+     lo que sobra a cada lado menos el ancho de la flecha y un respiro. */
+  --rm-gutter: max(0.25rem, min(5vw, calc((100vw - var(--rm-comp-w)) / 2 - 60px)));
+
   /* Secondary images, sized as fractions of the main image rather than in
      fixed px. The brief's absolute widths (210 / 320) do not fit: at the main
      image's capped 420x560 box the two stacked frames plus the 15% top offset
@@ -114,26 +135,18 @@
   padding: clamp(3rem, 7vh, 5.5rem) 1.5rem 0;
 }
 
+/* Tipografía en .sec-eyebrow (style.css). Aquí solo el ritmo vertical. */
 .rooms-eyebrow {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.25em;
-  color: rgba(244, 239, 232, 0.5);
   margin: 0 0 0.9rem;
 }
 
+/* Escala y énfasis en .sec-title (style.css). */
 .rooms-heading {
-  font-size: clamp(1.75rem, 3.6vw, 3rem);
-  font-weight: 500;
-  letter-spacing: -0.03em;
-  line-height: 1;
   margin: 0;
 }
-.rooms-heading em {
-  font-style: italic;
-  font-weight: 400;
-  color: var(--rm-accent);
-}
+/* El énfasis lo define .sec-title em: itálica serif, sin color. El dorado
+   de esta sección pasó al numeral del índice, para que el acento aparezca
+   una sola vez y en el mismo sitio que en las otras cuatro. */
 
 /* ── Slider stage ────────────────────────────────────────────────────── */
 .rooms-stage {
@@ -150,7 +163,10 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  transform: translate(-50%, -50%);
+  /* -50% centra la caja; --rm-shift corre el conjunto para dejarle sitio al
+     panel a la derecha. Los tres bloques centrados llevan el mismo desfase o
+     dejan de estar alineados entre sí. */
+  transform: translate(calc(-50% - var(--rm-shift)), -50%);
   width: var(--rm-main-w);
   aspect-ratio: 3 / 4;
   overflow: hidden;
@@ -176,7 +192,10 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  transform: translate(-50%, -50%);
+  /* -50% centra la caja; --rm-shift corre el conjunto para dejarle sitio al
+     panel a la derecha. Los tres bloques centrados llevan el mismo desfase o
+     dejan de estar alineados entre sí. */
+  transform: translate(calc(-50% - var(--rm-shift)), -50%);
   width: var(--rm-main-w);
   aspect-ratio: 3 / 4;
   z-index: 2;
@@ -246,6 +265,7 @@
   margin: 0;
   pointer-events: none;
 }
+
 .rooms-title .char,
 .rooms-index .char {
   /* La transición de "01"/"02"/"03" mueve cada carácter con yPercent, y una
@@ -262,8 +282,11 @@
 .rooms-panel {
   position: absolute;
   bottom: 0;
-  left: 105%;
-  width: 360px;
+  /* Separación explícita en lugar del 105%, que ataba el hueco al ancho de la
+     foto: al encoger la foto el hueco encogía con ella justo cuando más falta
+     hacía. */
+  left: calc(100% + var(--rm-panel-gap));
+  width: var(--rm-panel-w);
 }
 
 .rooms-desc {
@@ -377,7 +400,10 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  transform: translate(-50%, -50%);
+  /* -50% centra la caja; --rm-shift corre el conjunto para dejarle sitio al
+     panel a la derecha. Los tres bloques centrados llevan el mismo desfase o
+     dejan de estar alineados entre sí. */
+  transform: translate(calc(-50% - var(--rm-shift)), -50%);
   width: var(--rm-main-w);
   aspect-ratio: 3 / 4;
   z-index: 3;
@@ -445,7 +471,17 @@
 
 /* Belt and braces: JS is what actually keeps the rail out of the DOM below
    this width, but if it ever runs before a resize settles, nothing shows. */
-@media not all and (min-width: 860px) and (any-pointer: fine) {
+@media not all and (any-hover: hover) and (any-pointer: fine) and (min-width: 640px) {
+  .rooms-aside { display: none; }
+}
+
+/* Los marcos secundarios muerden el borde izquierdo de la foto, así que
+   reclaman a su izquierda 0.64 del ancho principal menos los 28px de mordida
+   —unos 126px con la foto en su mínimo—. Al centrar la composición completa
+   (foto + panel) el bloque se corre a la izquierda, y por debajo de este
+   ancho ese aire ya no existe: los marcos se salían por el borde. Son un
+   adorno; lo que la sección no puede perder es la foto y el panel. */
+@media (max-width: 820px) {
   .rooms-aside { display: none; }
 }
 
@@ -470,9 +506,9 @@
   transform: translateX(var(--tr-x, 0px));
 }
 .rooms-nav svg path { fill: var(--rm-ink); }
-.rooms-nav-prev { left: 8vw; }
+.rooms-nav-prev { left: var(--rm-gutter); }
 .rooms-nav-prev:hover svg { --tr-x: -10px; }
-.rooms-nav-next { right: 8vw; }
+.rooms-nav-next { right: var(--rm-gutter); }
 .rooms-nav-next:hover svg { --tr-x: 10px; }
 
 /* ── Tabs + progress ─────────────────────────────────────────────────── */
@@ -543,7 +579,7 @@
    before the description — the gap was the reserved padding, not spacing.
    Here everything is in normal flow and the column is only as tall as what
    is in it. */
-@media not all and (min-width: 860px) and (any-pointer: fine) {
+@media not all and (any-hover: hover) and (any-pointer: fine) and (min-width: 640px) {
   .rooms {
     /* Shared by the photograph and by the arrows, which centre on it. */
     --rm-m-w: min(320px, 74vw);

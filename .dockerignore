@@ -1,0 +1,11 @@
+.git
+.gitignore
+.impeccable
+.DS_Store
+**/.DS_Store
+__MACOSX
+*.bak
+Dockerfile
+docker-compose.yml
+.dockerignore
+README.docker.md

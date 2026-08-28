@@ -1,5 +1,23 @@
 /* (01) Los espacios — horizontal editorial.
 
+   ── Cuándo esta sección corre en horizontal ──────────────────────────
+   El criterio es UNO SOLO y vive en breakpoints.js como window.REGO_MQ:
+
+       (any-hover: hover) and (any-pointer: fine) and (min-width: 640px)
+
+   Toda media query de este archivo lo repite palabra por palabra, y
+   hscroll.js activa el pin con la misma cadena leída de REGO_MQ. Si alguna
+   vez hay que cambiarlo, se cambia en breakpoints.js y se replica acá igual:
+   en cuanto CSS y JS discrepan, el track se maqueta para un eje y el pin se
+   crea para el otro.
+
+   La pregunta principal es el dispositivo, no el ancho. `any-hover`/
+   `any-pointer` -- nunca `hover`/`pointer` a secas, que describen el
+   señalador PRIMARIO y hacen que una laptop Windows táctil se declare
+   teléfono. El piso de 640px no está para decidir si es PC: está para
+   atajar el único caso que el puntero no distingue, un teléfono con un
+   ratón Bluetooth. Ver breakpoints.js para la medición que fijó ese valor.
+
    Replaces the old "Studios REGO" card run. Mechanics and composition follow
    the brief; two of its colour decisions did not survive contact with a
    contrast checker and are noted at --hs-accent below.
@@ -42,6 +60,11 @@
   --hs-surface: color-mix(in srgb, currentColor 6%, transparent);
   --hs-line: rgba(127, 127, 127, 0.28);
   --hs-line: color-mix(in srgb, currentColor 24%, transparent);
+
+  /* Ancho de la tarjeta de reserva de salón. Es un token y no un valor suelto
+     porque el ancho del último beat se DERIVA de él: si cambia aquí, la
+     tarjeta deja de quedar centrada al final del recorrido. Ver .beat--salon. */
+  --hs-card-w: clamp(300px, 30vw, 440px);
 
   --hs-serif: var(--vc-serif, "Zodiak", Georgia, serif);
   --hs-sans: var(--ov-font-display, "Satoshi", sans-serif);
@@ -104,13 +127,23 @@
 .beat:last-child { margin-bottom: 0; }
 
 /* ── Type ────────────────────────────────────────────────────────────── */
+/* Tipografía en .sec-eyebrow (style.css) — este era el tratamiento de
+   referencia y ahora lo comparten las cinco secciones.
+
+   Se le quita el opacity del conjunto: apagaba por igual las tres partes y,
+   con el numeral ya en dorado, lo habría deslavado. La atenuación vive
+   ahora en .sec-eyebrow span, que es la parte que debe ceder.
+
+   El acento se ANULA aquí, y a propósito. --hs-accent es para rellenos, nunca
+   para texto: contra el stop de luz de la rampa mide 1.74:1 (ver la nota en
+   --hs-accent, arriba). Un numeral dorado se leería bien en el arranque
+   nocturno y se borraría al llegar al crema — y en el layout apilado esta
+   marca recorre la rampa entera. Así que en esta sección el numeral se
+   distingue por peso y opacidad, no por color, que es lo único que sobrevive
+   a un fondo que se mueve. */
 .hs-eyebrow {
+  --sec-accent: currentColor;
   margin: 0 0 1.5rem;
-  font-family: var(--hs-mono);
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  opacity: 0.55;
 }
 
 /* Block title. Solid on small screens — an outline at this size turns to mush
@@ -176,6 +209,13 @@
 .hs-photo {
   position: relative;
   margin: 0 0 clamp(1.5rem, 4vh, 2.5rem);
+  /* column-reverse, no column: el <figcaption> va PRIMERO en el DOM —que es
+     lo correcto para lectores de pantalla— pero visualmente debe cerrar la
+     figura, no encabezarla. Arriba chocaba contra el titular calado del beat
+     ("HOSPEDAJE"), dos textos claros superpuestos en la misma banda, y el pie
+     se perdía. Abajo cae sobre la foto, que le da fondo propio. */
+  display: flex;
+  flex-direction: column-reverse;
 }
 
 .hs-photo picture {
@@ -194,7 +234,8 @@
 }
 
 .hs-label {
-  margin-bottom: 10px;
+  /* Antes margin-bottom: ahora el pie va debajo, así que el aire va arriba. */
+  margin-top: 10px;
   font-family: var(--hs-mono);
   font-size: 11px;
   letter-spacing: 0.12em;
@@ -322,7 +363,14 @@
 }
 
 .hs-card__alt {
-  display: inline-block;
+  /* block, no inline-block. En escritorio el CTA pasa a inline-block para que
+     la píldora se ajuste a su texto en vez de cruzar la tarjeta entera; con
+     este enlace también en inline, los dos caben en la misma línea en cuanto
+     la tarjeta es ancha, y el enlace secundario terminaba de pie junto al
+     botón principal como si fueran dos acciones del mismo rango. En bloque
+     cae siempre debajo, que es su sitio. */
+  display: block;
+  width: fit-content;
   margin-top: 1rem;
   font-size: 13px;
   color: inherit;
@@ -331,16 +379,6 @@
   text-underline-offset: 4px;
 }
 .hs-card__alt:hover { opacity: 1; }
-
-.hs-outro {
-  margin: 0;
-  font-family: var(--hs-mono);
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  text-align: center;
-  opacity: 0.45;
-}
 
 /* ── Progress rail ───────────────────────────────────────────────────── */
 /* Not decoration: without a visible sense of how much is left, a pinned
@@ -401,14 +439,14 @@
 /* No flight below the horizontal breakpoint or under reduced motion, so the
    strip that made room for it would just be dead space. */
 .beat--lead { display: none; }
-@media (min-width: 860px) and (any-pointer: fine) and (prefers-reduced-motion: no-preference) {
+@media (any-hover: hover) and (any-pointer: fine) and (min-width: 640px) and (prefers-reduced-motion: no-preference) {
   .beat--lead { display: block; }
 }
 
 /* ── Small-screen rhythm ─────────────────────────────────────────────── */
 /* The asymmetry of the desktop mosaic is kept by alternating widths and
    indents rather than by absolute positions. */
-@media not all and (min-width: 860px) and (any-pointer: fine) {
+@media not all and (any-hover: hover) and (any-pointer: fine) and (min-width: 640px) {
   .hs-photo--h2,
   .hs-photo--r2,
   .hs-photo--s2 { width: 78%; margin-left: 22%; }
@@ -421,11 +459,16 @@
 /* Gated on reduced-motion as well as width, so the query matches the
    matchMedia condition in hscroll.js exactly — one source of truth for
    "is this section horizontal right now". */
-@media (min-width: 860px) and (any-pointer: fine) and (prefers-reduced-motion: no-preference) {
+@media (any-hover: hover) and (any-pointer: fine) and (min-width: 640px) and (prefers-reduced-motion: no-preference) {
   .hscroll { height: 100vh; }
 
   .hscroll__track {
     display: flex;
+    /* Explícito, aunque sea el valor por defecto de flex: es la propiedad
+       que garantiza que los beats no se apilen. Junto con width:max-content
+       y el flex:none de abajo, el track no puede comprimirse ni envolver por
+       angosta que quede la ventana. */
+    flex-wrap: nowrap;
     align-items: stretch;
     width: max-content;
     height: 100vh;
@@ -441,10 +484,16 @@
     margin: 0;
   }
 
-  /* Widths are in viewport-widths. Total track ≈ 4.6 screens, so the travel
-     is ≈ 3.6 screens — which at a 1:1 gesture ratio is ≈ 6.4 viewport heights
-     of scroll on a 16:9 display, the depth the brief asks for. Adding width
-     here lengthens the section; the ratio must stay 1:1 either way. */
+  /* Anchos en anchos-de-viewport. Track total = 5.5 pantallas
+     (100+90+115+115+130), de las que 4.5 son recorrido.
+
+     La relación gesto:recorrido ya NO es 1:1: la fija `PACE` en hscroll.js,
+     porque a 1:1 el contenido pasaba demasiado rápido para apreciarlo.
+
+     Añadir ancho aquí alarga el recorrido y, por tanto, también el scroll —
+     el pin se deriva de esta medida multiplicada por PACE— y además MUEVE la
+     posición final de todo lo que venga después en el track. Ver la nota de
+     .beat--salon, cuyo ancho está calculado justamente a partir de eso. */
   /* Exactly one screen: the width the finished cover image occupies as it is
      carried off. It no longer has to make room for the growth as well — that
      happens on the approach, before this pin opens — so the strip is only as
@@ -454,8 +503,36 @@
   .beat--intro { width: 90vw; }
   .beat--hospedaje { width: 115vw; }
   .beat--restaurante { width: 115vw; }
-  .beat--salon { width: 105vw; }
-  .beat--outro { width: 35vw; }
+
+  /* Salón lleva cola: 105vw dejaban la tarjeta de reserva pegada al borde
+     derecho justo cuando el recorrido se acaba, que es el peor sitio posible
+     para lo único de la sección en lo que se puede hacer clic.
+
+     El ancho sale de una cuenta, no del ojo. Al final del recorrido el track
+     se ha desplazado toda su distancia, así que la posición en pantalla de la
+     tarjeta queda fijada por lo que mide este beat:
+
+       posición de la tarjeta dentro del track = 100+90+115+115 + 62 = 482vw
+       desplazamiento total                    = (420 + W) - 100 = 320+W vw
+       borde izquierdo en pantalla al final    = 482 - (320+W) = 162-W vw
+       centro (la tarjeta mide ~30vw)          = 177-W vw
+
+     Igualando ese centro al medio de la pantalla y despejando W:
+
+         W = 112vw + (ancho de la tarjeta / 2)
+
+     Y esa mitad NO es una constante en vw. --hs-card-w es un clamp con techo
+     de 440px, así que en pantallas grandes la tarjeta deja de crecer con el
+     viewport: a 1024px mide 30vw, pero a 1920px ya son 23vw y a 2560px, 17vw.
+     Un ancho fijo —130vw— sólo acertaba en la resolución para la que se
+     calculó y corría la tarjeta cada vez más a la izquierda cuanto mayor era
+     la pantalla. Por eso el beat se calcula en vez de fijarse: así la tarjeta
+     queda centrada en cualquier resolución.
+
+     El espacio que queda detrás de ella no es relleno: es donde el recorrido
+     aterriza. La sección ya tenía esa función en el beat de salida que se
+     quitó; ahora la cumple sosteniendo la tarjeta. */
+  .beat--salon { width: calc(112vw + var(--hs-card-w) / 2); }
 
   .beat--intro {
     display: grid;
@@ -560,14 +637,29 @@
   .hs-card {
     position: absolute;
     z-index: 2;
-    left: 66vw;
-    top: 24vh;
-    width: 24vw;
-    padding: 32px;
+    /* 24vw dejaba la tarjeta en ~245px a 1023px de ancho: el título partía en
+       dos ("¿Organizas / algo?") y cada ítem de la lista se quebraba. El
+       clamp la mantiene legible en pantallas chicas sin dejarla crecer hasta
+       parecer un panel en monitores grandes.
+
+       El valor vive en --hs-card-w, arriba: el ancho del último beat se
+       calcula a partir de él.
+
+       El centrado vertical va con top/bottom + margin-block:auto, y NO con
+       transform: translateY(-50%). hscroll.js escribe transform —y también la
+       propiedad translate— sobre esta tarjeta al revelarla, así que cualquier
+       centrado apoyado en ellas lo pisa el primer fotograma de la animación.
+       Con las dos anclas a 0 y una altura definida, el margen automático
+       reparte el sobrante y centra sin tocar nada que GSAP vaya a sobrescribir. */
+    left: 62vw;
+    top: 0;
+    bottom: 0;
+    height: fit-content;
+    margin-block: auto;
+    width: var(--hs-card-w);
+    padding: 34px 36px;
   }
   .hs-card__cta { display: inline-block; }
-
-  .beat--outro { display: grid; place-items: center; }
 
   .hscroll__progress {
     position: absolute;
@@ -635,7 +727,7 @@
    principal en el formato donde menos margen hay. */
 .hs-title-m { display: none; }
 
-@media not all and (min-width: 860px) and (any-pointer: fine) {
+@media not all and (any-hover: hover) and (any-pointer: fine) and (min-width: 640px) {
   .hs-marquee { display: none; }
 
   .hs-title-m {
@@ -698,7 +790,7 @@
    compartirlo tocaría un componente que ya está verificado. */
 .hs-subtitle-d { display: none; }
 
-@media (min-width: 860px) and (any-pointer: fine) {
+@media (any-hover: hover) and (any-pointer: fine) and (min-width: 640px) {
   /* La foto era el unico hijo en flujo del beat, asi que como se repartian
      las filas implicitas daba igual. Con el subtitulo son dos, y por defecto
      las filas se estiran hasta llenar la pantalla: la foto queda centrada en

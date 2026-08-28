@@ -1,0 +1,8 @@
+services:
+  landing:
+    build: .
+    image: rego-hotel-landing:latest
+    container_name: rego-hotel-landing
+    ports:
+      - "8081:80"
+    restart: unless-stopped

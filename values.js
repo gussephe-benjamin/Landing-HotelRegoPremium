@@ -20,8 +20,23 @@ document.addEventListener("DOMContentLoaded", function () {
     smoothness: 0.14,
     bufferSlides: 2,
     imageShift: 25,
-    copyShift: 15,
-    titleHold: 0.1,
+    /* Cuánto se separan verticalmente las dos mitades del rótulo durante la
+       transición. La deriva es opuesta por columna, así que este número es
+       literalmente cuánto se parte el texto: a 15 las mitades quedaban a
+       distinta altura durante casi todo el recorrido y se leía "SILENCI&" en
+       lugar de "SILENCIO &". Se conserva el gesto —partir y recomponer es la
+       firma de la sección— pero a una amplitud que no rompe la palabra. */
+    copyShift: 9,
+    /* Ventana en la que el valor queda CENTRADO y sus dos mitades alineadas,
+       es decir, el único tramo en el que su texto se puede leer entero.
+       Estaba en 0.1: sobre un recorrido de ±1 por valor, apenas un 10% a cada
+       lado, así que había que acertar el instante exacto para leerlo y el
+       resto del tiempo la sección era una superposición de fragmentos.
+
+       A 0.38 cada valor se sostiene enfocado durante la mayor parte de su
+       paso: entra, se detiene a que lo leas, y recién entonces cede al
+       siguiente. Es el enfoque por valor, sin renunciar al scroll. */
+    titleHold: 0.38,
     imageZoom: 1.25,
     revealOverlap: 0.5,
   };
@@ -413,23 +428,25 @@ document.addEventListener("DOMContentLoaded", function () {
   if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches && !cssArrival) {
     gsap.fromTo(
       columns.left.el,
-      { yPercent: 100 },
+      { yPercent: 16 },
       {
         yPercent: 0,
         ease: "none",
         scrollTrigger: { trigger: root, start: "top bottom", end: "top top", scrub: true },
       }
     );
-    // Symmetric with the left column on purpose: this one rises by exactly as
-    // much as the page scrolls, so the two halves part like a curtain. An
-    // earlier attempt overshot this to -140 on the theory that a transform
-    // standing still in the viewport is where a frame of main-thread lag
-    // becomes visible. The theory holds in general, but it was not what was
-    // shaking here — the layer count below was — and the overshoot cost the
-    // symmetry, so it is back to -100.
+    // Simétrico con la columna izquierda a propósito: las dos mitades parten
+    // en direcciones opuestas y por la misma cantidad.
+    //
+    // La amplitud es 16, no 100. Con el recorrido completo cada columna
+    // arrancaba enteramente fuera de su caja y dejaba a la vista una franja
+    // del fondo de la sección de hasta media pantalla — el bloque negro que
+    // se veía al entrar desde Habitaciones. Debe coincidir con el @keyframes
+    // de values.css: son la misma animación escrita dos veces, una para
+    // motores con animation-timeline y otra para los que no.
     gsap.fromTo(
       columns.right.el,
-      { yPercent: -100 },
+      { yPercent: -16 },
       {
         yPercent: 0,
         ease: "none",

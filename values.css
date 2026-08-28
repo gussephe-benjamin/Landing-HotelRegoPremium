@@ -11,7 +11,21 @@
   z-index: 6;
   width: 100%;
   height: 100svh;
-  background: var(--vl-bg);
+  /* La cortina de entrada desplaza las columnas, así que durante ese tramo
+     queda a la vista una franja del fondo de la sección. Medido: arriba de
+     .values lo que se ve es el body (#141414) y esta sección es #0a0a0b —
+     diez puntos más oscura—, de modo que esa franja se leía como un escalón
+     negro recortado, no como parte de la composición.
+
+     El degradado arranca en el tono de arriba y baja al propio en ~340px: lo
+     que asome durante la entrada es ahora continuación de lo anterior. Una
+     vez las columnas cierran, el degradado queda tapado y no se ve nunca. */
+  background-color: var(--vl-bg);
+  background-image: linear-gradient(
+    180deg,
+    #141414 0px,
+    rgba(20, 20, 20, 0) 340px
+  );
   color: var(--vl-ink);
   font-family: var(--ov-font-display);
   overflow: hidden;
@@ -59,8 +73,54 @@
 .values-copy {
   position: absolute;
   top: 0;
-  width: 100vw;
+  /* 200% del propio slide —que mide lo que la columna— y NO 100vw.
+
+     Las dos columnas son flex:1 dentro de .values-stage, así que juntas miden
+     el ancho del CONTENIDO. `100vw`, en cambio, incluye la barra de scroll:
+     la capa de texto salía ~15px más ancha que las dos columnas juntas, y la
+     mitad derecha —anclada a right:0— quedaba desplazada esa diferencia
+     respecto de la izquierda. El resultado era que se perdían caracteres
+     justo en la costura: "ESPACIO & LUZ" se leía "ESPAC & LUZ" y "pensado",
+     "psado". No era la animación, era la barra de scroll.
+
+     200% del slide siempre equivale exacto a las dos columnas, haya barra o
+     no, así que las dos mitades recomponen la palabra sin junta visible. */
+    width: 200%;
   height: 100%;
+  pointer-events: none;
+}
+
+/* Plato de lectura.
+
+   El texto se apoyaba directamente sobre la fotografía. Con cuatro fotos
+   distintas debajo, el mismo rótulo caía unas veces sobre cielo claro y otras
+   sobre madera oscura, y el velo plano de .values-overlay no basta: oscurece
+   por igual toda la columna, así que subirlo para salvar la foto más clara
+   apagaba las otras tres.
+
+   Este es un velo centrado y local, del tamaño del bloque de texto: le da
+   fondo propio donde hace falta y se desvanece antes de tocar los bordes, de
+   modo que la fotografía sigue leyéndose alrededor.
+
+   Va en ::before del propio .values-copy —y no como una capa aparte— porque
+   así hereda su misma deriva vertical: cualquier otra capa se quedaría quieta
+   mientras el texto se mueve, y el fondo se despegaría de lo que sostiene.
+   Al ser el primer hijo, se pinta por debajo de tags, título y nota sin
+   necesidad de z-index. */
+.values-copy::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(76%, 980px);
+  height: min(62%, 480px);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(10, 10, 11, 0.7) 0%,
+    rgba(10, 10, 11, 0.5) 46%,
+    rgba(10, 10, 11, 0) 74%
+  );
   pointer-events: none;
 }
 
@@ -104,7 +164,7 @@
   font-weight: 500;
   letter-spacing: 0.12em;
   line-height: 1.9;
-  opacity: 0.75;
+  opacity: 0.88;
   white-space: nowrap;
 }
 
@@ -116,7 +176,7 @@
   text-align: center;
   font-size: clamp(0.85rem, 1.1vw, 1.05rem);
   line-height: 1.5;
-  opacity: 0.6;
+  opacity: 0.78;
   white-space: nowrap;
 }
 
@@ -150,6 +210,7 @@
 .values-corner-tl { top: 32px; left: 32px; }
 .values-corner-br { bottom: 32px; right: 32px; }
 
+/* Tipografía en .sec-eyebrow (style.css). Aquí solo la colocación. */
 .values-eyebrow {
   position: absolute;
   top: 40px;
@@ -157,10 +218,13 @@
   transform: translateX(-50%);
   z-index: 4;
   margin: 0;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.25em;
-  color: rgba(244, 239, 232, 0.55);
+  /* Al estar posicionado con left:50%, la caja sólo dispone del tramo que va
+     de ahí al borde derecho —195px en un teléfono de 390—, así que el nombre
+     se partía en dos líneas mientras los otros cuatro índices ocupaban una.
+     max-content la deja medirse por su contenido; el max-width impide que
+     eso se convierta en desbordamiento lateral. */
+  width: max-content;
+  max-width: calc(100vw - 2.5rem);
 }
 
 .values-progress {
@@ -221,8 +285,22 @@
    The GSAP path stays as the fallback in values.js for engines without this;
    the @supports condition here and the CSS.supports() test there are
    deliberately the same string so exactly one of the two can ever run. */
-@keyframes vl-arrive-up { from { transform: translateY(100%); } }
-@keyframes vl-arrive-down { from { transform: translateY(-100%); } }
+/* 16%, no 100%.
+
+   Con el recorrido completo cada columna empezaba fuera de su caja, así que
+   la franja de fondo descubierta llegaba a medir media pantalla — es el
+   bloque negro que se veía al entrar. La geometría es: franja = recorrido x
+   (lo que le falta a la sección para entrar), y con 100% eso alcanza ~455px
+   en el peor momento; con 16% no pasa de ~125px, y encima ahora funde con el
+   degradado de .values en vez de recortarse contra él.
+
+   El gesto se conserva: las dos columnas siguen partiendo en direcciones
+   opuestas, sólo que la amplitud es de acento y no de telón completo.
+
+   Si se cambia este valor hay que cambiar TAMBIÉN el yPercent del camino de
+   respaldo en values.js — son la misma animación para motores distintos. */
+@keyframes vl-arrive-up { from { transform: translateY(16%); } }
+@keyframes vl-arrive-down { from { transform: translateY(-16%); } }
 
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {

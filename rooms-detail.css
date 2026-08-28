@@ -183,46 +183,6 @@
 .rd-close:hover { transform: rotate(90deg); background: rgba(244, 239, 232, 0.12); }
 .rd-close svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
 
-/* ── 5.2 · Dismissible banner ────────────────────────────────────────── */
-.rd-note {
-  display: flex;
-  align-items: center;
-  gap: clamp(0.9rem, 1.6vw, 1.2rem);
-  margin: clamp(1rem, 2.4vh, 1.6rem) clamp(1.1rem, 3vw, 2.5rem) 0;
-  padding: 1.1rem 1.3rem;
-  border: 1px solid var(--rd-line);
-  border-radius: 24px;
-  background: var(--rd-glass);
-  -webkit-backdrop-filter: blur(24px) saturate(150%);
-  backdrop-filter: blur(24px) saturate(150%);
-  box-shadow: var(--rd-lift);
-  overflow: hidden;
-}
-.rd-note-ico {
-  flex: none;
-  width: 44px; height: 44px;
-  display: grid; place-items: center;
-  border: 1px solid rgba(199, 154, 91, 0.35);
-  border-radius: 999px;
-  background: rgba(199, 154, 91, 0.12);
-}
-.rd-note-ico svg {
-  width: 19px; height: 19px; fill: none;
-  stroke: var(--rd-accent); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
-}
-.rd-note-say { flex-grow: 1; display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
-.rd-note-say b { font-size: 0.95rem; font-weight: 700; letter-spacing: -0.01em; }
-.rd-note-say i { font-style: normal; font-size: 0.82rem; color: rgba(244, 239, 232, 0.62); }
-.rd-note-x {
-  flex: none; width: 34px; height: 34px; padding: 0;
-  display: grid; place-items: center;
-  border: 0; border-radius: 999px; background: none;
-  color: rgba(244, 239, 232, 0.45); cursor: pointer;
-  transition: color 0.3s ease;
-}
-.rd-note-x:hover { color: var(--rd-ink); }
-.rd-note-x svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
-
 /* ── 5.3 · Hero ──────────────────────────────────────────────────────── */
 .rd-hero {
   position: relative;
@@ -624,7 +584,7 @@
 
    El relleno opaco conserva el borde, el brillo superior y el radio, que es
    lo que hace que se lean como vidrio. Lo que se va es el muestreo. */
-@media not all and (min-width: 860px) and (any-pointer: fine) {
+@media not all and (any-hover: hover) and (any-pointer: fine) and (min-width: 640px) {
   .rd-bar {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
@@ -666,12 +626,6 @@
      retira antes que romper la fila. */
   .rd-meta { display: none; }
   .rd-pill { font-size: 10px; letter-spacing: 0.08em; padding: 0.38rem 0.7rem; }
-  /* El aviso es descartable: en un teléfono no puede comerse media pantalla. */
-  .rd-note { padding: 0.85rem 0.95rem; gap: 0.7rem; align-items: flex-start; }
-  .rd-note-ico { width: 34px; height: 34px; }
-  .rd-note-ico svg { width: 15px; height: 15px; }
-  .rd-note-say b { font-size: 0.82rem; }
-  .rd-note-say i { font-size: 0.75rem; }
 
   /* Full width with the home indicator accounted for. */
   .rd-book {

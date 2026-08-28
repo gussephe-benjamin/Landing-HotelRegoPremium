@@ -4,6 +4,117 @@
   box-sizing: border-box;
 }
 
+/* ══ Índice de sección ═══════════════════════════════════════════════════
+   Las cinco secciones numeradas —(01) Los espacios … (05) Ubicación— traían
+   cada una su propio encabezado, y las cinco habían derivado. Medido en el
+   navegador antes de tocar nada: tres tracking distintos (0.14 / 0.20 /
+   0.25em), dos blancos casi iguales pero no idénticos (244,239,232 contra
+   239,234,227), y mono en UNA sola de ellas mientras las otras cuatro caían
+   en la sans.
+
+   El sistema vive aquí porque style.css es la única hoja global. Cada
+   sección conserva la suya para lo que sí le pertenece —posición, márgenes,
+   fondo— y deja de redeclarar tipografía.
+
+   La decisión de fondo: la mono era lo correcto y estaba en la sección
+   equivocada. Un índice numerado es un gesto de catálogo, y la mono es lo
+   que lo hace leer como índice en vez de como etiqueta suelta. Se promueve
+   el tratamiento de .hs-eyebrow a las otras cuatro en lugar de inventar uno.
+
+   OJO con el orden de carga: esta hoja va PRIMERO (index.html:10) y las de
+   sección después, así que a igual especificidad ganan ellas. Por eso las
+   reglas por sección quedaron despojadas de font/tracking/color — si se
+   vuelven a declarar allí, esto deja de aplicar sin avisar. */
+
+:root {
+  --sec-mono: "JetBrains Mono", ui-monospace, monospace;
+  --sec-serif: "Zodiak", Georgia, serif;
+  --sec-accent: #c79a5b;
+}
+
+/* La jerarquía es interna al propio índice: el numeral ancla —dorado y a
+   peso pleno—, el filete separa, y el nombre queda en voz baja. Antes las
+   tres partes iban en un mismo gris al 50% y la marca se leía plana. */
+.sec-eyebrow {
+  /* inline-flex, no flex. Un flex de nivel bloque ocupa todo el ancho y sus
+     items dejan de obedecer al text-align del contenedor: rooms y voices
+     centran así su encabezado, y con `flex` el índice se quedaba pegado a la
+     izquierda mientras el título seguía centrado. Como caja inline vuelve a
+     alinearse según lo que cada sección ya decidía —centrado en esas dos,
+     a la izquierda en location— sin necesidad de overrides por sección. */
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.7em;
+  font-family: var(--sec-mono);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  /* currentColor, nunca un valor duro: la sección horizontal hace una rampa
+     de fondo de casi negro a crema, así que un color fijo se rompería a
+     mitad del recorrido. Aquí hereda --hs-fg; en el resto, el color de la
+     sección. */
+  color: currentColor;
+}
+
+.sec-eyebrow b {
+  flex: none;
+  font-weight: 500;
+  /* Cifras de ancho fijo: (01) y (05) tienen que ocupar lo mismo, o el
+     filete baila de una sección a otra. */
+  font-variant-numeric: tabular-nums;
+  color: var(--sec-accent);
+}
+
+/* Sustituye al guión largo. El carácter dependía de la fuente y se sentaba a
+   distinta altura en cada sección; un filete se alinea solo y no hereda esa
+   deriva. align-self porque el resto de la fila va a baseline y una regla de
+   1px no tiene baseline que valga. */
+.sec-eyebrow i {
+  flex: none;
+  align-self: center;
+  width: 1.75rem;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.32;
+}
+
+/* min-width:0 para que el nombre pueda partirse dentro de su propia caja en
+   pantallas angostas. Sin esto el ítem flex se niega a bajar de su ancho de
+   contenido y "(04) — La voz de los huéspedes" empuja la fila a lo ancho. */
+.sec-eyebrow span {
+  min-width: 0;
+  opacity: 0.62;
+}
+
+/* ── Título de sección ────────────────────────────────────────────────
+   No declara font-family a propósito: hereda la display (Satoshi) de la
+   raíz de cada sección, que ya era coherente en las tres. Lo que sí unifica
+   es la escala —location iba a 4.2vw/3.4rem contra 3.6vw/3rem de las otras
+   dos, sin motivo— y el tratamiento del énfasis. */
+.sec-title {
+  margin: 0;
+  font-size: clamp(1.85rem, 4vw, 3.25rem);
+  font-weight: 500;
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  /* Evita la palabra huérfana en la última línea. Progresivo: donde no está
+     soportado simplemente se ignora. */
+  text-wrap: balance;
+}
+
+/* La itálica serif es la voz de énfasis de la casa —la misma del hero
+   ("Espacio para vivir")—. Rooms la llevaba en sans y además en dorado,
+   que era el único sitio donde el acento competía con el numeral del
+   índice. Ahora el dorado aparece UNA vez por sección y siempre en el mismo
+   lugar; el énfasis del título lo carga la forma de la letra, no el color. */
+.sec-title em {
+  font-family: var(--sec-serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.005em;
+}
+
 html,
 body {
   width: 100%;
@@ -110,22 +221,6 @@ footer {
   width: 100%;
 }
 
-.preview {
-  position: absolute;
-  bottom: 2em;
-  right: 2em;
-  display: flex;
-  gap: 0.3em;
-  clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
-}
-
-.preview img {
-  position: relative;
-  transform: translate3d(0, 100px, 0);
-  width: 80px;
-  height: 50px;
-}
-
 .slide-num {
   margin: 3em 0;
   text-align: center;
@@ -220,8 +315,4 @@ body.is-intro .col .item {
     font-size: 16px;
   }
 
-  .preview img {
-    width: 60px;
-    height: 40px;
-  }
 }

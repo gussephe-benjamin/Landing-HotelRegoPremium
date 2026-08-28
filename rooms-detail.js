@@ -361,14 +361,6 @@
       '<button class="rd-close" type="button" aria-label="Cerrar el detalle"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>' +
       "</header>" +
 
-      // 5.2 — dismissible banner
-      '<div class="rd-note rd-anim">' +
-      '<span class="rd-note-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg></span>' +
-      '<span class="rd-note-say"><b>' + esc(room.name) + " · Disponible para tus fechas</b>" +
-      "<i>Reserva directa con el hotel, sin comisiones de intermediarios.</i></span>" +
-      '<button class="rd-note-x" type="button" aria-label="Cerrar el aviso"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>' +
-      "</div>" +
-
       // 5.3 — hero
       '<section class="rd-hero rd-anim">' +
       '<div class="rd-hero-frame"><img class="rd-hero-img" src="' + esc(room.hero) + '" alt="' + esc(room.gallery[0].alt) + '" fetchpriority="high" decoding="async" /></div>' +
@@ -583,19 +575,6 @@
 
   function wire(root) {
     root.querySelector(".rd-close").addEventListener("click", function () { close(); });
-
-    var note = root.querySelector(".rd-note");
-    var noteX = root.querySelector(".rd-note-x");
-    if (note && noteX) {
-      noteX.addEventListener("click", function () {
-        if (reduced || typeof gsap === "undefined") { note.remove(); return; }
-        gsap.to(note, {
-          height: 0, opacity: 0, marginBottom: 0, paddingTop: 0, paddingBottom: 0,
-          duration: 0.4, ease: "power2.inOut",
-          onComplete: function () { note.remove(); },
-        });
-      });
-    }
 
     [].forEach.call(root.querySelectorAll("[data-goto]"), function (b) {
       b.addEventListener("click", function () {

@@ -264,7 +264,7 @@
    Sobre un fondo casi negro la diferencia es de un par de puntos de
    luminancia; el disco sigue leyéndose como vidrio por su borde y su brillo
    interior, que es de donde salía la lectura de material. */
-@media not all and (min-width: 860px) and (any-pointer: fine) {
+@media not all and (any-hover: hover) and (any-pointer: fine) and (min-width: 640px) {
   .nav-fab {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;

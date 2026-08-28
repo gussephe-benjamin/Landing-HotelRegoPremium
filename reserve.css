@@ -195,7 +195,7 @@
 /* Video de fondo detras de vidrio: el backdrop-filter se recalcularia en
    cada cuadro del video. Se retira el muestreo y se sube la opacidad del
    relleno para conservar la lectura de vidrio sin el costo. */
-@media not all and (min-width: 860px) and (any-pointer: fine) {
+@media not all and (any-hover: hover) and (any-pointer: fine) and (min-width: 640px) {
   .rsv-go-solo {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;

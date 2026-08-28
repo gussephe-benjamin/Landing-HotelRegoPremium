@@ -122,19 +122,28 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  // Fotografia real del hotel, no el stock tropical que traia la demo. Son
+  // recortes propios a 420x560 -- el mismo formato vertical que usaban las
+  // originales -- y no los archivos de 1400px que usan las otras secciones:
+  // aca cada imagen se dibuja a 100-200px y se instancian muchas a la vez
+  // siguiendo el cursor, asi que apuntar a los originales seria pedir entre
+  // cinco y diez veces mas bytes de los que se ven.
+  //
+  // El orden es deliberado: alterna exterior, habitacion y espacio comun para
+  // que dos cuadros contiguos del rastro nunca se parezcan entre si.
   const images = [
-    "./img/trail/t1.jpg",
-    "./img/trail/t2.jpg",
-    "./img/trail/t3.jpg",
-    "./img/trail/t4.jpg",
-    "./img/trail/t5.jpg",
-    "./img/trail/t6.jpg",
-    "./img/trail/t7.jpg",
-    "./img/trail/t8.jpg",
-    "./img/trail/t9.jpg",
-    "./img/trail/t10.jpg",
-    "./img/trail/t11.jpg",
-    "./img/trail/t12.jpg"
+    "./img/trail/rego-01.jpg", // fachada al atardecer
+    "./img/trail/rego-02.jpg", // recepcion
+    "./img/trail/rego-03.jpg", // dormitorio estudio
+    "./img/trail/rego-04.jpg", // cocina estudio
+    "./img/trail/rego-05.jpg", // ducha
+    "./img/trail/rego-06.jpg", // dormitorio minidepartamento
+    "./img/trail/rego-07.jpg", // sala comedor minidepartamento
+    "./img/trail/rego-08.jpg", // dormitorio departamento
+    "./img/trail/rego-09.jpg", // sala departamento
+    "./img/trail/rego-10.jpg", // vista al valle
+    "./img/trail/rego-11.jpg", // salon
+    "./img/trail/rego-12.jpg"  // comedor planta alta
   ];
 
   // Pattern definitions (unchanged)

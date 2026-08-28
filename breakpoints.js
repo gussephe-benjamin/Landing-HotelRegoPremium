@@ -40,7 +40,29 @@
   //
   // El piso de ancho sigue atajando el otro lado: un teléfono con un ratón
   // Bluetooth cumple `any-pointer: fine` pero no llega a 860px.
-  var DESKTOP = "(min-width: 860px) and (any-pointer: fine)";
+  // ── El piso de ancho era la causa del colapso a vertical ─────────────
+  // Medido: a 859px la seccion horizontal renderiza VERTICAL, a 861px
+  // HORIZONTAL. El test de puntero pasaba en los dos -- el unico porton era
+  // el ancho. Eso explica cada caso reportado, porque todos reducen el ancho
+  // en pixeles CSS por debajo de 860 sin dejar de ser una PC:
+  //
+  //   1280px al 150% de zoom -> 853px CSS  -> caia a vertical
+  //   1024px al 125%          -> 819px CSS  -> caia a vertical
+  //   una ventana de Windows arrastrada angosta -> caia a vertical
+  //
+  // 640px es el piso nuevo. Deja de estorbar al zoom y a las ventanas
+  // angostas, y sigue atajando el unico caso que el puntero no distingue: un
+  // telefono con un raton Bluetooth, que cumple `any-pointer: fine` pero
+  // ronda los 390-430px.
+  //
+  // La pregunta principal ya no es el ancho sino el dispositivo. `any-hover`
+  // y `any-pointer`, nunca `hover`/`pointer` a secas: esos dos describen el
+  // señalador PRIMARIO, y una laptop Windows con pantalla tactil puede
+  // reportar el tactil como primario aunque tenga trackpad -- con lo que una
+  // PC entera recibia el layout de telefono. `any-*` pregunta si existe
+  // ALGUN señalador preciso, que es la pregunta que de verdad importa.
+  var DESKTOP =
+    "(any-hover: hover) and (any-pointer: fine) and (min-width: 640px)";
 
   window.REGO_MQ = {
     DESKTOP: DESKTOP,

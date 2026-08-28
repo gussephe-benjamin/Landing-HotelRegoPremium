@@ -212,14 +212,30 @@
 }
 
 /* ── Social row ──────────────────────────────────────────────────────── */
-/* Bottom-right, same corner the site's global nav-fab claims elsewhere —
-   but menu.js keeps that button hidden for the whole .kinetic section, so
-   there is no real risk of the two colliding. Sat clear above it anyway,
-   in case that hide list ever changes. */
+/* Bottom-right, same corner the site's global nav-fab claims elsewhere.
+
+   El comentario anterior daba por buena esa convivencia con dos argumentos y
+   los dos fallaban. El primero, que menu.js oculta el FAB en toda .kinetic:
+   lo oculta sólo mientras la sección cruza el MEDIO del viewport, así que al
+   final del documento el botón vuelve a aparecer con los discos ya en
+   pantalla. El segundo, que quedaba "clear above it anyway": medido, se
+   solapaban 20px.
+
+   El despeje que hace falta sale de la geometría del FAB: vive a
+   clamp(1rem, 2.4vw, 2rem) del borde inferior y mide 54px de alto, así que su
+   canto superior llega como mucho a 86px. Cualquier valor por debajo de eso
+   se solapa.
+
+   OJO: hay una segunda regla para esta fila en el @media de 900px, más abajo.
+   Es la que gobierna en pantallas medianas y la que de verdad producía el
+   solape reportado —fijaba 4.5rem, o sea 72px, justo por debajo del canto del
+   FAB—. Si se toca el despeje, hay que tocar las DOS. */
 .ft-social {
   position: absolute;
   right: clamp(1.25rem, 3vw, 2.5rem);
-  bottom: clamp(4.75rem, 11vh, 6.5rem);
+  /* Piso de 112px contra los 86px que como mucho ocupa el FAB: ~26px de aire
+     en el peor caso. */
+  bottom: clamp(7rem, 13vh, 8.5rem);
   z-index: 20;
   display: flex;
   gap: 0.75rem;
@@ -289,7 +305,9 @@
   .ft-hint { display: none; }
   .ft-word-mark { font-size: 40vw; }
   .trail-stage { cursor: auto; }
-  .ft-social { right: 1.25rem; bottom: 4.5rem; }
+  /* 4.5rem eran 72px y el canto superior del FAB queda a ~73px a estos
+     anchos: los discos lo tocaban. 7.5rem deja ~47px de aire. */
+  .ft-social { right: 1.25rem; bottom: 7.5rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {

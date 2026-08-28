@@ -41,19 +41,14 @@
   margin: 0 auto;
 }
 
+/* Tipografía en .sec-eyebrow (style.css). */
 .voices-eyebrow {
   margin: 0 0 1rem;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.25em;
-  color: rgba(239, 234, 227, 0.5);
 }
 
+/* Escala y énfasis en .sec-title (style.css). */
 .voices-title {
   margin: 0 0 1.25rem;
-  font-size: clamp(1.75rem, 3.6vw, 3rem);
-  font-weight: 500;
-  letter-spacing: -0.03em;
   line-height: 1.05;
 }
 .voices-title em {

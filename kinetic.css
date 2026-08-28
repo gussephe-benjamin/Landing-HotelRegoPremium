@@ -254,35 +254,6 @@
   background: linear-gradient(to top, rgba(18, 22, 26, 0.34), rgba(18, 22, 26, 0.02));
 }
 
-.kc-zoom {
-  position: absolute;
-  top: clamp(0.6rem, 1vw, 0.9rem);
-  left: clamp(0.6rem, 1vw, 0.9rem);
-  z-index: 2;
-  display: grid;
-  place-items: center;
-  width: clamp(34px, 2.6vw, 44px);
-  height: clamp(34px, 2.6vw, 44px);
-  padding: 0;
-  border: 1px solid rgba(244, 248, 251, 0.28);
-  border-radius: 50%;
-  background: rgba(244, 248, 251, 0.14);
-  -webkit-backdrop-filter: blur(14px) saturate(150%);
-  backdrop-filter: blur(14px) saturate(150%);
-  color: #f4f8fb;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.kc-zoom:hover { background: rgba(244, 248, 251, 0.26); transform: scale(1.06); }
-.kc-zoom:focus-visible { outline: 2px solid var(--kc-gold); outline-offset: 3px; }
-.kc-zoom svg {
-  width: 42%;
-  height: 42%;
-  stroke: currentColor;
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
 
 .kc-label {
   display: inline-block;
@@ -300,51 +271,6 @@
 /* Card B rides up and its caption would otherwise land back over card A's
    photograph; pushed to B's outer edge it clears it. */
 .kc-card-b .kc-label { float: right; }
-
-/* ── Lightbox ────────────────────────────────────────────────────────── */
-/* A native <dialog>, so the focus trap, the Escape key and inertness of the
-   page behind all come from the platform rather than from script. */
-.kc-lightbox {
-  width: min(92vw, 1100px);
-  max-height: 90svh;
-  padding: 0;
-  border: 0;
-  border-radius: clamp(14px, 1.4vw, 22px);
-  background: transparent;
-  overflow: visible;
-}
-.kc-lightbox::backdrop {
-  background: rgba(8, 10, 12, 0.82);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
-}
-.kc-lightbox img {
-  display: block;
-  width: 100%;
-  max-height: 90svh;
-  object-fit: contain;
-  border-radius: inherit;
-}
-.kc-lightbox__close {
-  position: absolute;
-  top: -14px;
-  right: -14px;
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  border: 1px solid rgba(244, 248, 251, 0.3);
-  border-radius: 50%;
-  background: #14100c;
-  color: #f4f8fb;
-  cursor: pointer;
-}
-.kc-lightbox__close svg {
-  width: 16px; height: 16px;
-  stroke: currentColor; stroke-width: 1.8; stroke-linecap: round;
-}
-.kc-lightbox__close:focus-visible { outline: 2px solid var(--kc-gold); outline-offset: 3px; }
 
 /* ── Responsive ──────────────────────────────────────────────────────── */
 /* Tablet: same composition with the slack taken out. */
@@ -407,9 +333,6 @@
     letter-spacing: 0.12em;
   }
   .kc-card-b .kc-label { float: none; }
-  .kc-zoom { width: 30px; height: 30px; }
-
-  .kc-lightbox__close { top: -10px; right: -10px; width: 34px; height: 34px; }
 }
 
 /* Short screens, at any width: a landscape phone or a small laptop gives this

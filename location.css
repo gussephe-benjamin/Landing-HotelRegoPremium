@@ -46,19 +46,14 @@
   margin: 0 auto clamp(2.5rem, 6vh, 4rem);
 }
 
+/* Tipografía en .sec-eyebrow (style.css). */
 .location-eyebrow {
   margin: 0 0 0.9rem;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.25em;
-  color: rgba(239, 234, 227, 0.5);
 }
 
+/* Escala y énfasis en .sec-title (style.css). Antes iba a 4.2vw/3.4rem
+   contra 3.6vw/3rem de rooms y voices, sin razón que lo justificara. */
 .location-title {
-  margin: 0;
-  font-size: clamp(1.85rem, 4.2vw, 3.4rem);
-  font-weight: 500;
-  letter-spacing: -0.03em;
   line-height: 1.02;
 }
 .location-title em {
@@ -378,20 +373,40 @@
   color: #17120f;
   border: none;
   border-radius: 999px;
-  padding: 1.05em 1.5em;
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
+  padding: 1.15em 1.6em;
+  /* Mono, como el resto de las etiquetas en versalita de la página
+     (.sec-eyebrow en style.css, .story-cue en story.css). Iba en la sans
+     heredada y a 0.12em, que era el último rótulo de este tipo que quedaba
+     fuera del sistema.
+
+     NOTA: el botón "Open in Maps" que aparece SOBRE el mapa no es este ni es
+     nuestro — lo dibuja Google dentro del <iframe>, que es cross-origin y por
+     tanto inalcanzable para nuestro CSS. Se ve ajeno porque el filtro de
+     .location-map iframe lo invierte junto con las teselas. No se enmascara a
+     propósito: ocultar los controles del embed va contra los términos de uso
+     de Google Maps. Este de aquí es la acción equivalente en el lenguaje de
+     la casa, y es el que la sección presenta como principal. */
+  font-family: var(--sec-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   text-decoration: none;
   cursor: pointer;
-  transition: transform 0.3s ease, background-color 0.3s ease;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.3s ease, box-shadow 0.35s ease;
 }
 .location-cta:hover {
   transform: translateY(-2px);
   background: #fff;
+  /* El alzado necesitaba una sombra que lo acompañe: sin ella el botón sube
+     pero no despega de la tarjeta. */
+  box-shadow: 0 12px 28px -14px rgba(0, 0, 0, 0.75);
 }
+/* La flecha acompaña al alzado en su propia diagonal — el mismo gesto que ya
+   hace el icono en los enlaces de esta página. */
+.location-cta svg { transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
+.location-cta:hover svg { transform: translate(2px, -2px); }
 .location-cta svg {
   width: 14px;
   height: 14px;
@@ -482,7 +497,7 @@
 }
 
 @supports (animation-timeline: view()) and (timeline-scope: --a) {
-  @media (min-width: 860px) and (any-pointer: fine) and (prefers-reduced-motion: no-preference) {
+  @media (any-hover: hover) and (any-pointer: fine) and (min-width: 640px) and (prefers-reduced-motion: no-preference) {
     /* .location and .reserve are siblings, so the name has to be hoisted to
        their common ancestor before the one can read a timeline defined on
        the other. */

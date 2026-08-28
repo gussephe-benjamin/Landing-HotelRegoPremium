@@ -639,13 +639,30 @@ document.addEventListener("DOMContentLoaded", function () {
       },
     });
 
+    // ── Ritmo del recorrido ──────────────────────────────────────────
+    // Cuánto scroll vertical cuesta cada píxel de avance horizontal. En 1 la
+    // relación es 1:1 —el gesto y el track se mueven a la par— y con eso el
+    // contenido pasaba demasiado rápido para leerlo: las tres secciones de
+    // fotografía se cruzaban en poco más de seis alturas de pantalla.
+    //
+    // Alargar SOLO el pin, no el track: el recorrido horizontal sigue siendo
+    // `distance()` exacto, pero se reparte sobre más scroll, así que cada
+    // pieza permanece más tiempo en pantalla sin que cambie una sola medida
+    // de la maquetación.
+    //
+    // Nada más hay que tocar. `drive()` recibe el progreso ya normalizado
+    // (0→1 sobre el rango del pin, sea cual sea su largo) y scrollYForBeat()
+    // lee `st.start`/`st.end` en vivo, de modo que el parallax, la rampa de
+    // color y los saltos del nav se reajustan solos.
+    var PACE = 1.1;
+
     var tween = gsap.to(track, {
       x: function () { return -distance(); },
       ease: "none",
       scrollTrigger: {
         trigger: section,
         start: "top top",
-        end: function () { return "+=" + distance(); },
+        end: function () { return "+=" + distance() * PACE; },
         pin: true,
         // One second of smoothing. Raw `true` reads as jitter on a trackpad.
         scrub: 1,
@@ -690,8 +707,14 @@ document.addEventListener("DOMContentLoaded", function () {
     // The marquee lines also loop on their own so they stay alive when the
     // scroll is still. The loop animates xPercent while drive() animates x —
     // different properties, so they compose instead of fighting.
-    var loops = drifters.map(function (el, i) {
-      return gsap.to(el, {
+    //
+    // El target es `d.el`, no `d`: prepare() devuelve envoltorios
+    // {el, k, set}, y pasarle el envoltorio a gsap.to() animaba una propiedad
+    // `xPercent` inventada sobre un objeto JS plano. No lanzaba ningún error
+    // —GSAP anima objetos comunes con toda naturalidad— y el DOM no se tocaba
+    // nunca: las marquesinas simplemente se quedaban quietas.
+    var loops = drifters.map(function (d, i) {
+      return gsap.to(d.el, {
         xPercent: -50,
         repeat: -1,
         ease: "none",
@@ -761,7 +784,15 @@ document.addEventListener("DOMContentLoaded", function () {
         b.removeAttribute("aria-current");
       });
       if (topo) gsap.set(topo, { clearProps: "transform" });
-      gsap.set(layers.concat(drifters), { clearProps: "transform" });
+      // Los elementos, no los envoltorios: mismo error que tenía el loop de
+      // arriba. Con el envoltorio, clearProps borraba una propiedad de un
+      // objeto JS y dejaba el transform puesto en el DOM — al cruzar el
+      // breakpoint hacia el layout apilado, los beats se quedaban con la
+      // traslación en x del parallax congelada encima.
+      gsap.set(
+        layers.concat(drifters).map(function (d) { return d.el; }),
+        { clearProps: "transform" }
+      );
     };
   });
 
@@ -819,4 +850,38 @@ document.addEventListener("DOMContentLoaded", function () {
   // Anchor jumps and in-page search can land inside a pinned section; without
   // a refresh the pin can be left measuring against a stale document height.
   window.addEventListener("hashchange", function () { ScrollTrigger.refresh(); });
+
+  // ── Re-medir cuando cambia el ancho ──────────────────────────────────
+  // El zoom del navegador altera las medidas del pin: a 150% el viewport pasa
+  // a reportar dos tercios de los píxeles CSS, así que el largo del track y el
+  // recorrido del pin cambian de golpe. Lo mismo al arrastrar el borde de la
+  // ventana o al rotar el dispositivo.
+  //
+  // Dos guardas, cada una por un fallo que ya costó arreglar:
+  //
+  // 1. Solo si cambió el ANCHO. En un teléfono, scrollear colapsa la barra de
+  //    direcciones y emite un resize donde solo cambió el alto; refrescar ahí
+  //    recoloca los pins y produce el salto de scroll que ya se reportó. Es la
+  //    misma razón del ignoreMobileResize de breakpoints.js, y comparar el
+  //    ancho lo respeta en vez de pasarle por encima.
+  //
+  // 2. Nunca con el scroll bloqueado. El detalle de habitaciones fija el body
+  //    con position:fixed mientras el overlay está abierto, y refrescar en ese
+  //    estado mide el documento colapsado -- el bug que dejaba la página
+  //    aterrizando arriba de todo al cerrar.
+  var anchoPrevio = window.innerWidth;
+  var reMedir = null;
+
+  function pedirReMedida(forzar) {
+    if (!forzar && window.innerWidth === anchoPrevio) return;
+    anchoPrevio = window.innerWidth;
+    clearTimeout(reMedir);
+    reMedir = setTimeout(function () {
+      if (document.body.style.position === "fixed") return;
+      ScrollTrigger.refresh();
+    }, 200);
+  }
+
+  window.addEventListener("resize", function () { pedirReMedida(false); });
+  window.addEventListener("orientationchange", function () { pedirReMedida(true); });
 });
