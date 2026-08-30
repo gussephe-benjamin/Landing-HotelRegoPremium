@@ -672,6 +672,28 @@
   }
   .rooms-nav-prev { left: 3vw; }
   .rooms-nav-next { right: 3vw; }
+
+  /* ── Escalón de tablet ─────────────────────────────────────────────
+     Una tablet cae en este layout apilado y hace bien: no tiene puntero
+     fino, así que la composición horizontal de escritorio no le sirve.
+     Pero las medidas de aquí estaban pensadas para un teléfono y en una
+     pantalla de tablet se quedaban cortas — medido a 767px: la foto
+     ocupaba 320px (42% del ancho) y la columna de texto 420px (55%),
+     dejando 224px y 174px de vacío a cada lado.
+
+     Sólo crecen estas dos medidas. El resto de la sección se deriva de
+     ellas: las flechas se posicionan desde --rm-m-w, y los títulos ya
+     usan clamp con tope propio. Y sólo hace falta en Habitaciones: el
+     resto de secciones ya ocupaban entre el 85% y el 100% a este ancho.
+
+     Anidado dentro de la consulta de arriba, no suelto: así aplica
+     únicamente cuando el layout apilado está activo, sin tener que
+     reescribir la negación de REGO_MQ y arriesgarse a que las dos
+     versiones se desincronicen. */
+  @media (min-width: 700px) {
+    .rooms { --rm-m-w: min(480px, 58vw); }
+    .rooms-info { width: min(600px, 76vw); }
+  }
 }
 
 @media (max-width: 640px) {

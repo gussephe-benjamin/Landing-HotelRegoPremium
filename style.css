@@ -316,3 +316,71 @@ body.is-intro .col .item {
   }
 
 }
+
+/* ══ Táctil: legibilidad y área de toque ═════════════════════════════════
+   Todo lo de este bloque se activa sólo con puntero grueso —teléfono y
+   tablet—, así que el escritorio no cambia ni un píxel.
+
+   Va al final de style.css a propósito: esta hoja carga PRIMERO y las de
+   sección después, de modo que a igual especificidad ganan ellas. Por eso
+   las reglas de abajo usan selectores algo más específicos o !important
+   donde hace falta pisar un valor de sección. Ver la nota de .sec-eyebrow
+   más arriba, que documenta el mismo orden de carga. */
+@media (any-pointer: coarse) {
+
+  /* ── Área de toque ────────────────────────────────────────────────
+     Medido en un iPhone de 390px: doce controles quedaban por debajo de
+     los 44px que recomienda Apple, y dos de ellos muy por debajo — el
+     botón de menú a 28x20 y las flechas de habitación a 40x22.
+
+     Se amplía con un pseudo-elemento invisible en lugar de con padding:
+     el padding empujaría la maquetación y cambiaría el diseño, que es
+     justo lo que no se quiere. Así el control se ve igual y la zona
+     sensible al dedo crece por debajo.
+
+     Se usa ::before y no ::after porque .link-underline y .rooms-more ya
+     tienen tomado el ::after para su subrayado. */
+  .btn-book, .btn-burger, .link-underline, .hs-card__alt,
+  .rooms-cta, .rooms-more, .rooms-nav, .rooms-tab,
+  .voices-cta, .location-cta, .hscroll__progress button,
+  .location-item a[href^="tel:"] {
+    position: relative;
+  }
+
+  .btn-book::before, .btn-burger::before, .link-underline::before,
+  .hs-card__alt::before, .rooms-cta::before, .rooms-more::before,
+  .rooms-nav::before, .rooms-tab::before, .voices-cta::before,
+  .location-cta::before, .hscroll__progress button::before,
+  .location-item a[href^="tel:"]::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
+    width: 100%;
+    height: 100%;
+    min-width: 44px;
+    min-height: 44px;
+    /* Sin fondo: sólo existe para recibir el toque. */
+  }
+
+  /* ── Tamaño mínimo de texto ───────────────────────────────────────
+     Seis rótulos bajaban de 11px, y el peor —el epígrafe del cierre— se
+     quedaba en 8.5px, que en una pantalla de teléfono es prácticamente
+     ilegible. Se suben al mínimo del sistema de índices de sección, que
+     ya es 11px, sin tocar su tracking ni su color.
+
+     Los selectores llevan el contenedor delante (.offering .offering-kicker
+     en vez de .offering-kicker a secas) por el orden de carga que ya se
+     explica arriba: esta hoja va primero, así que a igual especificidad
+     ganaba la hoja de sección y estas reglas no llegaban a aplicarse.
+     Con el padre delante suben a 0-2-0 y sí pisan. */
+  .offering .offering-kicker,
+  .reserve .reserve-kicker,
+  .kinetic .kc-eyebrow,
+  .kinetic .kc-cta,
+  .location .location-tab-label,
+  .location .location-badge {
+    font-size: 11px;
+  }
+}
