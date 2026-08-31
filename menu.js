@@ -11,7 +11,11 @@
 
 /* Sections that own the screen while they play. The button hides whenever one
    of these is across the viewport's middle. */
-var MENU_LOUD = [".hero-intro", ".story", ".rooms", ".kinetic"];
+// .kinetic salió de la lista al eliminarse esa sección: un selector que no
+// resuelve dejaría el botón sin regla que lo tape, pero además Reserva es
+// ahora la última ventana y ahí el botón SÍ debe verse — es el único acceso
+// a la navegación una vez que se acaba la página.
+var MENU_LOUD = [".hero-intro", ".story", ".rooms"];
 
 document.addEventListener("DOMContentLoaded", function () {
   var fab = document.querySelector(".nav-fab");

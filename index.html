@@ -20,11 +20,9 @@
    <link rel="stylesheet" href="values.css?v=9" />
    <link rel="stylesheet" href="voices.css?v=7" />
    <link rel="stylesheet" href="location.css?v=13" />
-   <link rel="stylesheet" href="reserve.css?v=13" />
+   <link rel="stylesheet" href="reserve.css?v=14" />
    <link rel="stylesheet" href="menu.css?v=4" />
    <link rel="stylesheet" href="brandmark.css?v=3" />
-   <link rel="stylesheet" href="kinetic.css?v=11" />
-   <link rel="stylesheet" href="footer-trail.css?v=9" />
    <link rel="stylesheet" href="hscroll.css?v=26" />
    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Norican&display=swap" rel="stylesheet" />
 </head>
@@ -810,140 +808,11 @@
             <span class="rsv-go-solo__label">Reservar</span>
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
          </a>
-      </div>
 
-   </section>
-
-   <section class="kinetic">
-      <div class="kinetic-type" aria-hidden="true">
-         <div class="kinetic-line">rego rego rego</div>
-         <div class="kinetic-line">amazonas amazonas amazonas</div>
-         <div class="kinetic-line">descanso descanso descanso</div>
-         <div class="kinetic-line">bagua bagua bagua</div>
-         <div class="kinetic-line">premium premium premium</div>
-         <div class="kinetic-line">utcubamba utcubamba utcubamba</div>
-         <div class="kinetic-line">rego rego rego</div>
-         <div class="kinetic-line">amazonas amazonas amazonas</div>
-         <div class="kinetic-line">descanso descanso descanso</div>
-         <div class="kinetic-line">bagua bagua bagua</div>
-         <div class="kinetic-line">premium premium premium</div>
-      </div>
-
-      <!-- Editorial close. Still the same element kinetic.js fades out as the
-           type sweeps off (.kinetic-item), only its contents are restructured:
-           two staggered cards that interlock at the corner, and the closing
-           line in the negative space beside them. -->
-      <div class="kinetic-item">
-         <!-- Copy before gallery in the DOM. The desktop row reads left to
-              right and the mobile stack reads top to bottom, so this order is
-              the reading order in both — the previous markup put the images
-              first and relied on row-reverse to undo it, which meant the
-              phone stack opened on two photographs before saying anything. -->
-         <div class="kc-say">
-            <p class="kc-eyebrow"><span class="kc-eyebrow__dot" aria-hidden="true"></span>Tu descanso en Bagua Grande empieza ac&aacute;</p>
-            <h2 class="kc-ask">&iquest;Y qu&eacute; esperas?</h2>
-            <p class="kc-lead">En REGO Premium Apart Hotel, cada detalle est&aacute; pensado para brindarte comodidad, calidez y una experiencia inolvidable.</p>
-            <a class="kc-cta" href="#rooms">
-               Conoce m&aacute;s
-               <span class="kc-cta__ico" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none"><path d="M4 12h14M12 5l7 7-7 7"/></svg>
-               </span>
-            </a>
-         </div>
-
-         <div class="kc-gallery">
-            <figure class="kc-card kc-card-a">
-               <div class="kc-frame">
-                  <img src="./img/lobby-rego.jpg" loading="lazy"
-                       alt="Recepci&oacute;n de REGO Premium Apart Hotel iluminada con luz c&aacute;lida por la noche" />
-               </div>
-               <figcaption class="kc-label">01 &mdash; Hospitalidad</figcaption>
-            </figure>
-
-            <figure class="kc-card kc-card-b">
-               <div class="kc-frame">
-                  <img src="./img/hotel-rego-sunset.jpg" loading="lazy"
-                       alt="Fachada del edificio de REGO Premium Apart Hotel encendida al anochecer" />
-               </div>
-               <figcaption class="kc-label">02 &mdash; El edificio</figcaption>
-            </figure>
-         </div>
-      </div>
-
-      <!-- El efecto del rastro se fija acá, en data-effect. El selector que
-           traía la demo original (Flame / Venetian / Curtain / …) era una
-           herramienta para probar variantes, no algo que el visitante deba
-           ver: footer-trail.js lee este atributo al iniciar y sigue
-           funcionando sin esos enlaces. -->
-      <div class="trail-stage" data-effect="flame">
-         <div class="ft-columns" aria-hidden="true">
-            <div class="ft-column">
-               <span class="ft-word">Descanso</span>
-               <span class="ft-word">Silencio</span>
-               <span class="ft-word">Cocina</span>
-               <span class="ft-word">Terraza</span>
-               <span class="ft-word">Balc&oacute;n</span>
-               <span class="ft-word">Vista</span>
-               <span class="ft-word">Wi-Fi</span>
-               <span class="ft-word">Cl&oacute;set</span>
-               <span class="ft-word">Ducha</span>
-               <span class="ft-word">Aire</span>
-               <span class="ft-word">Escritorio</span>
-               <span class="ft-word">Sala</span>
-               <span class="ft-word">Comedor</span>
-               <span class="ft-word">Cama</span>
-               <span class="ft-word">Ropa blanca</span>
-            </div>
-            <div class="ft-column">
-               <span class="ft-word">Utcubamba</span>
-               <span class="ft-word">Amazonas</span>
-               <span class="ft-word">Bagua</span>
-               <span class="ft-word">Valle</span>
-               <span class="ft-word">R&iacute;o</span>
-               <span class="ft-word">Cataratas</span>
-               <span class="ft-word">Gocta</span>
-               <span class="ft-word">Cerros</span>
-               <span class="ft-word">Selva</span>
-               <span class="ft-word">Chachapoyas</span>
-               <span class="ft-word">Kuelap</span>
-               <span class="ft-word">Puente</span>
-               <span class="ft-word">Plaza</span>
-               <span class="ft-word">Mercado</span>
-               <span class="ft-word">Camino</span>
-            </div>
-            <div class="ft-column">
-               <span class="ft-word">Estad&iacute;a</span>
-               <span class="ft-word">Regreso</span>
-               <span class="ft-word">Reserva</span>
-               <span class="ft-word">Check-in</span>
-               <span class="ft-word">Anfitri&oacute;n</span>
-               <span class="ft-word">Cercan&iacute;a</span>
-               <span class="ft-word">Detalle</span>
-               <span class="ft-word">Oficio</span>
-               <span class="ft-word">Calidez</span>
-               <span class="ft-word">Confianza</span>
-               <span class="ft-word">Ritmo</span>
-               <span class="ft-word">Pausa</span>
-               <span class="ft-word">Rutina</span>
-               <span class="ft-word">Casa</span>
-               <span class="ft-word">Origen</span>
-            </div>
-         </div>
-
-         <h2 class="ft-word-mark" aria-label="REGO">REGO</h2>
-
-         <div class="ft-rotated" aria-hidden="true">
-            <span class="ft-rot">Hospitalidad</span>
-            <span class="ft-rot">Dise&ntilde;o</span>
-            <span class="ft-rot">Descanso</span>
-            <span class="ft-rot">Ra&iacute;ces</span>
-            <span class="ft-rot">Amazonas</span>
-         </div>
-
-         <div class="ft-speed"></div>
-         <div class="ft-hint">Mueve el cursor para ver el rastro</div>
-
-         <div class="ft-social" aria-label="Redes sociales">
+         <!-- Subidas desde la sección de cierre, que se eliminó. Aquí cierran
+              la página: son el único enlace saliente que queda una vez que
+              Reserva es la última ventana. -->
+         <div class="rsv-social" aria-label="Redes sociales">
             <a href="https://www.instagram.com/rego_premium_apart_hotel" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.6" fill="currentColor"/></svg>
             </a>
@@ -954,10 +823,9 @@
                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3v10.7a4.3 4.3 0 1 1-3.8-4.27"/><path d="M16 3a5 5 0 0 0 5 5"/></svg>
             </a>
          </div>
-         </div>
+      </div>
+
    </section>
-
-
 
 
    <button class="nav-fab" type="button" aria-expanded="false" aria-controls="curvedMenu" aria-label="Abrir men&uacute;">
@@ -1234,9 +1102,7 @@
    <script src="location.js"></script>
    <script src="reserve.js?v=7"></script>
    <script src="reserve-bar.js?v=4"></script>
-   <script src="menu.js?v=3"></script>
-   <script src="kinetic.js?v=6"></script>
-   <script src="footer-trail.js?v=4"></script>
+   <script src="menu.js?v=4"></script>
 </body>
 
 </html>
