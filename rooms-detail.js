@@ -147,7 +147,7 @@
       titleTail: "con vista doble",
       tagline: "El departamento más grande, con vista al valle y a la ciudad.",
       description:
-        "El más amplio de los tres. Dos camas y un sofá cama para hasta cinco personas, dos baños completos y las mejores vistas del edificio, hacia el valle y hacia la ciudad.",
+        "El más amplio de los tres. Dos camas y un sofá cama para hasta cinco personas, un baño completo y las mejores vistas del edificio, hacia el valle y hacia la ciudad.",
       price: 220,
       currency: "S/",
       specs: [
@@ -155,7 +155,7 @@
         { n: "5", label: "huéspedes" },
         { n: "2", label: "camas" },
         { n: "1", label: "sofá cama" },
-        { n: "2", label: "baños" },
+        { n: "1", label: "baño" },
         { n: "—", label: "vista doble" },
       ],
       hero: "./img/departamento-hero.jpg",
@@ -164,7 +164,7 @@
           title: "Dos habitaciones",
           subtitle: "Separadas de la sala, más el sofá cama para el quinto.",
           badge: "5 huéspedes",
-          meta: "Dos baños completos",
+          meta: "Baño completo",
           image: "./img/departamento-dormitorio-2.jpg",
         },
         {
@@ -181,7 +181,7 @@
       ],
       amenities: [
         "Cocina equipada", "Aire acondicionado", "Wi-Fi en toda la propiedad",
-        "Smart TV", "Sala amplia", "Dos baños completos", "Vista al valle",
+        "Smart TV", "Sala amplia", "Baño completo", "Vista al valle",
         "Clóset empotrado", "Ropa de cama y toallas", "Recepción 24 horas",
       ],
       // Fotografía real del departamento, ya no stock.

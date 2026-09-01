@@ -89,19 +89,18 @@ document.addEventListener("DOMContentLoaded", function () {
     // hand-off permanently switched off instead of coming back.
     var mm = gsap.matchMedia();
     mm.add(window.REGO_MQ.DESKTOP, function () {
-      var previous = document.querySelector(".location");
+      // La sección que hay que sostener es la que va JUSTO encima. Era
+      // .location; con FAQ intercalada, es .faq. Si se vuelve a insertar algo
+      // entre medias, este selector y el bloque @supports de faq.css son los
+      // dos sitios que hay que mover a la vez.
+      var previous = document.querySelector(".faq");
       if (!previous) return;
-      var dim = previous.querySelector(".location-dim");
+      var dim = previous.querySelector(".faq-dim");
 
-      // The section being slid away carries the two most expensive things on
-      // the page to move: the info card's backdrop-filter, which re-samples
-      // and re-blurs whatever sits behind it on every frame it travels, and
-      // the live Google Maps iframe under a five-function filter chain, which
-      // re-runs that chain just as often. Handing the whole section to the
-      // compositor first means it is rasterised once and then only
-      // translated. Nothing the card blurs lives outside .location — the
-      // section paints its own opaque background — so making it a backdrop
-      // root here does not change what the glass samples.
+      // La sección que se desliza lleva seis paneles con foto, y al menos uno
+      // de ellos a color y a escala completa. Entregarla al compositor antes
+      // de moverla significa que se rasteriza una vez y después sólo se
+      // traslada, en lugar de repintar seis imágenes en cada cuadro.
       //
       // Promotion is scoped to the hand-off rather than left on: a layer this
       // size is real texture memory, and it is only worth holding while the

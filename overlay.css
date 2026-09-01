@@ -265,7 +265,9 @@
   transform: translateY(0);
 }
 
-footer { z-index: 5; }
+/* Acotado a la intro: el pie de página real no debe entrar en esta escalera.
+   Ver la nota gemela en style.css. */
+.hero-intro footer { z-index: 5; }
 
 /* ── Responsive ──────────────────────────────────────────────────────── */
 @media (max-width: 767px) {

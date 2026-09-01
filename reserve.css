@@ -16,7 +16,10 @@
 
 .reserve {
   position: relative;
-  z-index: 9;
+  /* Sube a 10 al entrar FAQ (9) entre esta sección y Ubicación (8). Tiene que
+     seguir siendo la más alta de la escalera: es la que se monta encima
+     mientras la de arriba se queda quieta. */
+  z-index: 10;
   width: 100%;
   /* One held screen. The tall booking widget that forced this open moved to
      its own page; what is left is a title, a summary bar and a caption. */
@@ -220,69 +223,7 @@
   .reserve.is-in .reserve-anim { animation: none; }
 }
 
-/* ══ Redes sociales ══════════════════════════════════════════════════════
-   Suben desde la sección de cierre, que se eliminó. Su tratamiento venía de
-   footer-trail.css y se porta aquí porque esa hoja ya no se carga.
-
-   En flujo bajo el botón, no fijas a una esquina: allí eran chrome flotante
-   sobre una escena a pantalla completa, y aquí forman parte de la columna
-   —cierran la sección igual que cerraban la página. Eso además evita el
-   solape con el botón de menú que hubo que corregir en su día. */
-.rsv-social {
-  display: flex;
-  justify-content: center;
-  gap: 0.75rem;
-  margin-top: clamp(2rem, 5vh, 3.25rem);
-}
-
-/* Discos con más presencia que el resto del cromo: son el único enlace
-   saliente que queda ahora que Reserva es la última ventana. */
-.rsv-social a {
-  display: grid;
-  place-items: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  color: #f4f8fb;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.38);
-  -webkit-backdrop-filter: blur(14px) saturate(150%);
-  backdrop-filter: blur(14px) saturate(150%);
-  box-shadow: 0 6px 20px -8px rgba(0, 0, 0, 0.6);
-  text-decoration: none;
-  transition: background-color 0.25s ease, border-color 0.25s ease,
-    color 0.25s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.rsv-social a:hover,
-.rsv-social a:focus-visible { transform: translateY(-3px); }
-
-/* El color de cada marca sólo aparece al interactuar: en reposo los tres
-   discos son iguales y no compiten con el botón de reserva. */
-.rsv-social a[aria-label="Instagram"]:hover,
-.rsv-social a[aria-label="Instagram"]:focus-visible {
-  background: linear-gradient(45deg, #f09433, #dc2743 45%, #bc1888);
-  border-color: transparent;
-}
-.rsv-social a[aria-label="Facebook"]:hover,
-.rsv-social a[aria-label="Facebook"]:focus-visible { background: #1877f2; border-color: transparent; }
-.rsv-social a[aria-label="TikTok"]:hover,
-.rsv-social a[aria-label="TikTok"]:focus-visible { background: #010101; border-color: #25f4ee; }
-
-.rsv-social a:focus-visible { outline: 2px solid #f4f8fb; outline-offset: 3px; }
-
-.rsv-social svg {
-  width: 22px;
-  height: 22px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.9;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.rsv-social a[aria-label="Facebook"] svg { fill: currentColor; stroke: none; }
-
-@media (prefers-reduced-motion: reduce) {
-  .rsv-social a { transition: none; }
-  .rsv-social a:hover, .rsv-social a:focus-visible { transform: none; }
-}
+/* Los estilos de .rsv-social se fueron con el marcado: las redes viven ahora
+   en el pie, en footer.css. Aquí tenían un tratamiento deliberadamente
+   pesado —eran el único enlace saliente cuando Reserva cerraba la página— que
+   en el footer ya no corresponde. */
