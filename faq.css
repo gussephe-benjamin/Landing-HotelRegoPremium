@@ -1,0 +1,858 @@
+/* FAQ — expediente de preguntas.
+
+   Va entre Ubicación y Reserva, y hereda el negro de Ubicación a propósito:
+   Reserva es un video a pantalla completa y no admite un vecino con fondo
+   propio sin que aparezca una costura entre los dos. Compartiendo #0d0e0e con
+   la sección de arriba, el corte lo marca un filete y la tipografía, no un
+   cambio de color.
+
+   Dos modos de la MISMA marca, no dos componentes:
+
+     · Puntero fino y ≥900px — riel horizontal. Seis paneles altos; el activo
+       ocupa 8fr y los otros 1fr cada uno, y la transición corre sobre
+       `grid-template-columns` del contenedor. Se anima la plantilla y no el
+       ancho de cada panel porque así hay UN solo valor interpolándose en vez
+       de seis, y porque los `fr` sí interpolan entre sí (un `5rem → 1fr` no).
+
+     · Todo lo demás — acordeón vertical. El cuerpo colapsa con
+       `grid-template-rows: 0fr → 1fr`, que anima la altura sin que nadie tenga
+       que medirla: la foto de dentro puede cargar tarde y cambiar de alto sin
+       dejar el panel cortado, que es justo donde falla un max-height medido.
+
+   La foto es la misma en los dos modos y se descarga una sola vez. */
+
+:root {
+  --faq-bg: #0d0e0e;
+  --faq-ink: #efeae3;
+  --faq-line: rgba(239, 234, 227, 0.12);
+  --faq-line-soft: rgba(239, 234, 227, 0.07);
+  --faq-accent: #c79a5b;
+  /* Una sola curva y una sola duración para todo lo que se abre en la
+     sección: riel, cuerpo, foto y filete dorado se mueven juntos o el gesto se
+     deshilacha. Es una `out` muy larga —salida rápida, llegada lenta— que es
+     lo que evita que un panel ancho parezca que salta a su sitio. */
+  --faq-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --faq-dur: 0.72s;
+  --faq-dur-fast: 0.34s;
+  /* Ancho congelado de la columna de texto en modo riel. Cubre el panel
+     abierto más ancho que puede darse: riel topado a 1280px, 8fr de 13. */
+  --faq-open-w: min(780px, 64vw);
+}
+
+.faq {
+  position: relative;
+  /* Por encima de .location (8) y por debajo de .reserve (10). El orden
+     importa: Reserva sube por encima de esta sección durante el traspaso del
+     final, y ésta sube por encima de Ubicación. */
+  z-index: 9;
+  background: var(--faq-bg);
+  color: var(--faq-ink);
+  font-family: var(--ov-font-display);
+  padding: clamp(4rem, 9vh, 6.5rem) clamp(1.25rem, 5vw, 4rem) clamp(4.5rem, 11vh, 7.5rem);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Ubicación y esta sección comparten fondo, así que sin esto se leen como un
+   solo bloque interminable. Un filete que nace y muere en transparente —no una
+   línea de borde a borde— separa sin cortar. */
+.faq::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(199, 154, 91, 0.28) 22%,
+    rgba(239, 234, 227, 0.16) 50%,
+    rgba(199, 154, 91, 0.28) 78%,
+    transparent 100%
+  );
+}
+
+/* Mismo recurso que .location-aura: sobre un negro plano no hay nada que
+   refractar, así que los paneles necesitan un campo del que despegarse.
+   Enmascarado arriba y abajo para que no corte contra las secciones vecinas,
+   que son de este mismo color. */
+.faq-aura {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(52vw 40vw at 16% 8%, rgba(199, 154, 91, 0.1), transparent 62%),
+    radial-gradient(46vw 46vw at 88% 76%, rgba(150, 176, 190, 0.11), transparent 66%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 26%, #000 74%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 26%, #000 74%, transparent 100%);
+}
+
+/* Velo del traspaso hacia Reserva. Una capa vacía de color plano es lo más
+   barato que existe de desvanecer: sin hijos, sin filtros, nada que
+   recomponer. Ver el bloque @supports del final. */
+.faq-dim {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  opacity: 0;
+  background: var(--faq-bg);
+}
+
+.faq-head,
+.faq-rail-wrap,
+.faq-foot {
+  position: relative;
+  z-index: 1;
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ══ Encabezado ══════════════════════════════════════════════════════ */
+.faq-head {
+  display: grid;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  margin-bottom: clamp(2.25rem, 5vh, 3.25rem);
+}
+
+@media (min-width: 900px) {
+  .faq-head {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    align-items: end;
+  }
+}
+
+/* Tipografía en .sec-eyebrow (style.css). */
+.faq-eyebrow {
+  margin: 0 0 0.9rem;
+}
+
+/* Escala y énfasis en .sec-title (style.css). */
+.faq-title {
+  line-height: 1.02;
+}
+.faq-title em {
+  font-family: var(--vc-serif, "Zodiak", Georgia, serif);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.faq-lead {
+  margin: 0 0 1.5rem;
+  max-width: 46ch;
+  font-size: clamp(0.9rem, 1.05vw, 1rem);
+  line-height: 1.6;
+  color: rgba(239, 234, 227, 0.6);
+}
+
+.faq-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.faq-arrow {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--faq-line);
+  background: transparent;
+  color: var(--faq-ink);
+  cursor: pointer;
+  transition:
+    background var(--faq-dur-fast) ease,
+    border-color var(--faq-dur-fast) ease,
+    color var(--faq-dur-fast) ease,
+    transform var(--faq-dur-fast) var(--faq-ease);
+}
+.faq-arrow svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.faq-arrow:hover {
+  background: rgba(239, 234, 227, 0.08);
+  border-color: rgba(239, 234, 227, 0.28);
+}
+.faq-arrow:active {
+  transform: scale(0.94);
+}
+.faq-arrow.is-primary {
+  background: var(--faq-ink);
+  border-color: var(--faq-ink);
+  color: #0d0e0e;
+}
+.faq-arrow.is-primary:hover {
+  background: var(--faq-accent);
+  border-color: var(--faq-accent);
+  color: #14100a;
+}
+.faq-arrow:focus-visible {
+  outline: 2px solid var(--faq-accent);
+  outline-offset: 3px;
+}
+
+/* Contador. Mono y cifras tabulares por el mismo motivo que el índice de
+   sección: 01 y 06 tienen que ocupar exactamente lo mismo o el filete baila al
+   cambiar de panel. */
+.faq-count {
+  margin: 0 0 0 0.35rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  font-family: var(--sec-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  font-variant-numeric: tabular-nums;
+  color: rgba(239, 234, 227, 0.45);
+}
+.faq-count b {
+  font-weight: 500;
+  color: var(--faq-accent);
+}
+.faq-count i {
+  width: 1.1rem;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.4;
+}
+
+/* ── Filete de posición ──────────────────────────────────────────────
+   El segmento dorado se desplaza y se estira hasta cubrir exactamente el panel
+   abierto. Es la única pista de "dónde estoy" que funciona sin leer nada, y se
+   mueve con transform —no con left/width— para que sea trabajo de compositor y
+   llegue en el mismo cuadro que la plantilla del riel. */
+.faq-track {
+  position: relative;
+  height: 1px;
+  margin-bottom: 1.1rem;
+  background: var(--faq-line-soft);
+  overflow: hidden;
+  display: none;
+}
+
+.faq-track-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  /* Ancho base fijo: el tamaño real lo pone un scaleX desde JS. Escalar una
+     caja conocida es transform puro; animar `width` sería layout cada cuadro. */
+  width: 100px;
+  transform-origin: left center;
+  transform: translateX(0) scaleX(0);
+  background: linear-gradient(to right, rgba(199, 154, 91, 0.35), var(--faq-accent));
+  transition: transform var(--faq-dur) var(--faq-ease);
+}
+
+/* Durante un resize la plantilla se recoloca de golpe; el filete tiene que
+   seguirla sin animar o queda persiguiéndola medio segundo. */
+.faq-rail-wrap.no-anim .faq-track-fill,
+.faq-rail-wrap.no-anim .faq-rail {
+  transition: none !important;
+}
+
+/* ══ Paneles — base común a los dos modos ════════════════════════════ */
+.faq-rail {
+  display: grid;
+  gap: 0.6rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.faq-panel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  border: 1px solid var(--faq-line);
+  background: rgba(239, 234, 227, 0.035);
+  isolation: isolate;
+  transition:
+    border-color var(--faq-dur) var(--faq-ease),
+    background var(--faq-dur) var(--faq-ease);
+}
+
+.faq-panel.is-active {
+  border-color: rgba(199, 154, 91, 0.34);
+  background: rgba(239, 234, 227, 0.06);
+}
+
+/* ── Foto ────────────────────────────────────────────────────────────
+   En gris y apagada mientras el panel está cerrado; a color y con la escala en
+   reposo cuando se abre. Es el gesto de la referencia y hace casi todo el
+   trabajo: el ojo va al único panel que tiene color. */
+.faq-panel__media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--faq-dur) var(--faq-ease);
+}
+
+.faq-panel__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.12);
+  filter: grayscale(1) brightness(0.72);
+  transition:
+    transform 1.1s var(--faq-ease),
+    filter var(--faq-dur) var(--faq-ease);
+}
+
+/* Sin esto el texto se apoya directamente sobre la foto. */
+.faq-panel__media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(13, 14, 14, 0.34) 0%,
+    rgba(13, 14, 14, 0.56) 40%,
+    rgba(13, 14, 14, 0.88) 80%,
+    rgba(13, 14, 14, 0.96) 100%
+  );
+}
+
+.faq-panel.is-active .faq-panel__media img {
+  transform: scale(1);
+  filter: grayscale(0) brightness(0.92);
+}
+
+/* ── Botón ───────────────────────────────────────────────────────────
+   El botón va envuelto en un <h3> para que un lector de pantalla pueda saltar
+   de pregunta a pregunta con su navegador de encabezados, que es como se
+   recorre de verdad una lista de FAQ. El h3 no aporta nada visual: se le quita
+   la escala y el margen propios y deja mandar al botón. */
+.faq-panel__h {
+  margin: 0;
+  font: inherit;
+  font-weight: inherit;
+}
+
+.faq-panel__btn {
+  position: relative;
+  z-index: 2;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.faq-panel__btn:focus-visible {
+  outline: 2px solid var(--faq-accent);
+  outline-offset: -5px;
+  border-radius: 16px;
+}
+
+.faq-panel__num {
+  font-family: var(--sec-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  font-variant-numeric: tabular-nums;
+  color: var(--faq-accent);
+}
+
+.faq-panel__q {
+  font-size: clamp(1.02rem, 2.6vw, 1.16rem);
+  font-weight: 500;
+  line-height: 1.28;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+.faq-panel__a {
+  margin: 0;
+  font-size: clamp(0.88rem, 1.9vw, 0.95rem);
+  line-height: 1.66;
+  color: rgba(239, 234, 227, 0.74);
+}
+
+/* Un dato duro por pregunta —el horario, el número, qué incluye—. Es lo que la
+   mayoría viene a buscar, y en una etiqueta se encuentra sin leer el párrafo
+   entero. */
+.faq-panel__note {
+  margin: 1rem 0 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+  padding: 0.5em 0.85em;
+  border-radius: 6px;
+  border: 1px solid rgba(199, 154, 91, 0.26);
+  background: rgba(199, 154, 91, 0.09);
+  font-family: var(--sec-mono);
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  color: rgba(233, 205, 165, 0.94);
+}
+.faq-panel__note svg {
+  flex: none;
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: var(--faq-accent);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ══ Modo acordeón — base, y lo que reciben teléfono y tablet ═════════ */
+
+/* El lomo vertical sólo existe en el riel. */
+.faq-panel__spine {
+  display: none;
+}
+
+.faq-panel__btn {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 0.9rem;
+  width: 100%;
+  padding: 1.15rem clamp(1rem, 4vw, 1.4rem);
+}
+
+.faq-panel__num {
+  padding-top: 0.45em;
+}
+
+/* Signo +/−: dos reglas cruzadas, y la vertical se acuesta al abrir. Se rota
+   en vez de cambiar de carácter para que el gesto sea continuo. */
+.faq-panel__sign {
+  position: relative;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 0.15em;
+}
+.faq-panel__sign i {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 13px;
+  height: 1.5px;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: 0.72;
+  transform: translate(-50%, -50%);
+  transition:
+    transform var(--faq-dur) var(--faq-ease),
+    opacity var(--faq-dur-fast) ease;
+}
+.faq-panel__sign i:last-child {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+.faq-panel.is-active .faq-panel__sign {
+  color: var(--faq-accent);
+}
+.faq-panel.is-active .faq-panel__sign i {
+  opacity: 1;
+}
+.faq-panel.is-active .faq-panel__sign i:last-child {
+  transform: translate(-50%, -50%) rotate(180deg);
+}
+
+/* El colapso. `0fr → 1fr` anima la altura sin que nadie la mida, así que una
+   foto que carga tarde no deja el panel cortado. Requiere overflow oculto y
+   min-height:0 en el hijo, o la fila de 0fr no llega a cero. */
+.faq-panel__body {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--faq-dur) var(--faq-ease);
+}
+.faq-panel__inner {
+  min-height: 0;
+  overflow: hidden;
+}
+.faq-panel.is-active > .faq-panel__body {
+  grid-template-rows: 1fr;
+}
+
+.faq-panel__pad {
+  padding: 0 clamp(1rem, 4vw, 1.4rem) 1.35rem calc(clamp(1rem, 4vw, 1.4rem) + 2.55rem);
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity var(--faq-dur-fast) ease,
+    transform var(--faq-dur) var(--faq-ease);
+}
+.faq-panel.is-active .faq-panel__pad {
+  opacity: 1;
+  transform: none;
+  /* Entra cuando la caja ya tiene sitio, no mientras se abre. */
+  transition-delay: 0.15s;
+}
+
+/* En acordeón la foto no llena el panel: sería un fondo de pantalla detrás de
+   un párrafo. Se queda como una veladura, que es lo que el degradado ya
+   oscurece por abajo. */
+@media not all and (any-hover: hover) and (any-pointer: fine) and (min-width: 900px) {
+  .faq-panel.is-active .faq-panel__media {
+    opacity: 0.55;
+  }
+  .faq-panel.is-active .faq-panel__media img {
+    filter: grayscale(0.3) brightness(0.6);
+  }
+}
+
+/* ══ Modo riel — puntero fino y sitio de sobra ════════════════════════ */
+@media (any-hover: hover) and (any-pointer: fine) and (min-width: 900px) {
+  .faq-track {
+    display: block;
+  }
+
+  .faq-rail {
+    grid-auto-flow: column;
+    /* Valor de arranque; faq.js reescribe la plantilla en cada cambio. Seis
+       pistas siempre, y todas en `fr`: sólo así interpolan. */
+    grid-template-columns: 8fr 1fr 1fr 1fr 1fr 1fr;
+    gap: 0.6rem;
+    height: clamp(400px, 58vh, 560px);
+    transition: grid-template-columns var(--faq-dur) var(--faq-ease);
+  }
+
+  /* El contenido se apila contra el borde inferior y se centra en horizontal,
+     porque las dos cajas de texto llevan ancho fijo (ver más abajo). */
+  .faq-panel {
+    min-width: 0;
+    border-radius: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+  }
+
+  /* La foto va en una caja de ancho FIJO centrada en el panel, no al 100%. Con
+     `width:100%` la imagen se re-encuadra en cada cuadro de la transición
+     —object-fit recalcula su recorte contra una caja que cambia— y el
+     resultado es un barrido lateral que se ve como si la foto resbalara. Con
+     la caja fija, el panel simplemente descubre o tapa una imagen que no se ha
+     movido. */
+  .faq-panel__media {
+    left: 50%;
+    right: auto;
+    width: var(--faq-open-w);
+    transform: translateX(-50%);
+    /* Los cerrados no desaparecen del todo: una brasa de foto detrás del lomo
+       es lo que evita que la fila parezca seis cajas vacías. */
+    opacity: 0.5;
+  }
+
+  .faq-panel__media::after {
+    background: linear-gradient(
+      to top,
+      rgba(13, 14, 14, 0.95) 0%,
+      rgba(13, 14, 14, 0.72) 34%,
+      rgba(13, 14, 14, 0.34) 62%,
+      rgba(13, 14, 14, 0.52) 100%
+    );
+  }
+
+  .faq-panel.is-active .faq-panel__media {
+    opacity: 1;
+  }
+
+  /* Numeral fijo arriba a la izquierda, fuera del apilado del pie. */
+  .faq-panel__num {
+    position: absolute;
+    z-index: 3;
+    top: 1.5rem;
+    left: 1.4rem;
+    padding-top: 0;
+    opacity: 0.9;
+  }
+
+  /* Lomo del panel cerrado. `vertical-rl` sin rotación: el texto baja y las
+     letras giran con él, que es como se leen los lomos de los libros. Se cruza
+     con la pregunta horizontal —una entra mientras la otra sale— en lugar de
+     cambiar de modo de escritura, que no se puede animar. */
+  .faq-panel__spine {
+    display: block;
+    position: absolute;
+    z-index: 3;
+    top: 3.6rem;
+    left: 50%;
+    transform: translateX(-50%);
+    max-height: calc(100% - 5.5rem);
+    writing-mode: vertical-rl;
+    white-space: nowrap;
+    overflow: hidden;
+    font-size: 12.5px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(239, 234, 227, 0.8);
+    transition:
+      opacity var(--faq-dur-fast) ease,
+      color var(--faq-dur-fast) ease;
+  }
+
+  .faq-panel.is-active .faq-panel__spine {
+    opacity: 0;
+    transition-duration: 0.16s;
+  }
+
+  /* Sin +/− en el riel: el ancho del panel ya dice cuál está abierto. */
+  .faq-panel__sign {
+    display: none;
+  }
+
+  /* Pregunta y cuerpo comparten el mismo ancho congelado. Si se dejaran al
+     100% del panel, el párrafo se re-partiría en líneas distintas en cada
+     cuadro mientras el panel se estrecha, y reflujar texto en movimiento es a
+     la vez lo más caro y lo más feo de la transición. Así el texto no se
+     mueve: el panel lo descubre o lo recorta.
+
+     El ancho lo lleva el <h3>, que es el hijo flex real; el botón lo llena. */
+  .faq-panel__h,
+  .faq-panel__body {
+    flex: none;
+    width: var(--faq-open-w);
+  }
+  .faq-panel__btn {
+    width: 100%;
+  }
+
+  /* `static` a propósito: el numeral y el lomo son hijos del botón —tienen que
+     serlo para que el acordeón los coloque en su rejilla de tres columnas— y
+     aquí se posicionan contra el PANEL. Sacando al botón del posicionamiento,
+     su ancestro posicionado pasa a ser .faq-panel, que es la caja correcta. La
+     zona de toque de abajo hereda la misma referencia. */
+  .faq-panel__btn {
+    position: static;
+    display: block;
+    padding: 0 1.6rem 0.85rem;
+  }
+
+  /* Zona de toque estirada a todo el panel sin sacar el botón del flujo. Va
+     por debajo del cuerpo para que la respuesta siga siendo seleccionable. */
+  .faq-panel__btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+
+  .faq-panel__q {
+    display: block;
+    position: relative;
+    z-index: 2;
+    font-size: clamp(1.24rem, 1.85vw, 1.68rem);
+    line-height: 1.14;
+    opacity: 0;
+    transform: translateY(14px);
+    transition:
+      opacity var(--faq-dur-fast) ease,
+      transform var(--faq-dur) var(--faq-ease);
+  }
+
+  .faq-panel.is-active .faq-panel__q {
+    opacity: 1;
+    transform: none;
+    transition-delay: 0.16s;
+  }
+
+  /* En el riel el cuerpo no colapsa: el ancho del panel ya lo revela. */
+  .faq-panel__body {
+    display: block;
+    grid-template-rows: none;
+    transition: none;
+  }
+  .faq-panel__inner {
+    overflow: visible;
+  }
+  .faq-panel__pad {
+    padding: 0 1.6rem 1.6rem;
+    transform: translateY(16px);
+  }
+  .faq-panel.is-active .faq-panel__pad {
+    transition-delay: 0.22s;
+  }
+
+  /* Un panel cerrado bajo el cursor se aclara sin abrirse: acusa recibo del
+     puntero antes de que el riel se reorganice. */
+  .faq-panel:not(.is-active):hover .faq-panel__media {
+    opacity: 0.74;
+  }
+  .faq-panel:not(.is-active):hover .faq-panel__spine {
+    color: var(--faq-ink);
+  }
+}
+
+/* ══ Cierre ══════════════════════════════════════════════════════════ */
+.faq-foot {
+  margin-top: clamp(1.75rem, 4vh, 2.5rem);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.9rem 1.35rem;
+  padding-top: clamp(1.25rem, 3vh, 1.75rem);
+  border-top: 1px solid var(--faq-line-soft);
+}
+
+.faq-foot p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: rgba(239, 234, 227, 0.52);
+}
+
+.faq-foot-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  padding: 0.72em 1.15em;
+  border-radius: 999px;
+  border: 1px solid rgba(199, 154, 91, 0.4);
+  background: rgba(199, 154, 91, 0.1);
+  color: rgba(240, 219, 190, 0.96);
+  font-size: 0.86rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    background var(--faq-dur-fast) ease,
+    border-color var(--faq-dur-fast) ease,
+    color var(--faq-dur-fast) ease;
+}
+.faq-foot-cta svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform var(--faq-dur-fast) var(--faq-ease);
+}
+.faq-foot-cta:hover {
+  background: var(--faq-accent);
+  border-color: var(--faq-accent);
+  color: #14100a;
+}
+.faq-foot-cta:hover svg {
+  transform: translateX(3px);
+}
+
+/* ══ Entrada ═════════════════════════════════════════════════════════
+   El estado inicial vive aquí y no en JS para que no haya un cuadro con los
+   paneles ya puestos antes de que el script corra. `.is-ready` lo pone faq.js
+   en cuanto toma el control; sin JS —o sin GSAP— nada de esto llega a
+   aplicarse y la sección se ve entera, que es el fallo correcto. */
+.faq.is-ready .faq-panel,
+.faq.is-ready .faq-anim {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .faq.is-ready .faq-panel,
+  .faq.is-ready .faq-anim {
+    opacity: 1;
+  }
+  .faq-rail,
+  .faq-panel,
+  .faq-panel__body,
+  .faq-panel__media,
+  .faq-panel__media img,
+  .faq-panel__pad,
+  .faq-panel__q,
+  .faq-panel__spine,
+  .faq-track-fill,
+  .faq-panel__sign i {
+    transition: none !important;
+  }
+}
+
+/* ══ Traspaso hacia Reserva ═══════════════════════════════════════════
+   Vivía en location.css, cuando Ubicación era la sección que Reserva tapaba.
+   Con FAQ en medio, la que hay que sostener es ésta; el mecanismo es el mismo
+   y la explicación de por qué es CSS y no un scrub de GSAP sigue valiendo
+   entera:
+
+   Una animación con scrub corre en el hilo principal, un cuadro por detrás del
+   scroll que el compositor ya aplicó. Una sección cuyo único trabajo es
+   parecer inmóvil es el peor sitio posible para ese desfase, porque el cuadro
+   atrasado es el único movimiento en pantalla. Una timeline `view()` la evalúa
+   el compositor junto al scroll, así que la traslación llega en el mismo
+   cuadro que la causó y la sección puede seguir siendo una capa cacheada
+   mientras viaja.
+
+   .reserve mide exactamente 100svh, así que su rango `entry` —del borde
+   superior tocando el fondo de la ventana hasta la sección entera a la vista—
+   es la misma ventana que usaba el scrub ("top bottom" a "top top").
+
+   reserve.js conserva la versión GSAP para motores sin esto, con la misma
+   condición, de modo que sólo una de las dos puede estar gobernando. */
+@keyframes faq-handoff {
+  /* Los dos extremos escritos. Un `from` implícito resuelve al valor propio
+     del elemento —`none`— y `transform: none` no crea contexto de apilamiento,
+     con lo que la sección dejaría de ser raíz de composición en el primer
+     cuadro. translateY(0) computa a matriz y lo sostiene todo el rango. */
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100svh);
+  }
+}
+@keyframes faq-handoff-dim {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.75;
+  }
+}
+
+/* La pone reserve.js sólo mientras dura el traspaso, en la rama de respaldo.
+   No se deja fija porque una capa de este tamaño es memoria de textura real. */
+.faq.is-handoff {
+  will-change: transform;
+}
+
+@supports (animation-timeline: view()) and (timeline-scope: --a) {
+  @media (any-hover: hover) and (any-pointer: fine) and (min-width: 640px) and (prefers-reduced-motion: no-preference) {
+    /* .faq y .reserve son hermanas, así que el nombre tiene que subir a su
+       ancestro común antes de que una pueda leer una timeline definida en la
+       otra. Ese `timeline-scope: --faq-handoff` sobre body NO está aquí: vive
+       en style.css junto al del footer, porque una segunda declaración sobre
+       el mismo elemento no se suma sino que reemplaza a la anterior, y la
+       última hoja en cargar apagaría el traspaso de la otra sin avisar. */
+    .reserve {
+      view-timeline: --faq-handoff block;
+    }
+
+    .faq {
+      animation: faq-handoff 1ms linear both;
+      animation-timeline: --faq-handoff;
+      animation-range: entry;
+    }
+
+    /* Misma ventana que usaba el scrub: "top 85%" y "top 20%" son el 15% y el
+       80% de un rango que abarca exactamente una pantalla. */
+    .faq-dim {
+      animation: faq-handoff-dim 1ms linear both;
+      animation-timeline: --faq-handoff;
+      animation-range: entry 15% entry 80%;
+    }
+  }
+}

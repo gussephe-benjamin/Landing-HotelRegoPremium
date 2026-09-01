@@ -1,0 +1,1016 @@
+/* Footer — el cierre de la página.
+
+   ── La continuidad de color ──────────────────────────────────────────
+   El scrim de .reserve termina en `rgba(18, 22, 26, 1)`, exactamente. Este
+   footer arranca en ese mismo valor y desciende hasta casi negro, así que no
+   hay costura entre el video y esto: el fondo del footer ES el último píxel
+   del degradado de la sección de arriba, continuado. Sobre esa unión queda un
+   resplandor muy tenue —el "after-glow"— que insinúa que la luz del video
+   todavía se derrama un poco aquí abajo. Si algún día cambia el color final
+   del scrim de reserve.css, --ft-top tiene que cambiar con él.
+
+   ── Sin efecto de página ─────────────────────────────────────────────
+   A diferencia del resto de la página, este bloque NO se monta encima de su
+   vecino ni lo sostiene quieto: es continuación simple de documento. Termina
+   la pantalla del video y el pie empieza justo ahí. La unión la resuelve el
+   color, no el movimiento. */
+
+:root {
+  /* El último color del scrim de .reserve. Ver la nota de arriba. */
+  --ft-top: #12161a;
+  --ft-deep: #080a0c;
+  --ft-ink: #f4f8fb;
+  --ft-ink-70: rgba(244, 248, 251, 0.7);
+  --ft-ink-46: rgba(244, 248, 251, 0.46);
+  --ft-line: rgba(244, 248, 251, 0.1);
+  --ft-accent: #c79a5b;
+  --ft-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ft {
+  /* Sin z-index propio: no hay traspaso que sostener, así que no necesita
+     apilarse por encima de .reserve. `relative` es sólo para que .ft-glow y
+     .ft-grain, que son `position: absolute`, se ubiquen contra este bloque. */
+  position: relative;
+  /* El degradado hace todo el trabajo de unión. La primera parada se sostiene
+     en --ft-top un tramo antes de empezar a oscurecer: el vecino de arriba
+     termina exactamente en ese color, así que si la rampa arrancara a bajar
+     desde el píxel cero habría un gradiente de un lado y color plano del otro
+     —justo la clase de diferencia que el ojo lee como borde—. Con el tramo
+     plano, la vecindad de la unión es idéntica a ambos lados y la caída
+     empieza cuando ya nadie la puede comparar con nada.
+     Se detiene en --ft-deep a media altura para que la mitad inferior sea un
+     negro estable y el texto legal no flote sobre una rampa. */
+  background: linear-gradient(
+    to bottom,
+    var(--ft-top) 0%,
+    var(--ft-top) 9%,
+    #0d1013 46%,
+    var(--ft-deep) 80%,
+    var(--ft-deep) 100%
+  );
+  color: var(--ft-ink);
+  font-family: var(--ov-font-display);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Resplandor de continuidad. Un óvalo de luz muy abierto pegado al borde
+   superior: lo que queda del video de Reserva al pasar a esta sección. Sin él
+   la unión es correcta pero muerta; con él las dos secciones se leen como un
+   mismo espacio con una fuente de luz arriba. */
+.ft-glow {
+  position: absolute;
+  /* Sin desplazamiento vertical. Antes iba a translateY(-58%) sobre un bloque
+     con overflow oculto, así que el óvalo se recortaba EN SU PUNTO MÁS
+     BRILLANTE contra el borde superior: eso no era un resplandor, era una
+     banda cálida de canto duro justo en la unión, y es lo que hacía que el pie
+     se leyera como otra sección pegada. Anclado en `top: 0` y sin translate,
+     el centro del óvalo —donde el radial es más intenso— cae a media altura
+     del propio elemento, ya bien dentro del pie. */
+  top: 0;
+  left: 50%;
+  width: min(1500px, 130vw);
+  height: min(620px, 58vw);
+  transform: translateX(-50%);
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(closest-side, rgba(199, 154, 91, 0.15), transparent 72%),
+    radial-gradient(closest-side, rgba(150, 176, 198, 0.1), transparent 62%);
+  /* El mismo recurso que .location-aura y .faq-aura, y por el mismo motivo:
+     un campo de luz recortado por la caja arranca y muere en seco sobre sus
+     bordes, y contra una sección vecina de idéntico color ese corte se lee
+     como una costura. Con la máscara la luz nace de la nada a partir del
+     borde, así que en la unión no hay NADA que dibujar una línea: el pie
+     empieza exactamente con el mismo negro con el que termina el video, y la
+     calidez sólo aparece más abajo. */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.4) 24%,
+    #000 52%,
+    rgba(0, 0, 0, 0.55) 80%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.4) 24%,
+    #000 52%,
+    rgba(0, 0, 0, 0.55) 80%,
+    transparent 100%
+  );
+}
+
+/* Grano. Sobre un negro tan plano y tan extenso, una superficie perfectamente
+   lisa se lee como plástico; el ruido le devuelve materia. Se rasteriza una
+   sola vez —nada aquí lo anima— y va a opacidad muy baja: tiene que notarse
+   sin poder señalarlo. */
+.ft-grain {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.05;
+  /* También enmascarado arriba. Es ruido claro sobre negro, así que sube un
+     punto la luminancia percibida; empezando de golpe en el borde, el pie
+     quedaba una pizca más claro que el video justo en la unión. Entra a
+     partir del primer 12%, ya lejos de la costura. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 100%);
+}
+
+.ft-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: clamp(3.5rem, 8vh, 6rem) clamp(1.25rem, 5vw, 4rem) clamp(1.75rem, 4vh, 2.5rem);
+}
+
+/* ══ Banda de llamada ════════════════════════════════════════════════ */
+.ft-cta {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  padding: clamp(1.75rem, 4vw, 2.75rem) clamp(1.5rem, 4vw, 3rem);
+  border-radius: 26px;
+  /* Mismo vidrio que la tarjeta de Ubicación y el panel de Reserva, para que
+     las tres se lean como la misma lámina: relleno graduado translúcido, filo
+     de un píxel y un brillo interior que hace de canto iluminado. */
+  background: linear-gradient(
+    150deg,
+    rgba(244, 248, 251, 0.075) 0%,
+    rgba(244, 248, 251, 0.028) 52%,
+    rgba(244, 248, 251, 0.055) 100%
+  );
+  border: 1px solid rgba(244, 248, 251, 0.13);
+  box-shadow:
+    0 34px 80px -34px rgba(0, 0, 0, 0.9),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  overflow: hidden;
+  /* Obligatorio para el `screen` del aura: sin aislar, el canvas se fundiría
+     contra TODO el pie que tiene detrás en lugar de contra el vidrio de esta
+     tarjeta, y la luz se derramaría fuera de sus bordes. */
+  isolation: isolate;
+}
+
+/* ── Aura WebGL ──────────────────────────────────────────────────────
+   `screen` y no un fondo opaco: la fórmula es 1-(1-a)(1-b), así que las zonas
+   oscuras del shader dejan el vidrio intacto y sólo las claras suman luz. El
+   resultado es que la tarjeta sigue siendo la misma lámina que la de
+   Ubicación y la de Reserva —con su filo, su brillo interior y su
+   translucidez— y encima le pasa luz por dentro. Un canvas opaco habría
+   sustituido el material por un rectángulo de vídeo.
+
+   Arranca invisible: footer.js sube la opacidad sólo si el contexto WebGL
+   llegó a crearse y el programa compiló. Sin GPU, con WebGL desactivado o con
+   movimiento reducido, la tarjeta queda tal cual estaba. */
+.ft-cta-aura {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: screen;
+  transition: opacity 1.4s var(--ft-ease);
+}
+.ft-cta.has-aura .ft-cta-aura {
+  opacity: 1;
+}
+
+/* Velo de legibilidad. El aura es más viva por el lado derecho y se apaga
+   hacia la izquierda, que es donde vive el texto.
+
+   La rampa NO baja a cero por la derecha, y esa es la parte medida: con el
+   velo abierto del todo, el píxel más brillante del aura levantaba el fondo
+   bajo el botón hasta rgb(153,139,118) y su rótulo blanco caía a 3.12:1 —por
+   debajo del 4.5 que pide AA—. Con un suelo de 0.34 el mismo peor caso queda
+   en 8.74:1 y el aura se sigue viendo claramente más viva de ese lado. */
+.ft-cta::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(9, 11, 13, 0.76) 0%,
+    rgba(9, 11, 13, 0.58) 36%,
+    rgba(9, 11, 13, 0.42) 68%,
+    rgba(9, 11, 13, 0.34) 100%
+  );
+}
+
+/* Brillo especular en la esquina alta izquierda, donde caería la luz del
+   resplandor de arriba. Es lo que impide que el vidrio se lea como un
+   rectángulo gris. Va por encima del aura: es el canto de la lámina, y una
+   lámina no deja de tener canto porque le pase luz por dentro. */
+.ft-cta::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(146deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 42%);
+}
+
+/* El contenido, por encima de todas las capas. */
+.ft-cta-text,
+.ft-cta-btn {
+  position: relative;
+  z-index: 3;
+}
+
+.ft-cta-kicker {
+  margin: 0 0 0.7rem;
+  font-family: var(--sec-mono);
+  font-size: 11px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  /* Más sólido que el --ft-ink-46 de los otros epígrafes del pie, y a
+     propósito: aquellos se leen sobre negro plano, y éste sobre un campo de
+     luz en movimiento. Al 46% caía a 3.94:1 contra el peor caso del aura; al
+     62% queda en 6.14:1 y sigue estando claramente en segundo plano respecto
+     al titular. */
+  color: rgba(244, 248, 251, 0.62);
+}
+
+.ft-cta-title {
+  margin: 0;
+  font-family: var(--sec-serif);
+  font-weight: 300;
+  font-size: clamp(1.7rem, 3.6vw, 2.85rem);
+  line-height: 1.06;
+  letter-spacing: -0.01em;
+}
+.ft-cta-title em {
+  font-style: italic;
+  color: rgba(240, 222, 197, 0.96);
+}
+
+/* ── Botón ───────────────────────────────────────────────────────────
+   Contorno, no relleno: en la referencia el botón es un filo de luz sobre el
+   negro, y eso es lo correcto aquí — un botón sólido en esta banda competiría
+   con el titular en vez de acompañarlo. */
+.ft-cta-btn {
+  position: relative;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 1.1rem;
+  padding: 1.05em 1.9em;
+  border-radius: 12px;
+  border: 1px solid rgba(244, 248, 251, 0.34);
+  /* Fondo propio, no transparente: el aura pasa por detrás y sin esta base el
+     rótulo se quedaba sin suelo cuando una veta de luz cruzaba justo por
+     debajo. Es lo bastante translúcido para que la luz se siga viendo cruzar
+     y el botón no deje de leerse como un contorno sobre vidrio. */
+  background-color: rgba(9, 11, 13, 0.3);
+  color: var(--ft-ink);
+  font-family: var(--sec-serif);
+  font-size: clamp(0.98rem, 1.3vw, 1.1rem);
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  overflow: hidden;
+  transition:
+    border-color 0.45s var(--ft-ease),
+    background-color 0.45s var(--ft-ease),
+    color 0.45s var(--ft-ease);
+}
+
+/* Brasa fija en el filo derecho: la referencia tiene ahí una luz prendida y
+   es lo que hace que el contorno no parezca un borde muerto. */
+.ft-cta-btn::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -22%;
+  width: 55%;
+  height: 260%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  background: radial-gradient(closest-side, rgba(199, 154, 91, 0.5), transparent 70%);
+  transition: opacity 0.45s var(--ft-ease);
+}
+
+/* Destello que barre el botón al pasar por encima. Es un translate puro sobre
+   una banda inclinada —no un background-position animado— para que lo resuelva
+   el compositor y no repinte el botón en cada cuadro. */
+.ft-cta-btn::after {
+  content: "";
+  position: absolute;
+  top: -30%;
+  bottom: -30%;
+  left: 0;
+  width: 40%;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(255, 240, 216, 0.28), transparent);
+  transform: translateX(-200%) skewX(-16deg);
+}
+
+.ft-cta-btn:hover,
+.ft-cta-btn:focus-visible {
+  border-color: rgba(199, 154, 91, 0.72);
+  /* Cálido pero todavía oscuro. Un dorado translúcido a secas levantaría el
+     suelo que protege al rótulo justo cuando el usuario está a punto de
+     pulsar; el calor lo aportan el filo, la brasa y el barrido, que no le
+     quitan contraste a nada. */
+  background-color: rgba(58, 42, 22, 0.46);
+}
+.ft-cta-btn:hover::after,
+.ft-cta-btn:focus-visible::after {
+  transform: translateX(350%) skewX(-16deg);
+  transition: transform 0.95s var(--ft-ease);
+}
+.ft-cta-btn:hover::before {
+  opacity: 0.55;
+}
+.ft-cta-btn:focus-visible {
+  outline: 2px solid var(--ft-accent);
+  outline-offset: 3px;
+}
+
+.ft-cta-btn svg {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.45s var(--ft-ease);
+}
+.ft-cta-btn:hover svg {
+  transform: translateX(4px);
+}
+
+/* ══ Cuerpo ══════════════════════════════════════════════════════════ */
+.ft-body {
+  display: grid;
+  gap: clamp(2.25rem, 5vw, 3rem);
+  margin-top: clamp(2.75rem, 7vh, 4.5rem);
+}
+
+@media (min-width: 1000px) {
+  .ft-body {
+    /* Pistas al tamaño de su contenido y el sobrante repartido con
+       `space-evenly`, en vez de cuatro fracciones fijas.
+
+       Con fracciones, cada columna se estiraba a un ancho arbitrario y su
+       contenido quedaba anclado al borde izquierdo de esa caja: la primera
+       pegada al margen izquierdo y la última al derecho, con aire muerto en
+       medio. `auto` + `space-evenly` invierte el reparto —cada bloque mide lo
+       que mide y el hueco sobrante se divide en CINCO partes iguales,
+       incluidos los dos extremos—, así que ninguna columna toca el borde y el
+       conjunto se lee centrado. El `gap` queda de suelo mínimo por si el
+       contenido crece y ya no sobra espacio que repartir. */
+    grid-template-columns: repeat(4, minmax(0, auto));
+    justify-content: space-evenly;
+    align-items: start;
+    gap: clamp(1.25rem, 2.4vw, 2.25rem);
+  }
+}
+@media (min-width: 640px) and (max-width: 999px) {
+  .ft-body {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .ft-brand {
+    grid-column: 1 / -1;
+  }
+}
+
+.ft-col-h {
+  margin: 0 0 1.35rem;
+  font-family: var(--sec-mono);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--ft-ink-46);
+}
+
+.ft-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.9rem;
+}
+
+/* ── Enlaces ─────────────────────────────────────────────────────────
+   El punto dorado y el filete crecen desde la izquierda al pasar por encima,
+   y el rótulo se desplaza justo lo que mide el punto. Es el mismo gesto que
+   usa el índice de secciones de la página, en pequeño. */
+.ft-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  color: var(--ft-ink-70);
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: color 0.4s var(--ft-ease);
+}
+
+.ft-link::before {
+  content: "";
+  flex: none;
+  width: 0;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--ft-accent);
+  opacity: 0;
+  transition:
+    width 0.4s var(--ft-ease),
+    margin-right 0.4s var(--ft-ease),
+    opacity 0.3s ease;
+}
+
+.ft-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(to right, var(--ft-accent), rgba(199, 154, 91, 0));
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.5s var(--ft-ease);
+}
+
+.ft-link:hover,
+.ft-link:focus-visible {
+  color: var(--ft-ink);
+}
+.ft-link:hover::before,
+.ft-link:focus-visible::before {
+  width: 4px;
+  margin-right: 0.6rem;
+  opacity: 1;
+}
+.ft-link:hover::after,
+.ft-link:focus-visible::after {
+  transform: scaleX(1);
+}
+.ft-link:focus-visible {
+  outline: 2px solid var(--ft-accent);
+  outline-offset: 4px;
+  border-radius: 3px;
+}
+
+/* ── Contacto ────────────────────────────────────────────────────────── */
+.ft-contact {
+  display: grid;
+  gap: 1.15rem;
+}
+
+.ft-contact li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 0.85rem;
+}
+
+.ft-ico {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  border: 1px solid var(--ft-line);
+  background: rgba(244, 248, 251, 0.035);
+  color: rgba(214, 182, 140, 0.9);
+}
+.ft-ico svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ft-contact a,
+.ft-contact span {
+  align-self: center;
+  color: var(--ft-ink-70);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  text-decoration: none;
+  font-style: normal;
+}
+.ft-contact a {
+  transition: color 0.35s var(--ft-ease);
+}
+.ft-contact a:hover {
+  color: var(--ft-ink);
+}
+.ft-contact a:focus-visible {
+  outline: 2px solid var(--ft-accent);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+/* ══ Marca ═══════════════════════════════════════════════════════════ */
+/* El bloque va centrado sobre su propio eje y con un ritmo vertical propio:
+   el logotipo y la frase se tocan (son la misma idea, la marca y lo que es), y
+   la etiqueta de estado se separa (es otra cosa, un dato). Antes los tres
+   huecos medían igual y la columna se leía como una lista de tres cosas
+   sueltas en vez de como un bloque de marca con un apunte debajo. */
+.ft-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.85rem;
+  /* Ata el ancho de la columna a algo estable. Sin esto la pista `auto` la
+     dimensiona la línea más larga de la frase, que cambia con la tipografía y
+     con el idioma, y el reparto de espacio bailaba. */
+  width: clamp(230px, 21vw, 285px);
+}
+.ft-brand .ft-status {
+  margin-top: 0.55rem;
+}
+
+.ft-logo {
+  position: relative;
+  display: block;
+  width: clamp(190px, 17vw, 250px);
+  /* La proporción real del PNG (525×288). Reservada por adelantado para que la
+     fila no dé un salto cuando la imagen termina de cargar. */
+  aspect-ratio: 525 / 288;
+}
+
+.ft-logo img {
+  /* `block`, no el inline por defecto: como caja en línea, la imagen se sienta
+     sobre la línea base y arrastra el hueco del descendente debajo —medido:
+     5px de aire fantasma bajo el logotipo, que además descuadraba la máscara
+     del destello respecto a la propia imagen. */
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  /* El archivo es blanco puro; bajarlo un punto lo asienta sobre el negro en
+     lugar de dejarlo quemado. */
+  opacity: 0.94;
+}
+
+/* ── El destello de la marca ─────────────────────────────────────────
+   Una banda de luz que recorre el logotipo POR DENTRO de sus formas: la capa
+   se recorta con el propio PNG como máscara, así que el brillo sólo existe
+   donde hay letra o monograma. Recortado con el alfa del archivo, no con una
+   forma aproximada, que es lo que lo hace preciso.
+
+   La banda se mueve con transform —una franja inclinada que cruza— y no con
+   background-position, para que sea trabajo de compositor. */
+.ft-logo-sheen {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask-image: url("./img/brand/rego-logo.png");
+  mask-image: url("./img/brand/rego-logo.png");
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+.ft-logo-sheen::before {
+  content: "";
+  position: absolute;
+  top: -30%;
+  bottom: -30%;
+  left: 0;
+  width: 38%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 236, 208, 0.5) 42%,
+    rgba(226, 189, 140, 0.85) 50%,
+    rgba(255, 236, 208, 0.5) 58%,
+    transparent
+  );
+  transform: translateX(-180%) skewX(-15deg);
+}
+
+/* Un solo pase, al entrar. Repetirlo en bucle lo convertiría en un banner. */
+.ft.is-in .ft-logo-sheen::before {
+  animation: ft-sheen 1.5s cubic-bezier(0.5, 0, 0.2, 1) 0.75s both;
+}
+/* Y a demanda, si alguien pasa por encima de la marca. */
+.ft-logo:hover .ft-logo-sheen::before {
+  animation: ft-sheen 1.25s cubic-bezier(0.5, 0, 0.2, 1) both;
+}
+
+@keyframes ft-sheen {
+  from {
+    transform: translateX(-180%) skewX(-15deg);
+  }
+  to {
+    transform: translateX(430%) skewX(-15deg);
+  }
+}
+
+.ft-brand-note {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--ft-ink-46);
+  /* Reparte las líneas para que midan parecido en lugar de dejar una última
+     línea corta colgando bajo dos largas —que es lo que descuadraba el bloque
+     respecto al logotipo centrado que tiene encima—. */
+  text-wrap: balance;
+}
+
+/* ── Estado ──────────────────────────────────────────────────────────
+   Sustituye al reloj local. El punto que late dice lo mismo —que hay alguien
+   ahí, ahora— sin obligar al lector a traducir husos horarios ni depender de
+   que la zona del navegador esté bien configurada.
+
+   En una sola línea: el rótulo pasó de partirse en dos por culpa del texto
+   largo, y una etiqueta rota debajo de la marca desequilibraba la columna
+   entera. `white-space: nowrap` lo impide y el tamaño se ajusta si hace
+   falta. */
+.ft-status {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+  padding: 0.55em 1em;
+  border-radius: 999px;
+  border: 1px solid var(--ft-line);
+  background: rgba(244, 248, 251, 0.03);
+  font-family: var(--sec-mono);
+  font-size: clamp(9.5px, 0.72vw, 11px);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ft-ink-46);
+}
+.ft-status b {
+  font-weight: 500;
+  color: rgba(226, 200, 165, 0.92);
+}
+.ft-status span {
+  /* El punto medio separa sin meter otro filete en una tarjeta que ya es
+     pequeña. */
+  position: relative;
+  padding-left: 0.75em;
+}
+.ft-status span::before {
+  content: "·";
+  position: absolute;
+  left: 0.16em;
+  opacity: 0.55;
+}
+.ft-status i {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #7ddc9a;
+  box-shadow: 0 0 0 0 rgba(125, 220, 154, 0.55);
+  animation: ft-pulse 2.6s ease-out infinite;
+}
+
+@keyframes ft-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(125, 220, 154, 0.5);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 7px rgba(125, 220, 154, 0);
+  }
+}
+
+/* ══ Costura de luz ══════════════════════════════════════════════════
+   El filete que separa el cuerpo del pie de página. En la referencia lleva un
+   destello en el centro; aquí ese destello SIGUE AL PUNTERO a lo largo de la
+   línea, y vuelve al centro cuando el cursor se va.
+
+   Es un translate sobre una caja de ancho fijo gobernado por una variable
+   —footer.js sólo escribe --ft-seam-x— así que la línea no se repinta: la luz
+   se compone encima. El efecto es el de un canto metálico que capta la luz al
+   pasar la mano por delante. */
+.ft-seam {
+  position: relative;
+  height: 1px;
+  margin-top: clamp(2.75rem, 6vh, 4rem);
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    var(--ft-line) 16%,
+    var(--ft-line) 84%,
+    transparent 100%
+  );
+}
+
+.ft-seam-bloom {
+  position: absolute;
+  top: 50%;
+  /* Anclado al centro del filete, no a su izquierda. Un porcentaje dentro de
+     translateX se resuelve contra el ANCHO DEL PROPIO ELEMENTO, no contra el
+     del padre, así que centrarlo desde `left: 0` con un 50% dejaba el
+     resplandor pegado al extremo izquierdo. Anclando en `left: 50%` el reposo
+     es un translate del -50% de sí mismo, que sí es el centro. */
+  left: 50%;
+  width: 320px;
+  height: 2px;
+  margin-top: -1px;
+  border-radius: 2px;
+  pointer-events: none;
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 233, 200, 0.85),
+    rgba(199, 154, 91, 0.42) 42%,
+    transparent 100%
+  );
+  /* footer.js escribe --ft-seam-dx: el desplazamiento en píxeles RESPECTO AL
+     CENTRO. Sin JS vale 0 y el resplandor descansa centrado, que es
+     exactamente el reposo que se quiere. */
+  transform: translateX(calc(-50% + var(--ft-seam-dx, 0px)));
+  transition: transform 0.85s var(--ft-ease);
+}
+
+/* Halo ancho y muy tenue bajo la línea, que le da grosor óptico a la luz. */
+.ft-seam-bloom::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 260px;
+  height: 90px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(closest-side, rgba(199, 154, 91, 0.13), transparent 72%);
+}
+
+/* ══ Pie ═════════════════════════════════════════════════════════════ */
+.ft-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem 1.75rem;
+  padding-top: clamp(1.25rem, 3vh, 1.75rem);
+}
+
+.ft-copy {
+  margin: 0;
+  font-family: var(--sec-mono);
+  font-size: 11px;
+  letter-spacing: 0.11em;
+  color: rgba(244, 248, 251, 0.34);
+}
+
+.ft-social {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* Discos sobrios, al contrario de los de Reserva: allí eran el único enlace
+   saliente de la página y tenían que pesar; aquí conviven con tres columnas de
+   enlaces y su trabajo es estar disponibles, no llamar. El color de cada marca
+   sólo aparece al interactuar. */
+.ft-social a {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--ft-line);
+  background: rgba(244, 248, 251, 0.03);
+  color: var(--ft-ink-70);
+  text-decoration: none;
+  transition:
+    background-color 0.4s var(--ft-ease),
+    border-color 0.4s var(--ft-ease),
+    color 0.4s var(--ft-ease),
+    transform 0.4s var(--ft-ease);
+}
+.ft-social a:hover,
+.ft-social a:focus-visible {
+  transform: translateY(-3px);
+  color: #fff;
+}
+.ft-social a[data-net="ig"]:hover,
+.ft-social a[data-net="ig"]:focus-visible {
+  background: linear-gradient(45deg, #f09433, #dc2743 45%, #bc1888);
+  border-color: transparent;
+}
+.ft-social a[data-net="fb"]:hover,
+.ft-social a[data-net="fb"]:focus-visible {
+  background: #1877f2;
+  border-color: transparent;
+}
+.ft-social a[data-net="tt"]:hover,
+.ft-social a[data-net="tt"]:focus-visible {
+  background: #010101;
+  border-color: #25f4ee;
+  color: #25f4ee;
+}
+.ft-social a:focus-visible {
+  outline: 2px solid var(--ft-ink);
+  outline-offset: 3px;
+}
+.ft-social svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.ft-social a[data-net="fb"] svg {
+  fill: currentColor;
+  stroke: none;
+}
+
+/* ── Volver arriba ───────────────────────────────────────────────────
+   La página mide varias pantallas y termina aquí; sin esto la única salida es
+   arrastrar la barra. La flecha sube al pasar por encima y se desvanece por el
+   borde, y la de repuesto entra por abajo — el rótulo no se mueve. */
+.ft-top {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6em 0.4em 0.6em 1.1em;
+  border: 0;
+  background: transparent;
+  color: var(--ft-ink-46);
+  font-family: var(--sec-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.4s var(--ft-ease);
+}
+.ft-top:hover {
+  color: var(--ft-ink);
+}
+.ft-top:focus-visible {
+  outline: 2px solid var(--ft-accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.ft-top-disc {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  overflow: hidden;
+  border-radius: 50%;
+  border: 1px solid var(--ft-line);
+  transition:
+    border-color 0.4s var(--ft-ease),
+    background-color 0.4s var(--ft-ease);
+}
+.ft-top:hover .ft-top-disc {
+  border-color: rgba(199, 154, 91, 0.6);
+  background: rgba(199, 154, 91, 0.1);
+}
+
+.ft-top-disc svg {
+  grid-area: 1 / 1;
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.5s var(--ft-ease), opacity 0.4s var(--ft-ease);
+}
+.ft-top-disc svg:last-child {
+  transform: translateY(16px);
+  opacity: 0;
+}
+.ft-top:hover .ft-top-disc svg:first-child {
+  transform: translateY(-16px);
+  opacity: 0;
+}
+.ft-top:hover .ft-top-disc svg:last-child {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* ══ Entrada ═════════════════════════════════════════════════════════
+   Igual que en FAQ: el estado inicial lo pone footer.js con `.is-ready`, para
+   que una carga sin JS o sin GSAP muestre el footer entero en lugar de
+   dejarlo invisible. */
+.ft.is-ready .ft-anim {
+  opacity: 0;
+}
+
+@media (max-width: 639px) {
+  .ft-cta {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+  /* Aquí la tarjeta se apila y el texto ocupa todo el ancho, así que un velo
+     que se apaga hacia la derecha dejaría media línea sin protección. Pasa a
+     vertical: cubre el bloque de texto y libera la parte baja, donde ya sólo
+     está el botón. */
+  .ft-cta::after {
+    background: linear-gradient(
+      to bottom,
+      rgba(9, 11, 13, 0.7) 0%,
+      rgba(9, 11, 13, 0.5) 52%,
+      rgba(9, 11, 13, 0.12) 100%
+    );
+  }
+  .ft-cta-btn {
+    justify-content: center;
+  }
+  .ft-body {
+    justify-items: center;
+    text-align: center;
+    /* Con dos bloques en lugar de cuatro sobra aire entre ellos. */
+    gap: clamp(1.75rem, 6vw, 2.5rem);
+  }
+
+  /* ── Sólo marca y contacto ────────────────────────────────────────
+     Las dos columnas de enlaces se retiran en teléfono. No se pierde nada:
+     son atajos a secciones de ESTA misma página, y el botón de menú ya las
+     ofrece todas —del 01 al 06— a un toque y desde cualquier punto del
+     scroll. Repetirlas aquí obligaba a recorrer dos listas más para llegar
+     al dato que la gente busca de verdad en un pie desde el móvil, que es
+     cómo llamar y dónde está.
+
+     Se distinguen por el elemento, no por una clase extra: las dos que se
+     van son <nav> —listas de navegación— y la que se queda es un <div> con
+     los datos de contacto. La diferencia ya era semántica.
+
+     `display: none` y no `visibility`: así salen también del árbol de
+     accesibilidad y del orden de tabulación, que es lo correcto cuando el
+     mismo destino sigue estando disponible en el menú. */
+  .ft-body > nav.ft-col {
+    display: none;
+  }
+
+  /* Recupera el ancho: el tope de 285px que ordena las cuatro columnas en
+     escritorio aquí sólo servía para estrechar la única columna que hay. */
+  .ft-brand {
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .ft-contact li {
+    justify-items: center;
+  }
+  .ft-list {
+    justify-items: center;
+  }
+  .ft-bottom {
+    flex-direction: column-reverse;
+    gap: 1.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ft.is-ready .ft-anim {
+    opacity: 1;
+  }
+  .ft-seam-bloom,
+  .ft-link,
+  .ft-link::before,
+  .ft-link::after,
+  .ft-cta-btn,
+  .ft-cta-btn::after,
+  .ft-social a,
+  .ft-top-disc svg {
+    transition: none !important;
+  }
+  .ft-status i,
+  .ft.is-in .ft-logo-sheen::before,
+  .ft-logo:hover .ft-logo-sheen::before {
+    animation: none !important;
+  }
+}
+
+/* Sin traspaso a propósito. El footer no sube por encima de Reserva ni la
+   sostiene quieta debajo — es simple continuación de documento: termina la
+   pantalla del video y el pie empieza justo ahí, sin ningún efecto de página.
+   La unión sigue sin costura porque el fondo del footer arranca en el mismo
+   color donde termina el scrim de Reserva (--ft-top, arriba). */

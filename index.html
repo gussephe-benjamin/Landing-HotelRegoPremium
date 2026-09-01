@@ -10,8 +10,8 @@
    <link rel="apple-touch-icon" href="./img/brand/apple-touch-icon.png?v=1" />
    <link rel="preconnect" href="https://api.fontshare.com" />
    <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,401,500,700&f[]=zodiak@300,301,400,401,700,701&f[]=clash-display@500,600,700&display=swap" rel="stylesheet" />
-   <link rel="stylesheet" href="style.css?v=8" />
-   <link rel="stylesheet" href="overlay.css?v=3" />
+   <link rel="stylesheet" href="style.css?v=14" />
+   <link rel="stylesheet" href="overlay.css?v=4" />
    <link rel="stylesheet" href="story.css?v=21" />
    <link rel="stylesheet" href="masked-heading.css" />
    <link rel="stylesheet" href="offering.css?v=5" />
@@ -19,11 +19,13 @@
    <link rel="stylesheet" href="rooms-detail.css?v=5" />
    <link rel="stylesheet" href="values.css?v=9" />
    <link rel="stylesheet" href="voices.css?v=7" />
-   <link rel="stylesheet" href="location.css?v=13" />
-   <link rel="stylesheet" href="reserve.css?v=14" />
-   <link rel="stylesheet" href="menu.css?v=4" />
+   <link rel="stylesheet" href="location.css?v=14" />
+   <link rel="stylesheet" href="faq.css?v=3" />
+   <link rel="stylesheet" href="reserve.css?v=16" />
+   <link rel="stylesheet" href="menu.css?v=5" />
    <link rel="stylesheet" href="brandmark.css?v=3" />
    <link rel="stylesheet" href="hscroll.css?v=26" />
+   <link rel="stylesheet" href="footer.css?v=8" />
    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Norican&display=swap" rel="stylesheet" />
 </head>
 
@@ -542,7 +544,7 @@
                      </div>
                      <div class="rooms-spec">
                         <svg viewBox="0 0 24 24"><path d="M4 12h16v3a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4v-3z"/><path d="M7 12V6a2 2 0 0 1 4 0"/><path d="M7 19l-1 2M18 19l1 2"/></svg>
-                        <span><b>2</b> ba&ntilde;os</span>
+                        <span><b>1</b> ba&ntilde;o</span>
                      </div>
                      <div class="rooms-spec">
                         <svg viewBox="0 0 24 24"><path d="M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="9.5" cy="7" r="3.5"/><path d="M21 20v-2a4 4 0 0 0-3-3.87"/></svg>
@@ -693,14 +695,6 @@
 
       <div class="location-aura" aria-hidden="true"></div>
 
-      <!-- Dimmed by reserve.js while the reservation panel rises over this
-           section. It exists so that fade has something cheap to animate: the
-           dim used to be an opacity tween on .location-grid, which holds the
-           glass card and the filtered map, and fading that subtree forced the
-           blur and the filter chain to be recomposited on every frame of the
-           hand-off. -->
-      <div class="location-dim" aria-hidden="true"></div>
-
       <div class="location-grid">
          <div class="location-map">
             <div class="location-map-frame">
@@ -789,6 +783,181 @@
       </div>
    </section>
 
+   <!-- Preguntas frecuentes. Va aquí, entre Ubicación y Reserva, porque son
+        las dudas que se resuelven justo antes de decidir: horarios, cocina,
+        pagos. Hereda el negro de Ubicación —Reserva es video a pantalla
+        completa y no admite un vecino con fondo propio sin costura— y es la
+        sección que Reserva sostiene al subir; el traspaso vive en faq.css. -->
+   <section class="faq" id="faq" aria-labelledby="faqTitle">
+      <div class="faq-aura" aria-hidden="true"></div>
+      <div class="faq-dim" aria-hidden="true"></div>
+
+      <div class="faq-head">
+         <div class="faq-head-col">
+            <p class="faq-eyebrow sec-eyebrow faq-anim"><b>06</b><i></i><span>Preguntas frecuentes</span></p>
+            <h2 class="faq-title sec-title faq-anim" id="faqTitle">Lo que conviene <em>saber antes</em> de llegar</h2>
+         </div>
+         <div class="faq-head-col">
+            <p class="faq-lead faq-anim">Horarios, cocina, pagos y estacionamiento &mdash; resuelto aqu&iacute; para que la reserva sea el &uacute;ltimo paso y no el primero. Lo que quede fuera lo respondemos por WhatsApp el mismo d&iacute;a.</p>
+            <div class="faq-nav faq-anim">
+               <button class="faq-arrow" type="button" data-faq-prev aria-label="Pregunta anterior">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5M11 6l-6 6 6 6"/></svg>
+               </button>
+               <button class="faq-arrow is-primary" type="button" data-faq-next aria-label="Pregunta siguiente">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+               </button>
+               <p class="faq-count"><b>01</b><i></i><span>06</span></p>
+            </div>
+         </div>
+      </div>
+
+      <div class="faq-rail-wrap">
+         <div class="faq-track" aria-hidden="true"><span class="faq-track-fill"></span></div>
+
+         <div class="faq-rail">
+            <article class="faq-panel">
+               <span class="faq-panel__media" aria-hidden="true">
+                  <img src="./img/estudio-recepcion.jpg" alt="" loading="lazy" decoding="async" />
+               </span>
+               <h3 class="faq-panel__h">
+                  <button class="faq-panel__btn" type="button" aria-expanded="false" aria-controls="faq-a-1">
+                     <span class="faq-panel__num" aria-hidden="true">01</span>
+                     <span class="faq-panel__spine" aria-hidden="true">Check-in y salida</span>
+                     <span class="faq-panel__q">&iquest;Cu&aacute;l es el horario de check-in y check-out?</span>
+                     <span class="faq-panel__sign" aria-hidden="true"><i></i><i></i></span>
+                  </button>
+               </h3>
+               <div class="faq-panel__body" id="faq-a-1">
+                  <div class="faq-panel__inner">
+                     <div class="faq-panel__pad">
+                        <p class="faq-panel__a">El check-in es desde las 14:00 y el check-out hasta las 12:00. La recepci&oacute;n atiende de forma continua, as&iacute; que una llegada de madrugada no tiene recargo: basta avisarnos por WhatsApp para dejar la habitaci&oacute;n lista y la puerta abierta.</p>
+                        <p class="faq-panel__note"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 6.5V12l4 2.4"/></svg>Recepci&oacute;n 24 horas</p>
+                     </div>
+                  </div>
+               </div>
+            </article>
+
+            <article class="faq-panel">
+               <span class="faq-panel__media" aria-hidden="true">
+                  <img src="./img/estudio-cocina-equipada.jpg" alt="" loading="lazy" decoding="async" />
+               </span>
+               <h3 class="faq-panel__h">
+                  <button class="faq-panel__btn" type="button" aria-expanded="false" aria-controls="faq-a-2">
+                     <span class="faq-panel__num" aria-hidden="true">02</span>
+                     <span class="faq-panel__spine" aria-hidden="true">Cocina propia</span>
+                     <span class="faq-panel__q">&iquest;Las habitaciones tienen cocina equipada?</span>
+                     <span class="faq-panel__sign" aria-hidden="true"><i></i><i></i></span>
+                  </button>
+               </h3>
+               <div class="faq-panel__body" id="faq-a-2">
+                  <div class="faq-panel__inner">
+                     <div class="faq-panel__pad">
+                        <p class="faq-panel__a">S&iacute;. Somos un apart hotel, no un hotel con kitchenette: estudios, minidepartamentos y departamentos incluyen cocina con refrigeradora, microondas, vajilla y utensilios. Est&aacute; pensado para estancias largas, donde comer fuera todos los d&iacute;as deja de ser una opci&oacute;n.</p>
+                        <p class="faq-panel__note"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3.5v6a2.5 2.5 0 0 0 5 0v-6M6.5 9.5V20.5M17 3.5c-1.7 1-2.5 3-2.5 5.5s.8 3.5 2.5 3.5V20.5"/></svg>Vajilla y menaje incluidos</p>
+                     </div>
+                  </div>
+               </div>
+            </article>
+
+            <article class="faq-panel">
+               <span class="faq-panel__media" aria-hidden="true">
+                  <img src="./img/recepcion-checkin-huespedes.jpg" alt="" loading="lazy" decoding="async" />
+               </span>
+               <h3 class="faq-panel__h">
+                  <button class="faq-panel__btn" type="button" aria-expanded="false" aria-controls="faq-a-3">
+                     <span class="faq-panel__num" aria-hidden="true">03</span>
+                     <span class="faq-panel__spine" aria-hidden="true">Reservas y pagos</span>
+                     <span class="faq-panel__q">&iquest;C&oacute;mo reservo y qu&eacute; formas de pago aceptan?</span>
+                     <span class="faq-panel__sign" aria-hidden="true"><i></i><i></i></span>
+                  </button>
+               </h3>
+               <div class="faq-panel__body" id="faq-a-3">
+                  <div class="faq-panel__inner">
+                     <div class="faq-panel__pad">
+                        <p class="faq-panel__a">La reserva se confirma por WhatsApp al +51 990 669 259, directo con recepci&oacute;n y sin comisiones de plataforma. Aceptamos efectivo, transferencia bancaria, Yape, Plin y tarjeta de d&eacute;bito o cr&eacute;dito al momento del registro.</p>
+                        <p class="faq-panel__note"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2.5"/><path d="M3 10.5h18"/></svg>Sin comisi&oacute;n de intermediarios</p>
+                     </div>
+                  </div>
+               </div>
+            </article>
+
+            <article class="faq-panel">
+               <span class="faq-panel__media" aria-hidden="true">
+                  <img src="./img/dormitorio-vista-balcon.jpg" alt="" loading="lazy" decoding="async" />
+               </span>
+               <h3 class="faq-panel__h">
+                  <button class="faq-panel__btn" type="button" aria-expanded="false" aria-controls="faq-a-4">
+                     <span class="faq-panel__num" aria-hidden="true">04</span>
+                     <span class="faq-panel__spine" aria-hidden="true">Cancelaci&oacute;n y cambios</span>
+                     <span class="faq-panel__q">&iquest;Puedo cancelar o cambiar la fecha de mi reserva?</span>
+                     <span class="faq-panel__sign" aria-hidden="true"><i></i><i></i></span>
+                  </button>
+               </h3>
+               <div class="faq-panel__body" id="faq-a-4">
+                  <div class="faq-panel__inner">
+                     <div class="faq-panel__pad">
+                        <p class="faq-panel__a">Puedes cancelar sin costo hasta 24 horas antes de la fecha de llegada escribi&eacute;ndonos por WhatsApp; pasado ese plazo se cobra la primera noche como penalidad. Cambiar la fecha no tiene costo si hay disponibilidad &mdash; solo coordina directamente con recepci&oacute;n.</p>
+                        <p class="faq-panel__note"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="16" rx="2"/><path d="M3.5 9.5h17M8 3v3M16 3v3"/><path d="M8.5 14.5l2 2 4.5-4.5"/></svg>Cancelaci&oacute;n gratuita hasta 24 h antes</p>
+                     </div>
+                  </div>
+               </div>
+            </article>
+
+            <article class="faq-panel">
+               <span class="faq-panel__media" aria-hidden="true">
+                  <img src="./img/wifi-trabajo-remoto.jpg" alt="" loading="lazy" decoding="async" />
+               </span>
+               <h3 class="faq-panel__h">
+                  <button class="faq-panel__btn" type="button" aria-expanded="false" aria-controls="faq-a-5">
+                     <span class="faq-panel__num" aria-hidden="true">05</span>
+                     <span class="faq-panel__spine" aria-hidden="true">Wifi y cochera</span>
+                     <span class="faq-panel__q">&iquest;Hay estacionamiento y wifi en el hotel?</span>
+                     <span class="faq-panel__sign" aria-hidden="true"><i></i><i></i></span>
+                  </button>
+               </h3>
+               <div class="faq-panel__body" id="faq-a-5">
+                  <div class="faq-panel__inner">
+                     <div class="faq-panel__pad">
+                        <p class="faq-panel__a">Estacionamiento privado dentro del edificio, sin costo adicional y con cupo garantizado si lo indicas al reservar. El wifi de fibra cubre habitaciones, comedor y sal&oacute;n, con ancho de banda pensado para videollamadas de trabajo, no s&oacute;lo para revisar el correo.</p>
+                        <p class="faq-panel__note"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9.5a13 13 0 0 1 18 0M6.5 13a8 8 0 0 1 11 0M10 16.5a3 3 0 0 1 4 0"/><circle cx="12" cy="20" r="0.9" fill="currentColor" stroke="none"/></svg>Fibra &oacute;ptica &middot; Cochera privada</p>
+                     </div>
+                  </div>
+               </div>
+            </article>
+
+            <article class="faq-panel">
+               <span class="faq-panel__media" aria-hidden="true">
+                  <img src="./img/salon-principal.jpg" alt="" loading="lazy" decoding="async" />
+               </span>
+               <h3 class="faq-panel__h">
+                  <button class="faq-panel__btn" type="button" aria-expanded="false" aria-controls="faq-a-6">
+                     <span class="faq-panel__num" aria-hidden="true">06</span>
+                     <span class="faq-panel__spine" aria-hidden="true">Eventos y sal&oacute;n</span>
+                     <span class="faq-panel__q">&iquest;Puedo usar el sal&oacute;n para reuniones o eventos?</span>
+                     <span class="faq-panel__sign" aria-hidden="true"><i></i><i></i></span>
+                  </button>
+               </h3>
+               <div class="faq-panel__body" id="faq-a-6">
+                  <div class="faq-panel__inner">
+                     <div class="faq-panel__pad">
+                        <p class="faq-panel__a">El sal&oacute;n admite montaje flexible para capacitaciones, reuniones corporativas y celebraciones, con proyector y servicio de cafeter&iacute;a. Cotizamos seg&uacute;n aforo y horas de uso; la disponibilidad se coordina por WhatsApp con al menos 48 horas de anticipaci&oacute;n.</p>
+                        <p class="faq-panel__note"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4" width="17" height="11" rx="1.5"/><path d="M12 15v4M8.5 19h7"/></svg>Montaje a medida &middot; Proyector</p>
+                     </div>
+                  </div>
+               </div>
+            </article>
+         </div>
+      </div>
+
+      <div class="faq-foot faq-anim">
+         <p>&iquest;Tu pregunta no est&aacute; en la lista?</p>
+         <a class="faq-foot-cta" href="https://wa.me/51990669259?text=Hola%2C%20tengo%20una%20consulta%20sobre%20el%20hotel" target="_blank" rel="noopener noreferrer">
+            Escr&iacute;benos por WhatsApp
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+         </a>
+      </div>
+   </section>
+
    <section class="reserve" id="contact">
       <video class="reserve-video" src="./media/reserve-bg.mp4" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
       <div class="reserve-scrim" aria-hidden="true"></div>
@@ -817,23 +986,142 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
          </a>
 
-         <!-- Subidas desde la sección de cierre, que se eliminó. Aquí cierran
-              la página: son el único enlace saliente que queda una vez que
-              Reserva es la última ventana. -->
-         <div class="rsv-social" aria-label="Redes sociales">
-            <a href="https://www.instagram.com/rego_premium_apart_hotel" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-               <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.6" fill="currentColor"/></svg>
-            </a>
-            <a href="https://www.facebook.com/profile.php?id=61592640328745" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
-               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 8.5V7a1.5 1.5 0 0 1 1.5-1.5H17V3h-2a4 4 0 0 0-4 4v1.5H9V11h2v10h3V11h2.2l.3-2.5z"/></svg>
-            </a>
-            <a href="https://www.tiktok.com/@regopremium_" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
-               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3v10.7a4.3 4.3 0 1 1-3.8-4.27"/><path d="M16 3a5 5 0 0 0 5 5"/></svg>
+         <!-- Las redes bajaron al footer: ya no son el único enlace saliente
+              de la página, así que su sitio es el pie y no el cierre de esta
+              sección. Reserva se queda con una sola acción. -->
+      </div>
+   </section>
+
+   <!-- Pie. Arranca exactamente en el color donde termina el scrim de Reserva
+        (#12161a) y desciende a negro, de modo que la unión entre el video y
+        esto no tiene costura: se monta encima de Reserva, que se queda quieta
+        debajo, y como comparten el color del punto de contacto lo que se ve no
+        es un borde sino la oscuridad del video convirtiéndose en el footer. -->
+   <footer class="ft" id="footer" aria-label="Pie de p&aacute;gina">
+      <div class="ft-glow" aria-hidden="true"></div>
+
+      <svg class="ft-grain" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+         <filter id="ftGrain">
+            <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" stitchTiles="stitch" />
+            <feColorMatrix type="saturate" values="0" />
+         </filter>
+         <rect width="100%" height="100%" filter="url(#ftGrain)" />
+      </svg>
+
+      <div class="ft-inner">
+
+         <div class="ft-cta ft-anim">
+            <!-- Campo de luz WebGL. Se funde en `screen`, así que sólo SUMA
+                 luz sobre el vidrio de la tarjeta en vez de taparlo, y si el
+                 contexto no arranca se queda a opacidad 0 y la tarjeta se ve
+                 exactamente como sin él. -->
+            <canvas class="ft-cta-aura" aria-hidden="true"></canvas>
+            <div class="ft-cta-text">
+               <p class="ft-cta-kicker">Tu estancia, en un solo lugar</p>
+               <h2 class="ft-cta-title">Vive la experiencia <em>REGO</em></h2>
+            </div>
+            <a class="ft-cta-btn"
+               href="https://wa.me/51990669259?text=Hola%2C%20quisiera%20hacer%20una%20reserva"
+               target="_blank" rel="noopener noreferrer">
+               <span>Reservar ahora</span>
+               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
             </a>
          </div>
-      </div>
 
-   </section>
+         <div class="ft-body">
+
+            <nav class="ft-col ft-anim" aria-label="Explora el sitio">
+               <h3 class="ft-col-h">Explora</h3>
+               <ul class="ft-list">
+                  <li><a class="ft-link" href="#experiencia">Los espacios</a></li>
+                  <li><a class="ft-link" href="#rooms">Habitaciones</a></li>
+                  <li><a class="ft-link" href="#amenities">Servicios</a></li>
+                  <li><a class="ft-link" href="#opiniones">Opiniones</a></li>
+                  <li><a class="ft-link" href="#location">Ubicaci&oacute;n</a></li>
+               </ul>
+            </nav>
+
+            <div class="ft-brand ft-anim">
+               <span class="ft-logo">
+                  <img src="./img/brand/rego-logo.png" alt="REGO Premium Apart Hotel" width="525" height="288" loading="lazy" decoding="async" />
+                  <i class="ft-logo-sheen" aria-hidden="true"></i>
+               </span>
+               <p class="ft-brand-note">Cocina equipada, vista al valle del Utcubamba y recepci&oacute;n atendida a cualquier hora.</p>
+               <!-- Sustituye al reloj local. El punto que late sigue diciendo
+                    lo mismo —que hay alguien ahí— pero sin obligar al lector a
+                    hacer la cuenta de husos para entenderlo, y no depende de
+                    que la zona horaria del navegador esté bien puesta. -->
+               <p class="ft-status">
+                  <i aria-hidden="true"></i>
+                  <b>Recepci&oacute;n 24 h</b>
+                  <span>Bagua Grande, Amazonas</span>
+               </p>
+            </div>
+
+            <nav class="ft-col ft-anim" aria-label="Informaci&oacute;n">
+               <h3 class="ft-col-h">Informaci&oacute;n</h3>
+               <ul class="ft-list">
+                  <li><a class="ft-link" href="#faq">Preguntas frecuentes</a></li>
+                  <li><a class="ft-link" href="#contact">Reservar</a></li>
+                  <li><a class="ft-link" href="https://www.google.com/maps/search/?api=1&amp;query=REGO+Premium+Apart+Hotel,+Jr.+Miguel+Grau+672,+Bagua+Grande,+Peru" target="_blank" rel="noopener noreferrer">C&oacute;mo llegar</a></li>
+                  <li><a class="ft-link" href="https://wa.me/51990669259?text=Hola%2C%20quisiera%20cotizar%20el%20sal%C3%B3n%20para%20un%20evento" target="_blank" rel="noopener noreferrer">Eventos y sal&oacute;n</a></li>
+               </ul>
+            </nav>
+
+            <div class="ft-col ft-anim">
+               <h3 class="ft-col-h">Cont&aacute;ctanos</h3>
+               <ul class="ft-list ft-contact">
+                  <li>
+                     <span class="ft-ico" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                     </span>
+                     <span>Jr. Miguel Grau 672<br />Bagua Grande, Amazonas</span>
+                  </li>
+                  <li>
+                     <span class="ft-ico" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 7l8.5 6 8.5-6"/></svg>
+                     </span>
+                     <a href="mailto:reservas@regopremium.pe">reservas@regopremium.pe</a>
+                  </li>
+                  <li>
+                     <span class="ft-ico" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><path d="M3.5 3.5h5l1.5 5-2.5 1.8a13 13 0 0 0 6.2 6.2l1.8-2.5 5 1.5v5h-1.4C10.4 20.5 3.5 13.6 3.5 5z"/></svg>
+                     </span>
+                     <a href="tel:+51990669259">+51 990 669 259</a>
+                  </li>
+               </ul>
+            </div>
+
+         </div>
+
+         <div class="ft-seam ft-anim"><span class="ft-seam-bloom" aria-hidden="true"></span></div>
+
+         <div class="ft-bottom ft-anim">
+            <p class="ft-copy">&copy; <span data-ft-year>2026</span> REGO Premium Apart Hotel &middot; Bagua Grande, Per&uacute;</p>
+
+            <div class="ft-social" aria-label="Redes sociales">
+               <a data-net="ig" href="https://www.instagram.com/rego_premium_apart_hotel" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.6" fill="currentColor"/></svg>
+               </a>
+               <a data-net="fb" href="https://www.facebook.com/profile.php?id=61592640328745" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 8.5V7a1.5 1.5 0 0 1 1.5-1.5H17V3h-2a4 4 0 0 0-4 4v1.5H9V11h2v10h3V11h2.2l.3-2.5z"/></svg>
+               </a>
+               <a data-net="tt" href="https://www.tiktok.com/@regopremium_" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3v10.7a4.3 4.3 0 1 1-3.8-4.27"/><path d="M16 3a5 5 0 0 0 5 5"/></svg>
+               </a>
+            </div>
+
+            <button class="ft-top" type="button" data-ft-top>
+               <span>Volver arriba</span>
+               <span class="ft-top-disc" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="M12 19V6M6 11l6-6 6 6"/></svg>
+                  <svg viewBox="0 0 24 24"><path d="M12 19V6M6 11l6-6 6 6"/></svg>
+               </span>
+            </button>
+         </div>
+
+      </div>
+   </footer>
 
 
    <button class="nav-fab" type="button" aria-expanded="false" aria-controls="curvedMenu" aria-label="Abrir men&uacute;">
@@ -877,8 +1165,15 @@
                   <span class="cv-sub">C&oacute;mo llegar e info</span>
                </span>
             </a>
-            <a class="cv-link" href="#contact">
+            <a class="cv-link" href="#faq">
                <span class="cv-num">05.</span>
+               <span class="cv-text">
+                  <span class="cv-word">Preguntas</span>
+                  <span class="cv-sub">Horarios, servicios y pagos</span>
+               </span>
+            </a>
+            <a class="cv-link" href="#contact">
+               <span class="cv-num">06.</span>
                <span class="cv-text">
                   <span class="cv-word">Reserva</span>
                   <span class="cv-sub">Personal y corporativa</span>
@@ -896,6 +1191,109 @@
          </div>
       </aside>
    </div>
+
+   <!-- ══ Aura de la banda de cierre ═══════════════════════════════════
+        Campo de luz por ruido simplex para el interior de .ft-cta. WebGL a
+        pelo, sin Three.js: es un quad a pantalla completa con un solo paso de
+        fragmento, y traer una librería de escena entera para eso costaría más
+        que el efecto. Los uniformes de color los pone footer.js con la paleta
+        de la casa, no van escritos aquí. -->
+   <script id="ftAuraVertexShader" type="x-shader/x-vertex">
+      attribute vec2 position;
+      varying vec2 vUv;
+
+      void main() {
+         vUv = position * 0.5 + 0.5;
+         gl_Position = vec4(position, 0.0, 1.0);
+      }
+   </script>
+
+   <script id="ftAuraFragmentShader" type="x-shader/x-fragment">
+      /* highp donde exista. El ruido simplex acumula tiempo en sus
+         coordenadas, y en mediump esa suma pierde resolución al cabo de unos
+         minutos: el campo empieza a escalonarse. La guarda es la idiomática,
+         porque highp en fragmento no está garantizado. */
+      #ifdef GL_FRAGMENT_PRECISION_HIGH
+      precision highp float;
+      #else
+      precision mediump float;
+      #endif
+
+      varying vec2 vUv;
+
+      uniform vec2  u_resolution;
+      uniform float u_time;
+      uniform float u_grain;
+      uniform float u_intensity;
+      uniform vec3  u_base;
+      uniform vec3  u_colors[3];
+
+      vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+      vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+      vec3 permute(vec3 x) { return mod289(((x * 34.0) + 1.0) * x); }
+
+      float snoise(vec2 v) {
+         const vec4 C = vec4(0.211324865405187, 0.366025403784439,
+                             -0.577350269189626, 0.024390243902439);
+         vec2 i  = floor(v + dot(v, C.yy));
+         vec2 x0 = v - i + dot(i, C.xx);
+         vec2 i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+         vec4 x12 = x0.xyxy + C.xxzz;
+         x12.xy -= i1;
+         i = mod289(i);
+         vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0)) + i.x + vec3(0.0, i1.x, 1.0));
+         vec3 m = max(0.5 - vec3(dot(x0, x0), dot(x12.xy, x12.xy), dot(x12.zw, x12.zw)), 0.0);
+         m = m * m; m = m * m;
+         vec3 x = 2.0 * fract(p * C.www) - 1.0;
+         vec3 h = abs(x) - 0.5;
+         vec3 ox = floor(x + 0.5);
+         vec3 a0 = x - ox;
+         m *= 1.79284291400159 - 0.85373472095314 * (a0 * a0 + h * h);
+         vec3 g;
+         g.x  = a0.x  * x0.x  + h.x  * x0.y;
+         g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+         return 130.0 * dot(m, g);
+      }
+
+      void main() {
+         vec2 uv = vUv;
+         float ratio = u_resolution.x / max(u_resolution.y, 1.0);
+
+         /* La banda es muy apaisada —del orden de 7:1— y corregir la
+            proporción a pelo repetiría el ruido tantas veces a lo ancho que
+            se leería como textura estampada en vez de como luz. Comprimido,
+            quedan pocas vetas largas cruzando la tarjeta, que es lo que se
+            busca. */
+         vec2 p = uv * vec2(ratio * 0.42, 1.0);
+         float t = u_time * 0.2;
+
+         float n1 = snoise(p * 0.5 + t);
+         float n2 = snoise(p * 0.9 - t * 0.5 + n1);
+
+         float light = pow(abs(n2), 2.5) * 0.5;
+
+         vec3 col = u_base;
+         col += u_colors[0] * smoothstep(0.1, 1.0, n1) * 0.5;
+         col += u_colors[1] * light;
+         /* Contratono frío donde el oro no llega: el mismo azul del
+            resplandor del pie, para que la tarjeta pertenezca a su sección y
+            no parezca un widget pegado. */
+         col += u_colors[2] * smoothstep(0.25, 1.0, -n1) * 0.3;
+
+         float grain = fract(sin(dot(uv, vec2(12.9898, 78.233))) * 43758.5453 + u_time);
+         col += (grain - 0.5) * u_grain * 0.5;
+
+         /* Viñeta elíptica. En una caja tan ancha la distancia en uv ya viene
+            estirada, así que se corrige el eje vertical para que la luz muera
+            hacia los cantos por igual y no en forma de óvalo aplastado. */
+         float dist = length((uv - 0.5) * vec2(1.0, 0.85));
+         col *= smoothstep(1.05, 0.15, dist);
+
+         /* El grano puede restar por debajo de cero y el modo de fusión de
+            arriba es `screen`, que con negativos da resultados raros. */
+         gl_FragColor = vec4(max(col, 0.0) * u_intensity, 1.0);
+      }
+   </script>
 
    <script id="roomsVertexShader" type="x-shader/x-vertex">
       precision mediump float;
@@ -1108,8 +1506,10 @@
    <script src="band-shader.js?v=2"></script>
    <script src="voices.js?v=3"></script>
    <script src="location.js"></script>
-   <script src="reserve.js?v=7"></script>
+   <script src="faq.js?v=4"></script>
+   <script src="reserve.js?v=8"></script>
    <script src="reserve-bar.js?v=4"></script>
+   <script src="footer.js?v=4"></script>
    <script src="menu.js?v=4"></script>
 </body>
 
