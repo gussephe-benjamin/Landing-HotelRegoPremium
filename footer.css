@@ -668,18 +668,6 @@
   font-weight: 500;
   color: rgba(226, 200, 165, 0.92);
 }
-.ft-status span {
-  /* El punto medio separa sin meter otro filete en una tarjeta que ya es
-     pequeña. */
-  position: relative;
-  padding-left: 0.75em;
-}
-.ft-status span::before {
-  content: "·";
-  position: absolute;
-  left: 0.16em;
-  opacity: 0.55;
-}
 .ft-status i {
   flex: none;
   width: 6px;
