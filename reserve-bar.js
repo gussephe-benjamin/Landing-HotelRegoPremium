@@ -1,9 +1,8 @@
 /* Reservation screen.
 
-   The section is a title, a summary bar and a caption over the video; the
-   booking engine itself lives on reserva.html. This file only covers the two
-   thing that still needs script here: making the "Reservar" buttons scattered
-   around the page land on this section. */
+   The section is a title and a caption over the video; the "Reservar"
+   buttons scattered around the page are plain links straight to the
+   HotelRunner booking engine now, so this file only animates the title. */
 document.addEventListener("DOMContentLoaded", function () {
   var section = document.querySelector(".reserve");
   if (!section) return;
@@ -304,31 +303,4 @@ document.addEventListener("DOMContentLoaded", function () {
 
     syncLabel();
   })();
-
-  // ── "Reservar" shortcuts ─────────────────────────────────────────────
-  // The button in the hero topbar and the one on every room card jump here
-  // instantly rather than smooth-scrolling: this page is long and pinned in
-  // several places, so animating down would take many seconds and replay
-  // every effect between there and here.
-  function jumpToReserve() {
-    // The intro locks the document (body.is-intro sets overflow:hidden), so a
-    // click during it would otherwise scroll nowhere.
-    if (window.unlockScroll) window.unlockScroll();
-
-    // Measure after a refresh: the pins above own a lot of scroll distance,
-    // and a stale pin-spacer height puts the target hundreds of pixels off.
-    if (typeof ScrollTrigger !== "undefined") ScrollTrigger.refresh();
-
-    window.scrollTo({
-      top: section.getBoundingClientRect().top + window.scrollY,
-      behavior: "auto",
-    });
-
-    if (typeof ScrollTrigger !== "undefined") ScrollTrigger.update();
-    if (window.history && history.replaceState) history.replaceState(null, "", "#contact");
-  }
-
-  [].slice.call(document.querySelectorAll(".btn-book, .rooms-cta")).forEach(function (btn) {
-    btn.addEventListener("click", jumpToReserve);
-  });
 });
